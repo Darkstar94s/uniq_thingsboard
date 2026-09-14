@@ -1,7 +1,7 @@
 # UNIQ identity — first implementation
 
 ## Compatibility
-Based on upstream tag `v4.3.1.4` (`a488a4c138971c0264bf7fdc879871f68eead1e4`). Server, database, configuration and packaging sources match that tag. Java compilation targets 17; the build uses JDK 21 to match the server runtime. This replaces the previous 4.4.0-SNAPSHOT base using a forward commit, so develop remains pullable without a force reset.
+Based on upstream tag `v4.3.1.4` (`a488a4c138971c0264bf7fdc879871f68eead1e4`). Server, database, configuration and packaging sources match that tag. Java compilation targets 17; the build uses JDK 21 to match the server runtime. The compatibility branch `bftech/uniq-4.3.1.4` is based directly on that tag, with only UI and documentation changes. Remote `develop` retains its previous 4.4.0-SNAPSHOT base; do not deploy it to a 4.3.1.4 server.
 
 ## Repository map
 - `ui-ngx`: Angular 20 application; Material themes, authentication, administration, dashboards and widgets.

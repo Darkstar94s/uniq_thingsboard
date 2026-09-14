@@ -12,11 +12,11 @@
 
 ```bash
 git fetch origin
-git switch develop
-git pull --ff-only origin develop
+git switch bftech/uniq-4.3.1.4
+git pull --ff-only origin bftech/uniq-4.3.1.4
 ```
 
-فرع develop يحتفظ بتاريخه؛ لا يلزم force pull أو reset. سحب الكود لا يحدّث الحزمة المثبتة.
+فرع التوافق مستقل عن develop ومبني مباشرة على الإصدار الرسمي. لا يلزم force pull أو reset. سحب الكود لا يحدّث الحزمة المثبتة.
 
 ## بناء حزمة deb
 
