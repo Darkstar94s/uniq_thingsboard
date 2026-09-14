@@ -10,6 +10,7 @@
     margin-top: 36px;
     margin-bottom: 76px;
     background-color: #eee;
+    --mat-card-elevated-container-color: #071633;
     --mat-card-elevated-container-elevation: none;
     .tb-login-form {
       @media #{$mat-gt-xs} {
