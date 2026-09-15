@@ -20,17 +20,21 @@ git pull --ff-only origin bftech/uniq-4.3.1.4
 
 ## بناء حزمة deb
 
-على جهاز بناء Linux تتوفر فيه Maven وJDK 21 وأدوات البناء الأساسية:
+على جهاز بناء Linux تتوفر فيه Maven وJDK 21 و`dpkg-deb` وأدوات البناء الأساسية، من نسخة Git فعلية للمشروع:
 
 ```bash
 java -version
 mvn -version
-mvn -B -ntp -pl application -am install \
+mvn -B -ntp -Ppackaging -pl application -am install \
   -DskipTests -Dlicense.skip=true \
+  -Dpkg.package.phase=none -Dpkg.skip.deb=true \
   -Dpkg.skip.rpm=true -Dpkg.skip.zip=true
+bash tools/package-uniq-deb.sh application/target output/uniq-4.3.1.4/thingsboard.deb
 ```
 
-هذا يبني نسخة الإنتاج من Angular والخادم وحزمة `application/target/thingsboard.deb`. اختبارات Java تُتجاوز هنا؛ نجاح البناء وحده لا يثبت سلامة التشغيل على بياناتك. لا تستخدم `build.sh` لهذا الغرض لأنه يعطّل إنتاج الحزم. يحافظ اسم الحزمة والخدمة على `thingsboard` لتحديث التثبيت الحالي.
+هذا يبني نسخة الإنتاج من Angular والخادم، ثم ينشئ `output/uniq-4.3.1.4/thingsboard.deb` بأداة Ubuntu الأصلية. سكربت التغليف يستخدم ملفات الخدمة والإعداد وسكربتات التثبيت المولدة من المصدر الرسمي، ويضبط نهايات أسطر Linux ويحافظ على تعريف ملفات الإعداد وبيانات القوالب كـ conffiles. اختبارات Java تُتجاوز هنا؛ نجاح البناء وحده لا يثبت سلامة التشغيل على بياناتك. لا تستخدم `build.sh` لهذا الغرض لأنه يعطّل إنتاج الحزم. يحافظ اسم الحزمة والخدمة على `thingsboard` لتحديث التثبيت الحالي.
+
+التغليف الأصلي يستخدم Gradle 7.3.3، الذي لا يدعم تشغيله على Java 21؛ الأمر أعلاه يتجاوز تلك المرحلة فقط ويُبقي تجميع التطبيق على Java 21. [جدول توافق Gradle](https://docs.gradle.org/current/userguide/compatibility.html).
 
 ## قبل التثبيت
 

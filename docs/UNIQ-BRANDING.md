@@ -1,7 +1,7 @@
 # UNIQ identity — first implementation
 
 ## Compatibility
-Based on upstream tag `v4.3.1.4` (`a488a4c138971c0264bf7fdc879871f68eead1e4`). Server, database, configuration and packaging sources match that tag. Java compilation targets 17; the build uses JDK 21 to match the server runtime. The compatibility branch `bftech/uniq-4.3.1.4` is based directly on that tag, with only UI and documentation changes. Remote `develop` retains its previous 4.4.0-SNAPSHOT base; do not deploy it to a 4.3.1.4 server.
+Based on upstream tag `v4.3.1.4` (`a488a4c138971c0264bf7fdc879871f68eead1e4`). Server, database, configuration and packaging sources match that tag. Java compilation targets 17; the build uses JDK 21 to match the server runtime. The compatibility branch `bftech/uniq-4.3.1.4` is based directly on that tag, with UI changes, documentation and a native Debian packaging helper. Remote `develop` retains its previous 4.4.0-SNAPSHOT base; do not deploy it to a 4.3.1.4 server.
 
 ## Repository map
 - `ui-ngx`: Angular 20 application; Material themes, authentication, administration, dashboards and widgets.
@@ -32,4 +32,4 @@ The user confirmed that existing typography (Roboto and the current fallbacks) s
 Technical ThingsBoard identifiers, packages, API contracts, upstream documentation, commercial edition references and legal notices remain accurate. Email templates and mobile application branding need a separate pass.
 
 ## Verification
-Source checks cover theme colors, logo XML/data references, environment titles and changed locale JSON validity (Romanian has a pre-existing syntax error at line 1403, confirmed against HEAD). A full Angular build requires project dependencies, which were absent in this checkout at review time. Browser verification remains required after dependencies and a running backend are available.
+Source checks cover theme colors, logo XML/data references, environment titles and changed locale JSON validity (Romanian has a pre-existing syntax error at line 1403, confirmed against HEAD). Angular production build passed. All Java modules compiled with target 17 using JDK 21; Java unit/integration tests were skipped. The application is packaged using `tools/package-uniq-deb.sh` and dpkg-deb because the upstream Gradle download failed. Package inspection checks version, UNIQ assets, Java bytecode, configuration metadata and Linux script line endings. No production server or database was accessed; a live database upgrade/login test has not been performed.
