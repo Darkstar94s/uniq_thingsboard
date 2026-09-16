@@ -40,7 +40,7 @@ body, html {
 body {
   margin: 0;
   padding: 0;
-  background-color: #eee;
+  background-color: $uniq-bg-light;
   overflow: hidden;
 }
 
@@ -1388,7 +1388,13 @@ pre.tb-highlight {
       z-index: 1;
     }
   }
+
 }
+
+/*********************************
+ * UNIQ SMART HOME MODULAR STYLING
+ *********************************/
+@import './scss/uniq/uniq-overrides';
 
 /***************
  * TAILWIND CSS

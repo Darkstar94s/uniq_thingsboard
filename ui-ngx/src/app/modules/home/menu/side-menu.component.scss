@@ -19,15 +19,22 @@
 
 :host ::ng-deep {
 
-  .tb-side-menu,
-  .tb-side-menu ul {
-    padding: 0;
-    margin-top: 0;
+  .tb-side-menu {
+    padding: 8px 10px;
+    margin: 0;
     list-style: none;
   }
 
-  .tb-side-menu > li {
-    border-bottom: 1px solid rgba(0, 0, 0, .12);
+  .tb-side-menu ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .tb-side-menu li {
+    margin: 0;
+    padding: 0;
+    border: none;
   }
 
   a.mat-mdc-button.mat-mdc-button-base {
@@ -37,23 +44,44 @@
     align-items: center;
     overflow: hidden;
     line-height: 40px;
-    border-radius: 0;
-    padding: 0 16px;
+    border-radius: 8px;
+    padding: 0 14px;
+    margin: 0;
+    box-sizing: border-box;
+    color: #334155;
+    font-weight: 500;
+    font-size: 13.5px;
+    transition: background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1), color 0.18s ease;
+
     &:hover {
       border-bottom: none;
-      background-color: rgba(255,255,255,0.08);
+      background-color: rgba(125, 166, 255, 0.1);
+      color: #0A57FC;
+      .mat-icon,
+      tb-icon {
+        color: #0A57FC;
+      }
     }
     &:focus {
       border-bottom: none;
     }
     &.tb-active {
-      background-color: rgba(255, 255, 255, .15);
+      background-color: #EEF4FF;
+      color: #0A57FC;
+      font-weight: 600;
+      .mat-icon,
+      tb-icon {
+        color: #0A57FC;
+      }
     }
-    .mat-icon {
-      margin-right: 8px;
-      margin-left: 0;
+    .mat-icon,
+    tb-icon {
+      margin-inline-end: 10px;
+      margin-inline-start: 0;
       min-width: 1.125rem;
       min-height: 1.125rem;
+      color: #64748B;
+      transition: color 0.18s ease;
     }
     span.mdc-button__label {
       width: 100%;
@@ -61,13 +89,18 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline-flex;
+      align-items: center;
       & > span {
         overflow: hidden;
         text-overflow: ellipsis;
+        flex: 1;
+        text-align: start;
       }
       .tb-toggle-icon {
-        padding-top: 12px;
-        padding-bottom: 12px;
+        margin-inline-start: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
     }
   }

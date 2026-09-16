@@ -15,14 +15,15 @@
     limitations under the License.
 
 -->
-<div class="tb-login-content mat-app-background tb-dark flex flex-1 items-center justify-center">
-  <mat-card appearance="raised" style="max-height: 80vh; overflow-y: auto;">
-    <mat-card-content class="!p-6">
+<div class="tb-login-content tb-default flex flex-1 items-center justify-center">
+  <mat-card appearance="raised" class="tb-login-card" style="max-height: 85vh; overflow-y: auto;">
+    <mat-card-content class="!p-8">
       <form class="tb-login-form flex flex-col" [formGroup]="loginFormGroup" (ngSubmit)="login()">
-        <div class="flex flex-col items-center justify-start" style="padding: 16px 0;">
+        <div class="flex flex-col items-center justify-start" style="padding: 12px 0 20px;">
           <tb-logo link="/login" class="login-logo"></tb-logo>
+          <div class="tb-login-subtitle">Smart Home Management Platform</div>
         </div>
-        <mat-progress-bar color="warn" mode="indeterminate" *ngIf="isLoading || (isLoading$ | async)">
+        <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading || (isLoading$ | async)">
         </mat-progress-bar>
         <span style="height: 4px;" *ngIf="!isLoading && !(isLoading$ | async)"></span>
         <span tb-toast style="height: 20px;"></span>
@@ -46,9 +47,9 @@
                 }
               </div>
               <div class="container-divider">
-                <mat-divider class="tb-dark flex-1"></mat-divider>
+                <mat-divider class="flex-1"></mat-divider>
                 <div class="text">{{ "login.or" | translate | uppercase }}</div>
-                <mat-divider class="tb-dark flex-1"></mat-divider>
+                <mat-divider class="flex-1"></mat-divider>
               </div>
             </div>
           } @else {
@@ -70,7 +71,7 @@
             <tb-toggle-password matSuffix></tb-toggle-password>
             <mat-icon matPrefix>lock</mat-icon>
           </mat-form-field>
-          <button mat-flat-button color="accent" [disabled]="isLoading || (isLoading$ | async)"
+          <button mat-flat-button color="primary" [disabled]="isLoading || (isLoading$ | async)"
                   class="tb-action-button" type="submit">{{ 'login.sign-in' | translate }}</button>
           <div class="forgot-password flex items-center justify-end gap-5">
             <button class="tb-reset-password" mat-button type="button" routerLink="/login/resetPasswordRequest">

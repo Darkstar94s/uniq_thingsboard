@@ -31,7 +31,10 @@ import { UrlHolder } from '@shared/pipe/image.pipe';
 export class LogoComponent implements OnInit {
 
   @Input()
-  src: string | UrlHolder = 'assets/logo_title_white.svg';
+  src: string | UrlHolder = 'assets/logo_title_dark.svg';
+
+  @Input()
+  variant: 'dark' | 'white' = 'dark';
 
   @Input()
   link: string | UrlTree;
@@ -46,6 +49,9 @@ export class LogoComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.variant === 'white' && this.src === 'assets/logo_title_dark.svg') {
+      this.src = 'assets/logo_title_white.svg';
+    }
     if (!this.link) {
       const authState = getCurrentAuthState(this.store);
       this.link = this.authService.defaultUrl(true, authState);

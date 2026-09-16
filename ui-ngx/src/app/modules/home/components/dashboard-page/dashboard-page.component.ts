@@ -267,7 +267,7 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
   dashboardLogoLink = this.getDashboardLogoLink();
 
   private dashboardLogoCache: SafeUrl;
-  private defaultDashboardLogo = 'assets/logo_title_white.svg';
+  private defaultDashboardLogo = 'assets/logo_title_dark.svg';
 
   private dashboardResize$: ResizeObserver;
 

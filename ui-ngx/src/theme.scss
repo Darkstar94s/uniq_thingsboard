@@ -56,8 +56,41 @@ $tb-mat-indigo: (
   )
 );
 
-$tb-primary: mat.m2-define-palette($tb-mat-indigo);
-$tb-accent: mat.m2-define-palette($tb-mat-indigo);
+$tb-accent-indigo: (
+  50: #EEF3FF,
+  100: #DCE7FF,
+  200: #ACC7FF,
+  300: #7DA6FF,
+  400: #548BFF,
+  500: #7DA6FF,
+  600: #0A57FC,
+  700: #0846CA,
+  800: #063597,
+  900: #042365,
+  A100: #EEF4FF,
+  A200: #7DA6FF,
+  A400: #0A57FC,
+  A700: #0846CA,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: white,
+    500: rgba(black, 0.87),
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: white,
+    A700: white,
+  )
+);
+
+$tb-primary: mat.m2-define-palette($tb-mat-indigo, 500, 300, 700);
+$tb-accent: mat.m2-define-palette($tb-accent-indigo, 500, 300, 700);
 
 $tb-mat-theme: mat.m2-define-light-theme((
   color: (
@@ -71,7 +104,7 @@ $tb-mat-theme: mat.m2-define-light-theme((
 ));
 
 $tb-theme-system: m2-utils.get-system($tb-mat-theme);
-$tb-theme-system: map_merge($tb-theme-system, ( background: map_get(mat.$m2-grey-palette, 200) ));
+$tb-theme-system: map_merge($tb-theme-system, ( background: #F8FAFC, surface: #FFFFFF ));
 $tb-theme: map_merge($tb-mat-theme, (_mat-system: $tb-theme-system));
 
 $primary: mat.m2-get-color-from-palette($tb-primary);

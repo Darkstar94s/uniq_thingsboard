@@ -34,9 +34,17 @@ $mat-md-lg: "screen and (min-width: 960px) and (max-width: 1819px)";
 
 $primary-hue-3: rgb(207, 216, 220) !default;
 
-$tb-primary-color: #0A57FC;
-$tb-secondary-color: #0846CA;
-$tb-hue3-color: #DCE7FF;
+// UNIQ Color Identity
+$uniq-white: #FFFFFF;
+$uniq-blue-light: #7DA6FF;
+$uniq-blue-primary: #0A57FC;
+$uniq-blue-dark: #0846CA;
+$uniq-bg-light: #F8FAFC;
+$uniq-border-light: rgba(125, 166, 255, 0.2);
 
-$tb-dark-primary-color: #7DA6FF;
-$tb-primary-color-light: #7DA6FF;
+$tb-primary-color: $uniq-blue-primary;
+$tb-secondary-color: $uniq-blue-light;
+$tb-hue3-color: #EEF4FF;
+
+$tb-dark-primary-color: $uniq-blue-light;
+$tb-primary-color-light: $uniq-blue-light;

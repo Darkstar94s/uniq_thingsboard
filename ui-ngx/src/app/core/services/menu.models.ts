@@ -17,6 +17,7 @@
 import { AuthState } from '@core/auth/auth.models';
 import { Authority } from '@shared/models/authority.enum';
 import { deepClone } from '@core/utils';
+import { UNIQ_CONFIG } from '@core/services/uniq-config';
 
 export declare type MenuSectionType = 'link' | 'toggle';
 
@@ -942,7 +943,19 @@ const defaultUserMenuMap = new Map<Authority, MenuReference[]>([
   ],
   [
     Authority.CUSTOMER_USER,
-    [
+    UNIQ_CONFIG.customerMenu.directSmartDevices ? [
+      {id: MenuId.home},
+      {id: MenuId.dashboards},
+      {id: MenuId.devices},
+      {id: MenuId.assets},
+      {id: MenuId.alarms},
+      {
+        id: MenuId.notifications_center,
+        pages: [
+          {id: MenuId.notification_inbox}
+        ]
+      }
+    ] : [
       {id: MenuId.home},
       {id: MenuId.alarms},
       {id: MenuId.dashboards},
@@ -950,11 +963,9 @@ const defaultUserMenuMap = new Map<Authority, MenuReference[]>([
         id: MenuId.entities,
         pages: [
           {id: MenuId.devices},
-          {id: MenuId.assets},
-          {id: MenuId.entity_views}
+          {id: MenuId.assets}
         ]
       },
-      {id: MenuId.edge_instances},
       {
         id: MenuId.notifications_center,
         pages: [
@@ -1034,20 +1045,12 @@ const defaultHomeSectionMap = new Map<Authority, HomeSectionReference[]>([
     Authority.CUSTOMER_USER,
     [
       {
-        name: 'asset.view-assets',
-        places: [MenuId.assets]
-      },
-      {
         name: 'device.view-devices',
         places: [MenuId.devices]
       },
       {
-        name: 'entity-view.management',
-        places: [MenuId.entity_views]
-      },
-      {
-        name: 'edge.management',
-        places: [MenuId.edge_instances]
+        name: 'asset.view-assets',
+        places: [MenuId.assets]
       },
       {
         name: 'dashboard.view-dashboards',

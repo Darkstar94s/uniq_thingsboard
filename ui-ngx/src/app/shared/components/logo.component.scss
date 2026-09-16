@@ -15,21 +15,33 @@
  */
 :host {
   pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   a {
     border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      background-color: #071633;
-      border-radius: 4px;
+      background: transparent;
+      transition: transform 0.25s ease;
+    }
+    &:hover img {
+      transform: scale(1.02);
     }
   }
 }
 
 :host-context(.login-logo) {
-  width: 280px;
-  height: 70px;
+  width: 240px;
+  height: 64px;
+  margin: 0 auto;
   a {
     text-decoration: none;
     border: none;
@@ -37,6 +49,9 @@
 
     &:focus {
       outline: 0;
+    }
+    img {
+      filter: drop-shadow(0 4px 12px rgba(10, 87, 252, 0.1));
     }
   }
 }

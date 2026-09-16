@@ -40,8 +40,9 @@
       border-radius: 10px;
       line-height: 22px;
       height: 20px;
-      background: #fff;
+      background: #EEF4FF;
       color: $tb-primary-color;
+      font-weight: 600;
       padding-left: 6px;
       padding-right: 6px;
       margin-left: -6px;
@@ -52,14 +53,20 @@
     position: relative;
     z-index: 1;
     overflow: hidden;
+    padding: 0;
+    margin: 0;
 
     transition: .45s cubic-bezier(.35, 0, .25, 1);
 
     transition-property: height;
 
     a.mat-mdc-button {
-      padding: 0 16px 0 32px;
+      padding: 0;
+      padding-inline-start: 36px;
+      padding-inline-end: 14px;
       font-weight: 500;
+      font-size: 13px;
+      border-radius: 8px;
       text-transform: none !important;
       text-rendering: optimizeLegibility;
     }

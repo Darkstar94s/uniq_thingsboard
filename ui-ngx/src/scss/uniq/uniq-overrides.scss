@@ -1,0 +1,203 @@
+/**
+ * UNIQ SMART HOME - Modern UI Component Overrides
+ * Centralized styling layer isolated from ThingsBoard core styles.
+ */
+
+@import 'uniq-theme';
+
+.tb-default, .tb-dark {
+
+  /***********************************
+   * UNIQ Modern Cards & Containers
+   ***********************************/
+  .mat-mdc-card,
+  mat-card {
+    border-radius: $uniq-radius-md !important;
+    border: 1px solid $uniq-border-color !important;
+    box-shadow: $uniq-shadow-sm !important;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+
+    &:hover {
+      border-color: rgba(125, 166, 255, 0.35) !important;
+      box-shadow: $uniq-shadow-md !important;
+    }
+  }
+
+  // Dashboard widgets - sleek consumer look
+  .tb-widget {
+    border-radius: $uniq-radius-md !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $uniq-shadow-lg !important;
+    }
+  }
+
+  /***********************************
+   * UNIQ Action Buttons
+   ***********************************/
+  .mat-mdc-unelevated-button.mat-primary,
+  .mat-mdc-raised-button.mat-primary,
+  .mat-mdc-flat-button.mat-primary {
+    background: linear-gradient(135deg, $uniq-blue-primary 0%, $uniq-blue-dark 100%) !important;
+    box-shadow: 0 4px 12px rgba(10, 87, 252, 0.25);
+    border-radius: $uniq-radius-sm !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 6px 18px rgba(10, 87, 252, 0.35);
+      transform: translateY(-1px);
+    }
+  }
+
+  .mat-mdc-outlined-button.mat-primary {
+    border-color: rgba(125, 166, 255, 0.5) !important;
+    border-radius: $uniq-radius-sm !important;
+    color: $uniq-blue-primary !important;
+    font-weight: 500 !important;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(125, 166, 255, 0.1) !important;
+      border-color: $uniq-blue-primary !important;
+    }
+  }
+
+  /***********************************
+   * UNIQ Modern Data Tables
+   ***********************************/
+  .mat-mdc-table {
+    border-radius: $uniq-radius-md;
+    overflow: hidden;
+
+    .mat-mdc-header-row {
+      background-color: $uniq-bg-main !important;
+      border-bottom: 2px solid rgba(125, 166, 255, 0.25) !important;
+
+      .mat-mdc-header-cell {
+        color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        letter-spacing: 0.3px;
+      }
+    }
+
+    .mat-mdc-row {
+      transition: background-color 0.15s ease;
+      &:hover {
+        background-color: $uniq-blue-subtle !important;
+      }
+    }
+  }
+
+  /***********************************
+   * UNIQ Modern Primary Toolbar
+   ***********************************/
+  .mat-toolbar.tb-primary-toolbar {
+    background-color: $uniq-white !important;
+    color: $uniq-text-main !important;
+    border-bottom: 1px solid $uniq-border-color !important;
+    box-shadow: $uniq-shadow-sm !important;
+
+    .mat-icon,
+    .material-icons,
+    tb-icon {
+      color: #475569 !important;
+    }
+
+    .mat-mdc-icon-button {
+      --mat-icon-button-icon-color: #475569 !important;
+      --mdc-icon-button-icon-color: #475569 !important;
+      color: #475569 !important;
+
+      &:hover {
+        background-color: rgba(125, 166, 255, 0.1) !important;
+        .mat-icon,
+        .material-icons,
+        tb-icon {
+          color: $uniq-blue-primary !important;
+        }
+      }
+    }
+
+    tb-breadcrumb {
+      .tb-breadcrumb {
+        color: $uniq-text-main !important;
+
+        h1, span {
+          color: $uniq-text-main !important;
+        }
+
+        a {
+          color: $uniq-text-muted !important;
+          opacity: 0.85 !important;
+          &:hover {
+            color: $uniq-blue-primary !important;
+            opacity: 1 !important;
+          }
+        }
+
+        .divider {
+          color: $uniq-text-subtle !important;
+        }
+
+        .mat-icon,
+        tb-icon {
+          color: $uniq-text-muted !important;
+        }
+      }
+    }
+
+    tb-notification-bell {
+      button.mat-mdc-icon-button {
+        --mat-icon-button-icon-color: #475569 !important;
+        --mdc-icon-button-icon-color: #475569 !important;
+        color: #475569 !important;
+
+        .mat-icon {
+          color: #475569 !important;
+        }
+
+        &:hover .mat-icon {
+          color: $uniq-blue-primary !important;
+        }
+      }
+    }
+
+    tb-user-menu {
+      .tb-user-display-name {
+        color: $uniq-text-main !important;
+        font-weight: 600 !important;
+      }
+      .tb-user-authority {
+        color: $uniq-text-muted !important;
+      }
+      .mat-icon.tb-mini-avatar {
+        color: $uniq-blue-primary !important;
+      }
+      button.mat-mdc-icon-button {
+        --mat-icon-button-icon-color: #475569 !important;
+        --mdc-icon-button-icon-color: #475569 !important;
+        color: #475569 !important;
+
+        .mat-icon {
+          color: #475569 !important;
+        }
+
+        &:hover .mat-icon {
+          color: $uniq-blue-primary !important;
+        }
+      }
+    }
+
+    .mat-mdc-form-field {
+      input.mat-mdc-input-element {
+        color: $uniq-text-main !important;
+        &::placeholder {
+          color: $uniq-text-subtle !important;
+        }
+      }
+    }
+  }
+}
