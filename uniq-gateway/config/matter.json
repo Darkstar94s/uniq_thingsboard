@@ -1,0 +1,67 @@
+{
+  "connector": "UNIQ Matter Connector",
+  "version": "1.0.0",
+  "supported_clusters": {
+    "0x0006": {
+      "name": "OnOff",
+      "attributes": {
+        "0x0000": "state"
+      },
+      "rpc_methods": {
+        "setState": "OnOff"
+      }
+    },
+    "0x0008": {
+      "name": "LevelControl",
+      "attributes": {
+        "0x0000": "brightness"
+      },
+      "rpc_methods": {
+        "setBrightness": "MoveToLevel"
+      }
+    },
+    "0x0300": {
+      "name": "ColorControl",
+      "attributes": {
+        "0x0007": "color_temperature",
+        "0x0003": "current_x",
+        "0x0004": "current_y"
+      },
+      "rpc_methods": {
+        "setColorTemp": "MoveToColorTemperature"
+      }
+    },
+    "0x0101": {
+      "name": "DoorLock",
+      "attributes": {
+        "0x0000": "lock_state"
+      },
+      "rpc_methods": {
+        "setLock": "LockUnlock"
+      }
+    },
+    "0x0402": {
+      "name": "TemperatureMeasurement",
+      "attributes": {
+        "0x0000": "temperature"
+      }
+    },
+    "0x0405": {
+      "name": "RelativeHumidityMeasurement",
+      "attributes": {
+        "0x0000": "humidity"
+      }
+    },
+    "0x0406": {
+      "name": "OccupancySensing",
+      "attributes": {
+        "0x0000": "occupancy"
+      }
+    }
+  },
+  "commissioning": {
+    "default_pincode": 20202021,
+    "discriminator": 3840,
+    "rendezvous_flags": ["BLE", "SoftAP", "OnNetwork"]
+  }
+}

@@ -1,0 +1,18 @@
+[Unit]
+Description=UNIQ Smart Home Gateway Service
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/uniq-gateway
+ExecStart=/opt/uniq-gateway/venv/bin/python3 /opt/uniq-gateway/uniq_gateway.py
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

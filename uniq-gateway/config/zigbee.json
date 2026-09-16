@@ -1,0 +1,48 @@
+{
+  "connector": "UNIQ Zigbee Connector",
+  "version": "1.0.0",
+  "device_mappings": [
+    {
+      "type": "light",
+      "model_patterns": ["TS0505B", "GL-C-008P", "Hue*", "IKEA*Light*"],
+      "telemetry_keys": ["state", "brightness", "color_temp", "color"],
+      "attributes_keys": ["linkquality", "battery"],
+      "rpc_methods": {
+        "setState": "state",
+        "setBrightness": "brightness",
+        "setColorTemp": "color_temp"
+      }
+    },
+    {
+      "type": "switch",
+      "model_patterns": ["TS0001", "TS0011", "SP 120", "Sonoff*"],
+      "telemetry_keys": ["state", "power", "energy", "voltage", "current"],
+      "attributes_keys": ["linkquality"],
+      "rpc_methods": {
+        "setState": "state",
+        "toggle": "state"
+      }
+    },
+    {
+      "type": "sensor_climate",
+      "model_patterns": ["WSDCGQ11LM", "RTCGQ11LM", "SNZB-02", "TS0201"],
+      "telemetry_keys": ["temperature", "humidity", "pressure", "battery"],
+      "attributes_keys": ["linkquality", "voltage"]
+    },
+    {
+      "type": "sensor_occupancy",
+      "model_patterns": ["RTCGQ12LM", "SNZB-03", "ZG-204ZL"],
+      "telemetry_keys": ["occupancy", "tamper", "battery", "illuminance"],
+      "attributes_keys": ["linkquality"]
+    },
+    {
+      "type": "door_lock",
+      "model_patterns": ["YRD256*", "Lock*", "Aqara*N100*"],
+      "telemetry_keys": ["state", "lock_state", "battery"],
+      "attributes_keys": ["linkquality"],
+      "rpc_methods": {
+        "setLock": "state"
+      }
+    }
+  ]
+}

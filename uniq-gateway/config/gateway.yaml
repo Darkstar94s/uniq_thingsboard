@@ -1,0 +1,38 @@
+# ==============================================================================
+# UNIQ Smart Home Gateway Configuration
+# ==============================================================================
+
+hub:
+  serial: "UNIQ-HUB-PRO-001"
+  name: "UNIQ Smart Hub"
+  tier: "PRO"                  # LITE (Matter/WiFi), PRO (Zigbee/Matter/BLE), ULTRA (All + Thread Border Router)
+  firmware_version: "2.4.0-uniq"
+
+cloud:
+  host: "18.134.221.206"       # UNIQ Cloud ThingsBoard Server Address
+  port: 1883                   # MQTT Port
+  access_token: "UNIQ_GATEWAY_TOKEN" # Device Access Token from UNIQ Cloud
+  keepalive: 60
+  reconnect_interval_sec: 5
+  tls_enabled: false
+
+connectors:
+  zigbee:
+    name: "UNIQ Zigbee Coordinator"
+    broker_host: "127.0.0.1"
+    broker_port: 1883
+    base_topic: "zigbee2mqtt"
+    permit_join_default_sec: 120
+    config_file: "config/zigbee.json"
+
+  matter:
+    name: "UNIQ Matter Controller"
+    server_url: "ws://127.0.0.1:5580/ws"
+    storage_path: "/var/lib/uniq-gateway/matter"
+    vendor_id: 0xFFF1
+    fabric_id: 1
+    config_file: "config/matter.json"
+
+logging:
+  level: "INFO"                # DEBUG, INFO, WARNING, ERROR
+  file: "/var/log/uniq-gateway.log"
