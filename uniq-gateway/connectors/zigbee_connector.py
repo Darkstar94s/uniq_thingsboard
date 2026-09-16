@@ -10,7 +10,10 @@ import json
 import logging
 import time
 from typing import Dict, Any
-import paho.mqtt.client as mqtt
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    mqtt = None
 from connectors.base_connector import BaseConnector
 
 log = logging.getLogger("UniqZigbeeConnector")
@@ -22,9 +25,13 @@ class ZigbeeConnector(BaseConnector):
         self.broker_port = int(self.config.get("broker_port", 1883))
         self.base_topic = self.config.get("base_topic", "zigbee2mqtt")
         self.known_devices = set()
-        self.mqtt_client = mqtt.Client(client_id="uniq_zigbee_connector")
+        self.mqtt_client = mqtt.Client(client_id="uniq_zigbee_connector") if mqtt else None
 
     def start(self):
+        if not self.mqtt_client:
+            log.warning("MQTT library not installed, Zigbee connector running in stub mode.")
+            self.is_running = True
+            return
         log.info(f"Starting UNIQ Zigbee Connector (Connecting to {self.broker_host}:{self.broker_port})...")
         self.mqtt_client.on_connect = self._on_connect
         self.mqtt_client.on_message = self._on_message
@@ -39,11 +46,12 @@ class ZigbeeConnector(BaseConnector):
     def stop(self):
         log.info("Stopping UNIQ Zigbee Connector...")
         self.is_running = False
-        try:
-            self.mqtt_client.loop_stop()
-            self.mqtt_client.disconnect()
-        except Exception as e:
-            log.error(f"Error stopping Zigbee connector: {e}")
+        if self.mqtt_client:
+            try:
+                self.mqtt_client.loop_stop()
+                self.mqtt_client.disconnect()
+            except Exception as e:
+                log.error(f"Error stopping Zigbee connector: {e}")
 
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:

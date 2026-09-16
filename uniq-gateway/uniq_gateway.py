@@ -14,9 +14,19 @@ import os
 import json
 import time
 import logging
-import yaml
+try:
+    import yaml
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
+
 from typing import Dict, Any
-import paho.mqtt.client as mqtt
+try:
+    import paho.mqtt.client as mqtt
+    HAS_MQTT = True
+except ImportError:
+    HAS_MQTT = False
+    mqtt = None
 
 from license_manager import LicenseManager, HubTier
 from connectors.zigbee_connector import ZigbeeConnector
@@ -30,10 +40,15 @@ logging.basicConfig(
 log = logging.getLogger("UniqGateway")
 
 CONFIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
-GATEWAY_CONFIG_PATH = os.path.join(CONFIG_DIR, "gateway.yaml")
+GATEWAY_CONFIG_PATH = os.path.join(CONFIG_DIR, "gateway.json" if not HAS_YAML and os.path.exists(os.path.join(CONFIG_DIR, "gateway.json")) else "gateway.yaml")
 
 class UniqGateway:
-    def __init__(self, config_path: str = GATEWAY_CONFIG_PATH):
+    def __init__(self, config_path: str = None):
+        if config_path is None:
+            if not HAS_YAML and os.path.exists(os.path.join(CONFIG_DIR, "gateway.json")):
+                config_path = os.path.join(CONFIG_DIR, "gateway.json")
+            else:
+                config_path = os.path.join(CONFIG_DIR, "gateway.yaml")
         self.config_path = config_path
         self.config = self._load_config()
         
@@ -52,15 +67,33 @@ class UniqGateway:
 
         # 2. Connectors pool
         self.connectors: Dict[str, Any] = {}
-        self.mqtt_client = mqtt.Client(client_id=f"uniq_gw_{self.hub_serial}")
+        self.mqtt_client = mqtt.Client(client_id=f"uniq_gw_{self.hub_serial}") if HAS_MQTT else None
         self.is_running = False
 
     def _load_config(self) -> Dict:
+        # If the requested path doesn't exist, try alternating .yaml / .json
+        if not os.path.exists(self.config_path):
+            alt_path = self.config_path.replace(".yaml", ".json") if self.config_path.endswith(".yaml") else self.config_path.replace(".json", ".yaml")
+            if os.path.exists(alt_path):
+                self.config_path = alt_path
+
         if not os.path.exists(self.config_path):
             log.warning(f"Config file not found at {self.config_path}, using defaults.")
             return {}
+
         with open(self.config_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            if self.config_path.endswith((".yaml", ".yml")):
+                if HAS_YAML:
+                    return yaml.safe_load(f)
+                else:
+                    log.warning("PyYAML not installed, attempting JSON fallback.")
+                    json_path = self.config_path.replace(".yaml", ".json").replace(".yml", ".json")
+                    if os.path.exists(json_path):
+                        with open(json_path, "r", encoding="utf-8") as jf:
+                            return json.load(jf)
+                    return {}
+            return json.load(f)
+
 
     def start(self):
         log.info("=======================================================")
