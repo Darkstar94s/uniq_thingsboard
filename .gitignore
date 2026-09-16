@@ -40,3 +40,6 @@ rebuild-docker.sh
 .claude
 .planning
 docs/superpowers/
+__pycache__/
+*.py[cod]
+*$py.class
