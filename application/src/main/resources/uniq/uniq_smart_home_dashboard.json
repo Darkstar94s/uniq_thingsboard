@@ -1,0 +1,165 @@
+{
+  "title": "UNIQ Smart Home",
+  "image": null,
+  "mobileHide": false,
+  "mobileOrder": null,
+  "configuration": {
+    "description": "UNIQ Smart Home Consumer Dashboard Template",
+    "widgets": {
+      "uniq-header-card": {
+        "type": "static",
+        "sizeX": 12,
+        "sizeY": 2.5,
+        "row": 0,
+        "col": 0,
+        "config": {
+          "showTitle": false,
+          "backgroundColor": "rgb(255, 255, 255)",
+          "color": "rgba(30, 41, 59, 1)",
+          "padding": "16px 20px",
+          "settings": {
+            "useMarkdownTextFunction": false,
+            "markdownTextPattern": "<div class=\"uniq-welcome-banner\">\n  <div class=\"uniq-banner-info\">\n    <h1 class=\"uniq-banner-title\">مرحباً بك في منزلك الذكي UNIQ 🏠</h1>\n    <p class=\"uniq-banner-subtitle\">جميع أجهزتك ومستشعراتك متصلة وتعمل بكفاءة عالية</p>\n  </div>\n  <div class=\"uniq-scenes-bar\">\n    <button class=\"uniq-scene-pill active\"><span class=\"material-icons\">home</span> بالمنزل</button>\n    <button class=\"uniq-scene-pill\"><span class=\"material-icons\">directions_run</span> في الخارج</button>\n    <button class=\"uniq-scene-pill\"><span class=\"material-icons\">bedtime</span> وضع النوم</button>\n  </div>\n</div>",
+            "markdownCss": ".uniq-welcome-banner { display: flex; align-items: center; justify-content: space-between; direction: rtl; width: 100%; height: 100%; flex-wrap: wrap; gap: 12px; } .uniq-banner-title { font-size: 20px; font-weight: 700; color: #1E293B; margin: 0 0 4px 0; } .uniq-banner-subtitle { font-size: 13.5px; color: #64748B; margin: 0; } .uniq-scenes-bar { display: flex; gap: 8px; } .uniq-scene-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 9999px; border: 1px solid rgba(125, 166, 255, 0.3); background: #FFFFFF; color: #334155; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; } .uniq-scene-pill.active, .uniq-scene-pill:hover { background: #EEF4FF; color: #0A57FC; border-color: #0A57FC; font-weight: 600; }"
+          },
+          "title": "Welcome Banner",
+          "dropShadow": false,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "widgetCss": "",
+          "pageSize": 1024,
+          "datasources": []
+        },
+        "id": "uniq-header-card",
+        "typeFullFqn": "system.cards.markdown_card"
+      },
+      "uniq-rooms-overview": {
+        "type": "static",
+        "sizeX": 8,
+        "sizeY": 5,
+        "row": 3,
+        "col": 0,
+        "config": {
+          "showTitle": false,
+          "backgroundColor": "rgb(255, 255, 255)",
+          "color": "rgba(30, 41, 59, 1)",
+          "padding": "20px",
+          "settings": {
+            "useMarkdownTextFunction": false,
+            "markdownTextPattern": "<div class=\"uniq-rooms-container\">\n  <div class=\"uniq-section-header\">\n    <h3 class=\"uniq-section-title\">المناطق والغرف</h3>\n    <a class=\"uniq-section-link\" routerLink=\"/entities/assets\">عرض الكل &larr;</a>\n  </div>\n  <div class=\"uniq-room-cards-grid\">\n    <div class=\"uniq-room-card\">\n      <div class=\"uniq-room-icon-box\"><span class=\"material-icons\">weekend</span></div>\n      <div class=\"uniq-room-name\">غرفة المعيشة</div>\n      <div class=\"uniq-room-stats\">4 أجهزة • 23.5°C</div>\n    </div>\n    <div class=\"uniq-room-card\">\n      <div class=\"uniq-room-icon-box\"><span class=\"material-icons\">king_bed</span></div>\n      <div class=\"uniq-room-name\">غرفة النوم الرئيسية</div>\n      <div class=\"uniq-room-stats\">3 أجهزة • 22.0°C</div>\n    </div>\n    <div class=\"uniq-room-card\">\n      <div class=\"uniq-room-icon-box\"><span class=\"material-icons\">kitchen</span></div>\n      <div class=\"uniq-room-name\">المطبخ</div>\n      <div class=\"uniq-room-stats\">2 أجهزة • 24.1°C</div>\n    </div>\n  </div>\n</div>",
+            "markdownCss": ".uniq-rooms-container { width: 100%; height: 100%; direction: rtl; display: flex; flex-direction: column; gap: 14px; } .uniq-section-header { display: flex; justify-content: space-between; align-items: center; } .uniq-section-title { font-size: 16px; font-weight: 600; color: #1E293B; margin: 0; } .uniq-section-link { font-size: 13px; color: #0A57FC; text-decoration: none; font-weight: 500; } .uniq-room-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; } .uniq-room-card { background: #F8FAFC; border: 1px solid rgba(125, 166, 255, 0.2); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; } .uniq-room-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(10, 87, 252, 0.08); border-color: #0A57FC; } .uniq-room-icon-box { width: 36px; height: 36px; border-radius: 8px; background: #EEF4FF; color: #0A57FC; display: flex; align-items: center; justify-content: center; } .uniq-room-name { font-weight: 600; font-size: 14px; color: #1E293B; } .uniq-room-stats { font-size: 12px; color: #64748B; }"
+          },
+          "title": "Rooms Grid",
+          "dropShadow": false,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "widgetCss": "",
+          "pageSize": 1024,
+          "datasources": []
+        },
+        "id": "uniq-rooms-overview",
+        "typeFullFqn": "system.cards.markdown_card"
+      },
+      "uniq-security-card": {
+        "type": "static",
+        "sizeX": 4,
+        "sizeY": 5,
+        "row": 3,
+        "col": 8,
+        "config": {
+          "showTitle": false,
+          "backgroundColor": "rgb(255, 255, 255)",
+          "color": "rgba(30, 41, 59, 1)",
+          "padding": "20px",
+          "settings": {
+            "useMarkdownTextFunction": false,
+            "markdownTextPattern": "<div class=\"uniq-security-panel\">\n  <div class=\"uniq-security-header\">\n    <span class=\"material-icons uniq-shield-icon\">verified_user</span>\n    <h3 class=\"uniq-security-title\">الأمان والحماية</h3>\n  </div>\n  <div class=\"uniq-security-status\">\n    <div class=\"uniq-status-indicator online\"></div>\n    <div class=\"uniq-status-text\">المنزل مؤمن بالكامل</div>\n  </div>\n  <div class=\"uniq-sensors-list\">\n    <div class=\"uniq-sensor-item\"><span class=\"material-icons\">door_front</span> الأبواب والنوافذ: <span>مغلقة</span></div>\n    <div class=\"uniq-sensor-item\"><span class=\"material-icons\">local_fire_department</span> حساس الدخان: <span>طبيعي</span></div>\n    <div class=\"uniq-sensor-item\"><span class=\"material-icons\">water_drop</span> كاشف تسريب المياه: <span>طبيعي</span></div>\n  </div>\n</div>",
+            "markdownCss": ".uniq-security-panel { width: 100%; height: 100%; direction: rtl; display: flex; flex-direction: column; gap: 14px; } .uniq-security-header { display: flex; align-items: center; gap: 8px; } .uniq-shield-icon { color: #10B981; font-size: 26px; } .uniq-security-title { font-size: 16px; font-weight: 600; color: #1E293B; margin: 0; } .uniq-security-status { display: flex; align-items: center; gap: 8px; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 10px 14px; border-radius: 8px; } .uniq-status-indicator { width: 10px; height: 10px; border-radius: 50%; background: #10B981; } .uniq-status-text { font-size: 13.5px; font-weight: 600; color: #065F46; } .uniq-sensors-list { display: flex; flex-direction: column; gap: 10px; } .uniq-sensor-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #475569; } .uniq-sensor-item span.material-icons { font-size: 18px; color: #64748B; } .uniq-sensor-item span:last-child { margin-right: auto; font-weight: 600; color: #10B981; }"
+          },
+          "title": "Security Status",
+          "dropShadow": false,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "widgetCss": "",
+          "pageSize": 1024,
+          "datasources": []
+        },
+        "id": "uniq-security-card",
+        "typeFullFqn": "system.cards.markdown_card"
+      }
+    },
+    "states": {
+      "default": {
+        "name": "UNIQ Smart Home",
+        "root": true,
+        "layouts": {
+          "main": {
+            "widgets": {
+              "uniq-header-card": {
+                "sizeX": 12,
+                "sizeY": 3,
+                "row": 0,
+                "col": 0
+              },
+              "uniq-rooms-overview": {
+                "sizeX": 8,
+                "sizeY": 6,
+                "row": 3,
+                "col": 0
+              },
+              "uniq-security-card": {
+                "sizeX": 4,
+                "sizeY": 6,
+                "row": 3,
+                "col": 8
+              }
+            },
+            "gridSettings": {
+              "backgroundColor": "#F8FAFC",
+              "columns": 12,
+              "margin": 16,
+              "outerMargin": true
+            }
+          }
+        }
+      }
+    },
+    "entityAliases": {},
+    "filters": {},
+    "timewindow": {
+      "displayValue": "",
+      "hideInterval": false,
+      "hideAggregation": false,
+      "hideAggInterval": false,
+      "hideTimezone": false,
+      "selectedTab": 0,
+      "realtime": {
+        "realtimeType": 0,
+        "interval": 1000,
+        "timewindowMs": 60000
+      },
+      "history": {
+        "historyType": 0,
+        "interval": 1000,
+        "timewindowMs": 60000,
+        "fixedTimewindow": {
+          "startTimeMs": 0,
+          "endTimeMs": 0
+        }
+      },
+      "aggregation": {
+        "type": "AVG",
+        "limit": 25000
+      }
+    },
+    "settings": {
+      "stateControllerId": "entity",
+      "showTitle": false,
+      "showDashboardsSelect": false,
+      "showEntitiesSelect": false,
+      "showDashboardTimewindow": false,
+      "showDashboardExport": false,
+      "toolbarAlwaysOpen": false
+    }
+  }
+}

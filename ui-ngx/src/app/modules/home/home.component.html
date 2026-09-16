@@ -61,7 +61,11 @@
                    placeholder="{{ 'common.enter-search' | translate }}"/>
           </mat-form-field>
         </div>
-        <tb-github-badge class="lt-md:!hidden"></tb-github-badge>
+        <button mat-stroked-button color="primary" class="uniq-header-hub-btn lt-md:!hidden" (click)="claimHub()"
+                [class.!hidden]="displaySearchMode()">
+          <mat-icon class="material-icons">router</mat-icon>
+          <span>إضافة موزع UNIQ</span>
+        </button>
         <button [class.!hidden]="!searchEnabled"
                 mat-icon-button (click)="openSearch()">
           <mat-icon class="material-icons">search</mat-icon>

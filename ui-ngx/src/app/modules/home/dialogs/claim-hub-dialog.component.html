@@ -1,0 +1,70 @@
+<form [formGroup]="claimHubForm" (ngSubmit)="submit()" class="uniq-claim-dialog">
+  <mat-toolbar color="primary" class="uniq-dialog-header">
+    <mat-icon class="header-icon">router</mat-icon>
+    <h2 mat-dialog-title>إضافة موزع UNIQ الذكي (Smart Hub)</h2>
+    <span class="flex-1"></span>
+    <button mat-icon-button (click)="cancel()" type="button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <mat-progress-bar color="warn" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+  <div mat-dialog-content class="uniq-dialog-content">
+    <div class="uniq-dialog-banner">
+      <mat-icon class="banner-icon">sensors</mat-icon>
+      <div class="banner-text">
+        قم بإدخال الرقم التسلسلي والرمز السري المطبوع على ملصق موزع UNIQ الخاص بك لربطه بحسابك وتفعيل شبكة Zigbee و Matter.
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="uniq-error-box">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div class="form-fields">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>الرقم التسلسلي للموزع (Serial / Device Name)</mat-label>
+        <input matInput formControlName="deviceName" placeholder="مثال: UNIQ-HUB-4A12" required>
+        <mat-icon matPrefix>qr_code</mat-icon>
+        <mat-hint>تجد الرقم التسلسلي أسفل جهاز الـ Hub أو بجانب رمز الـ QR</mat-hint>
+        <mat-error *ngIf="claimHubForm.get('deviceName').hasError('required')">
+          الرقم التسلسلي مطلوب
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full mt-3">
+        <mat-label>رمز التحقق السري (Claim Key / PIN)</mat-label>
+        <input matInput formControlName="secretKey" placeholder="مثال: 8492" required type="password">
+        <mat-icon matPrefix>vpn_key</mat-icon>
+        <mat-hint>رمز الأمان المرفق في بطاقة الإعداد السريع</mat-hint>
+        <mat-error *ngIf="claimHubForm.get('secretKey').hasError('required')">
+          رمز التحقق مطلوب
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full mt-3" *ngIf="rooms.length">
+        <mat-label>تخصيص مكان الموزع (الغرفة / المنطقة)</mat-label>
+        <mat-select formControlName="roomAssetId">
+          <mat-option value="">بدون تحديد حالياً</mat-option>
+          <mat-option *ngFor="let room of rooms" [value]="room.id.id">
+            {{ room.name }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>meeting_room</mat-icon>
+        <mat-hint>سيتم ربط الموزع وأجهزته الفرعية بهذه الغرفة تلقائياً</mat-hint>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end" class="uniq-dialog-actions">
+    <button mat-button type="button" (click)="cancel()" [disabled]="loading">
+      إلغاء
+    </button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="claimHubForm.invalid || loading">
+      <mat-icon *ngIf="!loading">link</mat-icon>
+      <span>ربط الموزع الآن</span>
+    </button>
+  </div>
+</form>

@@ -26,6 +26,7 @@ import { SideMenuComponent } from '@modules/home/menu/side-menu.component';
 import { GithubBadgeComponent } from '@home/components/github-badge/github-badge.component';
 import { NotificationBellComponent } from '@home/components/notification/notification-bell.component';
 import { ShowNotificationPopoverComponent } from '@home/components/notification/show-notification-popover.component';
+import { HomeDialogsModule } from '@modules/home/dialogs/home-dialogs.module';
 
 @NgModule({
   declarations:
@@ -41,7 +42,8 @@ import { ShowNotificationPopoverComponent } from '@home/components/notification/
   imports: [
     CommonModule,
     SharedModule,
-    HomeRoutingModule
+    HomeRoutingModule,
+    HomeDialogsModule
   ]
 })
 export class HomeModule { }

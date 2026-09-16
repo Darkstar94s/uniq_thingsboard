@@ -54,4 +54,16 @@ export class HomeDialogsService {
     }).afterClosed();
   }
 
+  public openClaimHubDialog(defaultRoomId?: string): Observable<any> {
+    return import('./claim-hub-dialog.component').then(m => {
+      return this.dialog.open(m.ClaimHubDialogComponent, {
+        disableClose: true,
+        panelClass: ['tb-dialog', 'uniq-claim-hub-modal'],
+        data: {
+          defaultRoomId
+        }
+      }).afterClosed();
+    }) as any;
+  }
+
 }

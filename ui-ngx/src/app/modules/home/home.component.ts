@@ -34,6 +34,7 @@ import { RouterTabsComponent } from '@home/components/router-tabs.component';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { isDefined, isDefinedAndNotNull } from '@core/utils';
+import { HomeDialogsService } from '@modules/home/dialogs/home-dialogs.service';
 
 @Component({
     selector: 'tb-home',
@@ -76,8 +77,13 @@ export class HomeComponent extends PageComponent implements AfterViewInit, OnIni
               @Inject(WINDOW) private window: Window,
               private activeComponentService: ActiveComponentService,
               private fb: FormBuilder,
-              public breakpointObserver: BreakpointObserver) {
+              public breakpointObserver: BreakpointObserver,
+              private homeDialogs: HomeDialogsService) {
     super(store);
+  }
+
+  claimHub(): void {
+    this.homeDialogs.openClaimHubDialog();
   }
 
   ngOnInit() {

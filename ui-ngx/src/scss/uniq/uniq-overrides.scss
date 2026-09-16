@@ -199,5 +199,32 @@
         }
       }
     }
+
+    button.uniq-header-hub-btn {
+      height: 36px;
+      line-height: 36px;
+      border-radius: 8px !important;
+      border: 1px solid rgba(10, 87, 252, 0.35) !important;
+      color: $uniq-blue-primary !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      padding: 0 14px !important;
+      margin: 0 8px !important;
+      transition: all 0.2s ease !important;
+
+      .mat-icon {
+        margin-inline-end: 6px;
+        color: $uniq-blue-primary !important;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        background-color: $uniq-blue-soft !important;
+        border-color: $uniq-blue-primary !important;
+        box-shadow: 0 2px 8px rgba(10, 87, 252, 0.15) !important;
+      }
+    }
   }
 }

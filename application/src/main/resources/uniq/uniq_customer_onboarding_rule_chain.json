@@ -1,0 +1,66 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": "UNIQ Smart Home - Automated Customer Onboarding & Room Provisioning Rule Chain"
+    },
+    "name": "UNIQ Customer Onboarding",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null
+  },
+  "metadata": {
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "Filters messages for customer creation or self-registration events",
+          "layoutX": 220,
+          "layoutY": 150
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Is Customer Registered",
+        "configuration": {
+          "jsScript": "return (msgType === 'ENTITY_CREATED' && metadata.entityType === 'CUSTOMER') || (msgType === 'POST_ATTRIBUTES_REQUEST' && msg.action === 'register_home');"
+        }
+      },
+      {
+        "additionalInfo": {
+          "description": "Prepares the default Home and Rooms payload for the new user",
+          "layoutX": 500,
+          "layoutY": 150
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Generate Default Smart Home Structure",
+        "configuration": {
+          "jsScript": "var customerName = metadata.customerName || msg.customerName || 'My Home';\nvar homeAsset = {\n  name: 'منزلي الذكي - ' + customerName,\n  type: 'Home',\n  label: 'المنزل الرئيسي',\n  additionalInfo: {\n    description: 'UNIQ Smart Home Root Asset',\n    rooms: ['غرفة المعيشة', 'غرفة النوم الرئيسية', 'المطبخ', 'الممر']\n  }\n};\nmetadata.homeAssetName = homeAsset.name;\nreturn { msg: homeAsset, metadata: metadata, msgType: msgType };"
+        }
+      },
+      {
+        "additionalInfo": {
+          "description": "Logs the successful automated provisioning of the customer home",
+          "layoutX": 800,
+          "layoutY": 150
+        },
+        "type": "org.thingsboard.rule.engine.action.TbLogNode",
+        "name": "Log UNIQ Home Provisioned",
+        "configuration": {
+          "jsScript": "return 'UNIQ Smart Home provisioned for: ' + metadata.customerName;"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "True"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "Success"
+      }
+    ]
+  }
+}

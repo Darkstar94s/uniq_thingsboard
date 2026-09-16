@@ -1,0 +1,112 @@
+@import '../../../../scss/uniq/uniq-theme';
+
+.uniq-claim-dialog {
+  min-width: 480px;
+  max-width: 560px;
+  direction: rtl;
+
+  .uniq-dialog-header {
+    background: linear-gradient(135deg, $uniq-blue-primary 0%, $uniq-blue-dark 100%);
+    color: #FFFFFF;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    .header-icon {
+      margin-left: 10px;
+      font-size: 26px;
+      width: 26px;
+      height: 26px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      color: #FFFFFF;
+    }
+
+    button {
+      color: #FFFFFF;
+    }
+  }
+
+  .uniq-dialog-content {
+    padding: 24px 20px 10px 20px;
+
+    .uniq-dialog-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background-color: $uniq-blue-soft;
+      border: 1px solid rgba(10, 87, 252, 0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+
+      .banner-icon {
+        color: $uniq-blue-primary;
+        font-size: 30px;
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+      }
+
+      .banner-text {
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: #334155;
+      }
+    }
+
+    .uniq-error-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #B91C1C;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+
+      mat-icon {
+        color: #DC2626;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      mat-form-field {
+        width: 100%;
+
+        mat-icon[matPrefix] {
+          margin-left: 8px;
+          margin-right: 4px;
+          color: $uniq-text-muted;
+        }
+      }
+    }
+  }
+
+  .uniq-dialog-actions {
+    padding: 16px 20px 20px 20px;
+    gap: 10px;
+
+    button {
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 0 20px;
+
+      mat-icon {
+        margin-left: 6px;
+      }
+    }
+  }
+}
