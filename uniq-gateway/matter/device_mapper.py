@@ -117,26 +117,86 @@ class MatterDeviceMapper:
                 if ep_id is not None:
                     ep_dict[int(ep_id)] = ep
 
+        # Support python-matter-server flat attributes map: "endpoint/cluster/attribute"
+        attributes_map = node_data.get("attributes", {})
+        if attributes_map and not ep_dict:
+            for attr_key, attr_val in attributes_map.items():
+                parts = attr_key.split("/")
+                if len(parts) == 3:
+                    try:
+                        ep_id = int(parts[0])
+                        cluster_id = int(parts[1])
+                        attr_id = int(parts[2])
+                    except ValueError:
+                        continue
+
+                    if ep_id not in ep_dict:
+                        ep_dict[ep_id] = {"endpoint_id": ep_id, "clusters": {}, "device_types": []}
+
+                    if cluster_id not in ep_dict[ep_id]["clusters"]:
+                        ep_dict[ep_id]["clusters"][cluster_id] = {}
+
+                    ep_dict[ep_id]["clusters"][cluster_id][attr_id] = attr_val
+
+                    # Extract Device Types from Descriptor Cluster 29 (0x001D), Attribute 0
+                    if cluster_id == 29 and attr_id == 0 and isinstance(attr_val, list):
+                        dt_list = []
+                        for item in attr_val:
+                            if isinstance(item, dict):
+                                dt_type = item.get("0") or item.get("device_type")
+                                if dt_type is not None:
+                                    dt_list.append({"device_type": int(dt_type)})
+                            elif isinstance(item, int):
+                                dt_list.append({"device_type": item})
+                        ep_dict[ep_id]["device_types"] = dt_list
+
         # Check root endpoint (0) for node basic info
         root_ep = ep_dict.get(0, {})
         root_clusters = root_ep.get("clusters", {})
-        basic_info = root_clusters.get(str(CLUSTER_BASIC_INFORMATION), {}) or root_clusters.get(CLUSTER_BASIC_INFORMATION, {})
+        basic_info = (
+            root_clusters.get(CLUSTER_BASIC_INFORMATION, {})
+            or root_clusters.get(str(CLUSTER_BASIC_INFORMATION), {})
+            or root_clusters.get(40, {})
+            or {}
+        )
 
-        vendor_name = basic_info.get("vendorName") or basic_info.get("0") or "Matter"
-        product_name = basic_info.get("productName") or basic_info.get("1") or "Device"
-        serial_number = basic_info.get("serialNumber") or basic_info.get("15") or f"NODE-{node_id}"
+        vendor_name = (
+            basic_info.get("vendorName")
+            or basic_info.get(1)
+            or basic_info.get("1")
+            or basic_info.get(0)
+            or basic_info.get("0")
+            or "SONOFF"
+        )
+        product_name = (
+            basic_info.get("productName")
+            or basic_info.get(3)
+            or basic_info.get("3")
+            or basic_info.get(14)
+            or basic_info.get("14")
+            or "NSPanel Pro"
+        )
+        serial_number = (
+            basic_info.get("serialNumber")
+            or basic_info.get(18)
+            or basic_info.get("18")
+            or basic_info.get(15)
+            or basic_info.get("15")
+            or f"NODE-{node_id}"
+        )
 
         # Determine if node is a Matter Bridge (Aggregator)
-        is_bridge = False
+        is_bridge = bool(node_data.get("is_bridge", False))
         for ep_id, ep_content in ep_dict.items():
             device_types = ep_content.get("device_types", [])
             for dt in device_types:
                 dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
-                if dt_id == DEVICE_TYPE_AGGREGATOR_BRIDGE:
+                if dt_id == DEVICE_TYPE_AGGREGATOR_BRIDGE or dt_id == 14:
                     is_bridge = True
                     break
 
         devices_to_sync = []
+
 
         if is_bridge:
             # 1. Register Bridge Root Device
