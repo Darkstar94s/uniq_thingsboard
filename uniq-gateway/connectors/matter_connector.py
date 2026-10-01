@@ -7,6 +7,7 @@ Integrates with Matter Controller Server, translates Matter clusters into teleme
 manages Bridge decomposition via MatterDeviceMapper, and executes cluster RPC commands.
 """
 
+import sys
 import json
 import logging
 import os
@@ -15,19 +16,34 @@ import time
 from typing import Dict, Any, Optional, Tuple
 from connectors.base_connector import BaseConnector
 
+# Ensure root directory is in sys.path
+_CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT_DIR = os.path.dirname(_CUR_DIR)
+if _ROOT_DIR not in sys.path:
+    sys.path.insert(0, _ROOT_DIR)
+
 try:
     from matter.matter_client import MatterClient
     from matter.commission_service import MatterCommissionService
     from matter.device_mapper import MatterDeviceMapper
-except Exception:
+except Exception as e1:
     try:
         from ..matter.matter_client import MatterClient
         from ..matter.commission_service import MatterCommissionService
         from ..matter.device_mapper import MatterDeviceMapper
-    except Exception:
-        MatterClient = None
-        MatterCommissionService = None
-        MatterDeviceMapper = None
+    except Exception as e2:
+        try:
+            import matter.matter_client as _mc
+            import matter.commission_service as _cs
+            import matter.device_mapper as _dm
+            MatterClient = _mc.MatterClient
+            MatterCommissionService = _cs.MatterCommissionService
+            MatterDeviceMapper = _dm.MatterDeviceMapper
+        except Exception as e3:
+            log.error(f"Critical: Failed to import Matter modules: {e1} | {e2} | {e3}")
+            MatterClient = None
+            MatterCommissionService = None
+            MatterDeviceMapper = None
 
 log = logging.getLogger("UniqMatterConnector")
 
