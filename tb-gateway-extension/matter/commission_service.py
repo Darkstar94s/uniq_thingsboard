@@ -434,7 +434,7 @@ class MatterCommissionService:
         res = self.connector.server_side_rpc_handler(rpc_request)
         return res
 
-    def remove_device(self, node_id: int) -> Dict[str, Any]:
+    def remove_device(self, node_id: int) -> dict:
         """
         Safely decommissions and removes a Matter node from the local fabric,
         cleans up registry and device states, and unbinds from ThingsBoard Gateway.
