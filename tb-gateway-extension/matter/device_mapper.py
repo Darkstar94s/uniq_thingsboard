@@ -766,8 +766,8 @@ class MatterDeviceMapper:
                 except Exception:
                     pass
 
-        # 11. Vendor-Specific & Custom Clusters (Tuya, Huayu Lian, Gosund 0xE000, 0xE001, 0xFC01, 0xFC80, 0xEF00)
-        elif cluster_id in [0xE000, 0xE001, 0xFC01, 0xFC02, 0xFC80, 0xEF00, 57344, 57345, 64513, 64640, 61184]:
+        # 11. Vendor-Specific & Custom Clusters (Tuya, Huayu Lian 308149265, Gosund 0xE000, 0xE001, 0xFC01, 0xFC80, 0xEF00)
+        elif cluster_id in [0xE000, 0xE001, 0xFC01, 0xFC02, 0xFC80, 0xEF00, 57344, 57345, 64513, 64640, 61184, 308149265, "308149265", 0x125E0011]:
             attr_name = str(attribute_id).lower()
             try:
                 num_val = float(value.get("energy", 0) if isinstance(value, dict) else value)
