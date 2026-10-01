@@ -74,13 +74,13 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             return
 
         # 2. System Status API
-        elif self.path in ["/matter/status", "/status", "/api/status"]:
+        elif parsed_path.path in ["/matter/status", "/status", "/api/status"]:
             status_data = service.get_status()
             self._send_json_response(200, status_data)
             return
 
         # 3. Live Devices API (Protected)
-        elif self.path in ["/api/devices"]:
+        elif parsed_path.path in ["/api/devices"]:
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
                 self._send_json_response(401, {"error": "Unauthorized. Please login with valid Hub PIN."})
@@ -118,6 +118,9 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         service = self.server.service  # type: ignore
+        from urllib.parse import urlparse
+        req_path = urlparse(self.path).path
+
         content_length = int(self.headers.get("Content-Length", 0))
         if content_length <= 0:
             self._send_json_response(400, {"status": "error", "error": "Empty request body"})
@@ -131,7 +134,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             return
 
         # 1. Admin PIN Login
-        if self.path == "/api/login":
+        if req_path == "/api/login":
             pin = req_data.get("pin", "")
             token = service.auth_manager.verify_pin(pin)
             if token:
@@ -141,7 +144,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             return
 
         # 2. Local Device RPC Control
-        elif self.path == "/api/control":
+        elif req_path == "/api/control":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
                 self._send_json_response(401, {"error": "Unauthorized"})
@@ -164,7 +167,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             return
 
         # 3. Change Device Category API
-        elif self.path == "/api/devices/set_category":
+        elif req_path == "/api/devices/set_category":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
                 self._send_json_response(401, {"error": "Unauthorized"})
@@ -182,7 +185,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             return
 
         # 4. Delete / Decommission Device API
-        elif self.path in ["/api/devices/delete", "/api/devices/remove"]:
+        elif req_path in ["/api/devices/delete", "/api/devices/remove"]:
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
                 self._send_json_response(401, {"error": "Unauthorized"})
@@ -198,7 +201,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             return
 
         # 5. Change PIN API
-        elif self.path == "/api/settings/pin":
+        elif req_path == "/api/settings/pin":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
                 self._send_json_response(401, {"error": "Unauthorized"})
