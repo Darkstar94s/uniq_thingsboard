@@ -9,7 +9,13 @@ import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Any, Optional
 
-from .hub_auth import HubAuthManager
+try:
+    from .hub_auth import HubAuthManager
+except Exception:
+    try:
+        from hub_auth import HubAuthManager
+    except Exception:
+        from matter.hub_auth import HubAuthManager
 
 log = logging.getLogger("UniqMatterCommissionService")
 
@@ -313,7 +319,13 @@ class MatterCommissionService:
         if not self.connector or not hasattr(self.connector, "mapper"):
             return []
 
-        from .device_mapper import resolve_device_type_and_category
+        try:
+            from .device_mapper import resolve_device_type_and_category
+        except Exception:
+            try:
+                from device_mapper import resolve_device_type_and_category
+            except Exception:
+                from matter.device_mapper import resolve_device_type_and_category
 
         devices = []
         registry = self.connector.mapper._registry

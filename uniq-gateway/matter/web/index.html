@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UNIQ Hub | لوحة التحكم المحلية للموزع الذكي</title>
+  <title>UNIQ Hub | لوحة التحكم للموزع الذكي</title>
   <style>
     :root {
       --primary: #0A57FC;
       --primary-hover: #0846c9;
+      --primary-glow: rgba(10, 87, 252, 0.25);
       --bg: #0B132B;
-      --card-bg: rgba(28, 37, 65, 0.7);
+      --card-bg: rgba(28, 37, 65, 0.75);
       --card-border: rgba(255, 255, 255, 0.08);
       --text: #F8FAFC;
       --text-muted: #94A3B8;
       --success: #10B981;
+      --success-glow: rgba(16, 185, 129, 0.3);
       --danger: #EF4444;
       --warning: #F59E0B;
+      --accent-cyan: #38BDF8;
+      --accent-purple: #A855F7;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,213 +32,276 @@
       flex-direction: column;
     }
 
+    /* Header */
     header {
-      background: rgba(11, 19, 43, 0.85);
-      backdrop-filter: blur(12px);
+      background: rgba(11, 19, 43, 0.9);
+      backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--card-border);
-      padding: 16px 24px;
+      padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: center; gap: 12px; }
     .brand-icon {
-      width: 36px;
-      height: 36px;
+      width: 38px; height: 38px;
       background: linear-gradient(135deg, var(--primary), #3B82F6);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 18px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 19px;
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
-    .brand-text h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
-    .brand-text span { font-size: 12px; color: var(--text-muted); }
+    .brand-text h1 { font-size: 16px; font-weight: 700; }
+    .brand-text span { font-size: 11px; color: var(--text-muted); }
 
-    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border);
     }
-    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
     .badge-dot.off { background: var(--danger); }
 
     .btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
+      padding: 7px 14px; border-radius: 8px; font-size: 12px;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px; justify-content: center;
     }
     .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text); }
-    .btn-outline:hover { background: rgba(255, 255, 255, 0.05); }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.08); }
 
     main {
-      flex: 1;
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
+      flex: 1; max-width: 1040px; width: 100%; margin: 0 auto;
+      padding: 20px; display: flex; flex-direction: column; gap: 20px;
     }
 
     /* Auth Box */
     .auth-container {
-      max-width: 440px;
-      width: 100%;
-      margin: 80px auto;
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 32px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      max-width: 400px; width: 100%; margin: 60px auto;
+      background: var(--card-bg); backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border); border-radius: 16px;
+      padding: 32px 24px; text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     }
-    .auth-container h2 { font-size: 20px; margin-bottom: 8px; }
-    .auth-container p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    .auth-container h2 { font-size: 19px; margin-bottom: 8px; }
+    .auth-container p { font-size: 12px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.5; }
     .pin-input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
+      width: 100%; padding: 12px; border-radius: 10px;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(11, 19, 43, 0.6);
-      color: white;
-      font-size: 22px;
-      text-align: center;
-      letter-spacing: 8px;
-      margin-bottom: 16px;
+      background: rgba(11, 19, 43, 0.7); color: white;
+      font-size: 22px; text-align: center; letter-spacing: 8px; margin-bottom: 16px;
     }
     .pin-hint { font-size: 11px; color: #64748B; margin-top: 12px; }
 
-    /* Dashboard Grid */
-    .stats-grid {
+    /* Top Stats */
+    .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .stat-val { font-size: 24px; font-weight: 700; margin-top: 4px; }
-    .stat-title { font-size: 12px; color: var(--text-muted); }
-
-    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .section-title span { background: var(--primary); width: 4px; height: 16px; border-radius: 2px; }
-
-    /* Devices Grid */
-    .devices-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-    }
-    .device-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
     }
-    .device-header { display: flex; align-items: flex-start; justify-content: space-between; }
-    .device-name { font-size: 14px; font-weight: 600; line-height: 1.4; }
-    .device-type { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    .device-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
-    .tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #CBD5E1; }
+    .stat-card {
+      background: var(--card-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .stat-val { font-size: 22px; font-weight: 700; margin-top: 2px; }
+    .stat-title { font-size: 11px; color: var(--text-muted); }
 
-    .device-body {
-      background: rgba(11, 19, 43, 0.4);
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* Category Filter Tabs */
+    .categories-bar {
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+      scrollbar-width: none;
     }
-    .metrics { display: flex; gap: 16px; }
-    .metric-item { display: flex; flex-direction: column; }
-    .metric-val { font-size: 16px; font-weight: 700; }
-    .metric-lbl { font-size: 10px; color: var(--text-muted); }
+    .categories-bar::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border);
+      color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .cat-tab:hover { background: rgba(255, 255, 255, 0.1); color: var(--text); }
+    .cat-tab.active {
+      background: var(--primary); border-color: var(--primary);
+      color: white; box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .cat-count {
+      font-size: 10px; padding: 1px 6px; border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+    }
 
-    /* Toggle Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 28px;
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 4px;
     }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #334155;
-      transition: .3s;
-      border-radius: 28px;
+    .section-title {
+      font-size: 15px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
     }
-    .slider:before {
-      position: absolute; content: ""; height: 20px; width: 20px;
-      left: 4px; bottom: 4px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
+    .section-title span { background: var(--primary); width: 4px; height: 16px; border-radius: 2px; }
+
+    /* ─── Device Cards ─── */
+    .devices-list {
+      display: flex; flex-direction: column; gap: 12px;
     }
-    input:checked + .slider { background-color: var(--primary); }
-    input:checked + .slider:before { transform: translateX(22px); }
+    .device-group-card {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .device-group-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .device-group-card.has-on {
+      border-right: 4px solid var(--success);
+    }
+
+    .device-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap;
+    }
+    .device-meta-left {
+      display: flex; align-items: center; gap: 14px; min-width: 0;
+    }
+    .device-icon-box {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .device-icon-box.socket { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); }
+    .device-icon-box.switch { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); }
+    .device-icon-box.lighting { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+    .device-icon-box.sensor { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+
+    .device-title-box { min-width: 0; }
+    .device-main-title {
+      font-size: 15px; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .device-sub-meta {
+      font-size: 11px; color: var(--text-muted); margin-top: 3px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+
+    /* Tags */
+    .tag {
+      font-size: 10px; font-weight: 600; padding: 2px 8px;
+      border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .tag-category { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .tag-wifi { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+    .tag-bridge { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+
+    /* ─── Fixed Power / Energy Measurement Bar ─── */
+    .power-metrics-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      background: rgba(11, 19, 43, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .metric-item {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .metric-item-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .metric-item-icon.power { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+    .metric-item-icon.voltage { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .metric-item-icon.current { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+    .metric-item-icon.energy { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+
+    .metric-item-data { display: flex; flex-direction: column; }
+    .metric-item-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .metric-item-val { font-size: 13px; font-weight: 700; color: var(--text); }
+    .metric-item-val.active { color: #F59E0B; }
+    .metric-item-val.active-green { color: #10B981; }
+
+    /* ─── Channels Row & Iconic Switch Buttons ─── */
+    .channels-grid {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .channel-pill {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; padding: 10px 14px; border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);
+      flex: 1; min-width: 200px;
+      transition: all 0.2s;
+    }
+    .channel-pill.is-on {
+      background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.2);
+    }
+    .channel-info { display: flex; align-items: center; gap: 10px; }
+    .channel-status-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; background: rgba(255, 255, 255, 0.05);
+    }
+    .channel-status-icon.on {
+      background: rgba(16, 185, 129, 0.15); color: var(--success);
+      box-shadow: 0 0 10px var(--success-glow);
+    }
+    .channel-name { font-size: 13px; font-weight: 600; }
+    .channel-state-text { font-size: 10px; color: var(--text-muted); }
+    .channel-state-text.on { color: var(--success); font-weight: 700; }
+
+    /* Modern Iconic Toggle Button */
+    .icon-toggle-btn {
+      padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #1E293B; color: #94A3B8;
+    }
+    .icon-toggle-btn:hover { background: #334155; color: white; transform: scale(1.02); }
+    .icon-toggle-btn.is-on {
+      background: var(--success); color: white; border-color: var(--success);
+      box-shadow: 0 0 14px var(--success-glow);
+    }
+    .power-symbol {
+      font-size: 14px; font-weight: 900;
+    }
+
+    .empty-state {
+      padding: 40px 16px; text-align: center;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 12px; color: var(--text-muted); font-size: 13px;
+    }
 
     /* Commission Form */
     .form-box {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 24px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 22px;
     }
     .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px; margin-top: 14px;
     }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
     .form-input {
-      padding: 10px 14px;
-      border-radius: 8px;
+      padding: 10px 14px; border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(11, 19, 43, 0.7);
-      color: white;
-      font-size: 14px;
+      background: rgba(11, 19, 43, 0.7); color: white; font-size: 13px;
+    }
+    .form-input:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
 
     footer {
       border-top: 1px solid var(--card-border);
-      padding: 16px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
+      padding: 16px; text-align: center; font-size: 11px; color: var(--text-muted);
     }
   </style>
 </head>
@@ -243,7 +310,7 @@
   <!-- Header -->
   <header>
     <div class="brand">
-      <div class="brand-icon">U</div>
+      <div class="brand-icon">⚡</div>
       <div class="brand-text">
         <h1>UNIQ Smart Hub</h1>
         <span id="hubSerialHeader">UNIQ-HUB-PRO-001</span>
@@ -252,147 +319,220 @@
     <div class="header-actions" id="headerActions" style="display: none;">
       <div class="badge">
         <div class="badge-dot" id="cloudDot"></div>
-        <span id="cloudStatus">السحابة: متصلة</span>
+        <span id="cloudStatus">☁️ السحابة: متصلة</span>
       </div>
       <div class="badge">
         <div class="badge-dot" id="matterDot"></div>
-        <span id="matterStatus">Matter: متصل</span>
+        <span id="matterStatus">⚡ Matter: متصل</span>
       </div>
-      <button class="btn btn-outline" onclick="logout()">خروج</button>
+      <button class="btn btn-outline" onclick="logout()">🚪 خروج</button>
     </div>
   </header>
 
   <!-- Login Section -->
   <div id="loginView" class="auth-container">
-    <div style="font-size: 48px; margin-bottom: 16px;">🔒</div>
+    <div style="font-size: 44px; margin-bottom: 12px;">🔒</div>
     <h2>تسجيل الدخول لموزع UNIQ</h2>
-    <p>أدخل رمز الأمان المطبوع على ملصق الجهاز للوصول للوحة التحكم المحلية.</p>
+    <p>أدخل رمز الأمان (PIN) المطبوع على قاعدة الجهاز للوصول للوحة التحكم المحلية وإدارة أجهزة Matter.</p>
     <form onsubmit="handleLogin(event)">
       <input type="password" id="pinInput" class="pin-input" placeholder="••••••" maxlength="8" required autofocus>
-      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">تسجيل الدخول</button>
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px;">🔑 تسجيل الدخول</button>
     </form>
-    <div class="pin-hint">رمز الأمان الافتراضي (PIN) هو: <b>849201</b> أو الكود المدون على قاعدة الجهاز.</div>
-    <div id="loginError" style="color: var(--danger); font-size: 12px; margin-top: 12px; display: none;">رمز PIN غير صحيح، يرجى التحقق من الملصق.</div>
+    <div class="pin-hint">رمز الأمان الافتراضي (PIN): <b>849201</b></div>
+    <div id="loginError" style="color: var(--danger); font-size: 12px; margin-top: 10px; display: none;">رمز PIN غير صحيح، يرجى المحاولة ثانية.</div>
   </div>
 
   <!-- Dashboard Section -->
   <main id="dashboardView" style="display: none;">
 
-    <!-- Top Stats -->
-    <div class="stats-grid">
+    <!-- Top Stats Row -->
+    <div class="stats-row">
       <div class="stat-card">
         <div>
           <div class="stat-title">أجهزة Matter المتصلة</div>
           <div class="stat-val" id="statDevicesCount">0</div>
         </div>
-        <div style="font-size: 32px;">📱</div>
+        <div style="font-size: 28px;">📱</div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">خادم التحكم المحلي</div>
-          <div class="stat-val" style="font-size: 18px; color: var(--success);" id="statMatterServer">متصل (5580)</div>
+          <div class="stat-title">خادم Matter المحلي</div>
+          <div class="stat-val" id="statServerStatus" style="color: var(--success); font-size: 15px;">متصل (5580)</div>
         </div>
-        <div style="font-size: 32px;">⚙️</div>
+        <div style="font-size: 28px;">⚡</div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">طابور التخزين المحلي</div>
-          <div class="stat-val" style="font-size: 18px; color: #38BDF8;" id="statStorage">جاهز (File Queue)</div>
+          <div class="stat-title">إجمالي استهلاك الطاقة</div>
+          <div class="stat-val" id="statTotalPower" style="color: #F59E0B; font-size: 19px;">0 W</div>
         </div>
-        <div style="font-size: 32px;">💾</div>
+        <div style="font-size: 28px;">🔌</div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">إصدار نظام UNIQ Hub</div>
-          <div class="stat-val" style="font-size: 18px;">v2.4.0-uniq</div>
+          <div class="stat-title">سحابة ThingsBoard</div>
+          <div class="stat-val" id="statTbStatus" style="color: var(--success); font-size: 15px;">مزامنة نشطة</div>
         </div>
-        <div style="font-size: 32px;">🛡️</div>
+        <div style="font-size: 28px;">☁️</div>
       </div>
     </div>
 
-    <!-- Matter Devices List -->
+    <!-- Category Filter Chips -->
+    <div class="categories-bar" id="categoriesBar">
+      <button class="cat-tab active" data-cat="all" onclick="setCategoryFilter('all')">
+        🌐 الكل <span class="cat-count" id="count-all">0</span>
+      </button>
+      <button class="cat-tab" data-cat="socket" onclick="setCategoryFilter('socket')">
+        🔌 المقابس الذكية <span class="cat-count" id="count-socket">0</span>
+      </button>
+      <button class="cat-tab" data-cat="switch" onclick="setCategoryFilter('switch')">
+        🎛️ المفاتيح الجدارية <span class="cat-count" id="count-switch">0</span>
+      </button>
+      <button class="cat-tab" data-cat="lighting" onclick="setCategoryFilter('lighting')">
+        💡 الإنارة الذكية <span class="cat-count" id="count-lighting">0</span>
+      </button>
+      <button class="cat-tab" data-cat="sensor" onclick="setCategoryFilter('sensor')">
+        📡 الحساسات <span class="cat-count" id="count-sensor">0</span>
+      </button>
+      <button class="cat-tab" data-cat="climate" onclick="setCategoryFilter('climate')">
+        ❄️ التكييف والمناخ <span class="cat-count" id="count-climate">0</span>
+      </button>
+      <button class="cat-tab" data-cat="security" onclick="setCategoryFilter('security')">
+        🔒 الأمان والأقفال <span class="cat-count" id="count-security">0</span>
+      </button>
+      <button class="cat-tab" data-cat="bridge" onclick="setCategoryFilter('bridge')">
+        🌉 الجسور الوسيطة <span class="cat-count" id="count-bridge">0</span>
+      </button>
+    </div>
+
+    <!-- Devices List Section -->
     <div>
-      <div class="section-title"><span></span>أجهزة Matter وجسور SONOFF المتصلة بالموزع</div>
-      <div class="devices-grid" id="devicesList">
-        <!-- Injected via JS -->
+      <div class="section-header">
+        <div class="section-title">
+          <span></span> أجهزة Matter المتصلة بالمنزل
+        </div>
+        <button class="btn btn-outline" style="font-size: 11px; padding: 5px 12px;" onclick="loadDevices()">
+          🔄 تحديث الحالات والقراءات
+        </button>
+      </div>
+
+      <div class="devices-list" id="devicesListContainer">
+        <div class="empty-state">جاري تحميل الأجهزة...</div>
       </div>
     </div>
 
-    <!-- Commissioning Card -->
+    <!-- Commissioning Section -->
     <div class="form-box">
-      <div class="section-title"><span></span>إضافة جهاز Matter جديد (Commissioning)</div>
-      <p style="font-size: 13px; color: var(--text-muted);">أدخل كود الـ Setup أو كود الـ QR لإقران مقبس أو مفتاح أو جسر ذكي بالموزع مباشرة.</p>
-      <form onsubmit="handleCommission(event)" class="form-grid">
-        <div class="form-group">
-          <label>رمز الإقران (Matter QR Setup Code)</label>
-          <input type="text" id="commCode" class="form-input" placeholder="مثال: MT:Y.ABCDEFG12345" required>
-        </div>
-        <div class="form-group">
-          <label>اسم شبكة الواي فاي (اختياري)</label>
-          <input type="text" id="commSsid" class="form-input" placeholder="Home-WiFi">
-        </div>
-        <div class="form-group">
-          <label>كلمة مرور الواي فاي (اختياري)</label>
-          <input type="password" id="commPass" class="form-input" placeholder="••••••••">
-        </div>
-        <div class="form-group" style="justify-content: flex-end;">
-          <button type="submit" class="btn btn-primary" id="commBtn" style="padding: 12px 24px;">اقتران الجهاز بالموزع</button>
-        </div>
-      </form>
-      <div id="commStatusMsg" style="margin-top: 12px; font-size: 13px; display: none;"></div>
-    </div>
+      <div class="section-title">
+        <span></span> ➕ إعداد وإقران جهاز Matter جديد
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+        أدخل كود الإقران المطبوع على الجهاز أو امسح رمز QR. سيتم إقران الجهاز عبر البلوتوث وتوصيله بشبكة الواي فاي تلقائياً.
+      </p>
 
-    <!-- Settings Card -->
-    <div class="form-box">
-      <div class="section-title"><span></span>إعدادات الأمان وتغيير رمز الـ PIN</div>
-      <form onsubmit="handleChangePin(event)" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
-        <div class="form-group">
-          <label>رمز الـ PIN الحالي</label>
-          <input type="password" id="curPin" class="form-input" placeholder="الرمز الحالي" required>
+      <form onsubmit="handleCommission(event)">
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>🔢 كود الإقران (Matter Setup PIN أو Manual Code أو MT:... QR String)</label>
+            <input type="text" id="commCode" class="form-input" placeholder="مثال: 3549-103-9009 أو MT:Y.K90..." required>
+          </div>
+
+          <div class="form-group">
+            <label>📶 اسم شبكة الواي فاي للمنزل (SSID)</label>
+            <input type="text" id="commSsid" class="form-input" placeholder="اسم شبكة Wi-Fi 2.4GHz">
+          </div>
+
+          <div class="form-group">
+            <label>🔑 كلمة مرور الواي فاي (Password)</label>
+            <input type="password" id="commPassword" class="form-input" placeholder="كلمة المرور">
+          </div>
         </div>
-        <div class="form-group">
-          <label>رمز الـ PIN الجديد</label>
-          <input type="password" id="newPin" class="form-input" placeholder="رمز جديد (4-8 أرقام)" required>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px;">
+          <div style="font-size: 11px; color: var(--warning);">
+            💡 تأكد أن الجهاز في وضع الإقران (Pairing Mode) بالضغط المطول على زره لمدة 5 ثوانٍ حتى يومض المؤشر.
+          </div>
+          <button type="submit" id="commSubmitBtn" class="btn btn-primary" style="padding: 10px 24px;">
+            <span>➕ بدء الإقران والإضافة</span>
+          </button>
         </div>
-        <button type="submit" class="btn btn-outline" style="padding: 11px 20px;">حفظ الرمز الجديد</button>
       </form>
-      <div id="pinMsg" style="margin-top: 12px; font-size: 13px; display: none;"></div>
+
+      <div id="commStatusMsg" style="display: none; margin-top: 14px; padding: 12px; border-radius: 8px; font-size: 12px;"></div>
     </div>
 
   </main>
 
+  <!-- Footer -->
   <footer>
-    UNIQ Smart Home Hub &bull; النواة الرسمية ThingsBoard IoT Gateway 3.8 &bull; جميع الحقوق محفوظة 2026
+    UNIQ Smart Home Platform &copy; 2026 — وحدة الموزع الذكي المحلي
   </footer>
 
   <script>
-    let authToken = localStorage.getItem('uniq_hub_token');
+    let authToken = localStorage.getItem('uniq_hub_token') || '';
+    let currentCategoryFilter = 'all';
+    let rawDevices = [];
+    let pollInterval = null;
 
-    window.onload = function() {
+    const CATEGORY_ICONS = {
+      lighting: '💡',
+      socket: '🔌',
+      switch: '🎛️',
+      sensor: '📡',
+      climate: '❄️',
+      security: '🔒',
+      bridge: '🌉',
+      other: '⚙️'
+    };
+
+    const CATEGORY_LABELS = {
+      lighting: 'إنارة ذكية',
+      socket: 'مقبس ذكي',
+      switch: 'مفتاح جداري',
+      sensor: 'حساس',
+      climate: 'تكييف ومناخ',
+      security: 'أمان وأقفال',
+      bridge: 'جسر وسيط',
+      other: 'جهاز ذكي'
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedSsid = localStorage.getItem('uniq_wifi_ssid');
+      if (savedSsid) document.getElementById('commSsid').value = savedSsid;
+
       if (authToken) {
         showDashboard();
       } else {
         showLogin();
       }
-    };
+    });
 
     function showLogin() {
       document.getElementById('loginView').style.display = 'block';
       document.getElementById('dashboardView').style.display = 'none';
       document.getElementById('headerActions').style.display = 'none';
+      if (pollInterval) clearInterval(pollInterval);
     }
 
     function showDashboard() {
       document.getElementById('loginView').style.display = 'none';
       document.getElementById('dashboardView').style.display = 'flex';
       document.getElementById('headerActions').style.display = 'flex';
-      refreshData();
-      setInterval(refreshData, 3000);
+      loadStatus();
+      loadDevices();
+
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(() => {
+        loadDevices(true);
+      }, 3000);
     }
 
     async function handleLogin(e) {
       e.preventDefault();
-      const pin = document.getElementById('pinInput').value;
+      const pin = document.getElementById('pinInput').value.trim();
+      const errBox = document.getElementById('loginError');
+      errBox.style.display = 'none';
+
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
@@ -403,25 +543,50 @@
         if (data.success && data.token) {
           authToken = data.token;
           localStorage.setItem('uniq_hub_token', authToken);
-          document.getElementById('loginError').style.display = 'none';
           showDashboard();
         } else {
-          document.getElementById('loginError').style.display = 'block';
+          errBox.style.display = 'block';
         }
       } catch (err) {
-        document.getElementById('loginError').innerText = 'تعذر الاتصال بالموزع المحلي.';
-        document.getElementById('loginError').style.display = 'block';
+        errBox.textContent = 'تعذر الاتصال بالموزع المحلي.';
+        errBox.style.display = 'block';
       }
     }
 
     function logout() {
+      authToken = '';
       localStorage.removeItem('uniq_hub_token');
-      authToken = null;
       showLogin();
     }
 
-    async function refreshData() {
-      if (!authToken) return;
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const matterDot = document.getElementById('matterDot');
+        const matterStatus = document.getElementById('matterStatus');
+
+        if (data.matterjs_connected) {
+          matterDot.className = 'badge-dot';
+          matterStatus.textContent = '⚡ Matter: متصل';
+        } else {
+          matterDot.className = 'badge-dot off';
+          matterStatus.textContent = '⚡ Matter: غير متصل';
+        }
+      } catch (e) {
+        console.error('Status fetch error', e);
+      }
+    }
+
+    function setCategoryFilter(cat) {
+      currentCategoryFilter = cat;
+      document.querySelectorAll('.cat-tab').forEach(t => {
+        t.classList.toggle('active', t.getAttribute('data-cat') === cat);
+      });
+      renderDevicesList();
+    }
+
+    async function loadDevices(silent = false) {
       try {
         const res = await fetch('/api/devices', {
           headers: { 'Authorization': 'Bearer ' + authToken }
@@ -431,104 +596,265 @@
           return;
         }
         const data = await res.json();
-        renderDashboard(data);
+        rawDevices = data.devices || [];
+        updateCategoryCounts();
+        renderDevicesList();
       } catch (err) {
-        console.error('Error refreshing data:', err);
+        if (!silent) console.error('Error fetching devices', err);
       }
     }
 
-    function renderDashboard(data) {
-      const devices = data.devices || [];
-      document.getElementById('statDevicesCount').innerText = devices.length;
-      
-      const listEl = document.getElementById('devicesList');
-      listEl.innerHTML = '';
+    function updateCategoryCounts() {
+      const counts = { all: 0, lighting: 0, socket: 0, switch: 0, sensor: 0, climate: 0, security: 0, bridge: 0, other: 0 };
+      let totalPower = 0;
 
-      if (devices.length === 0) {
-        listEl.innerHTML = '<div style="color: var(--text-muted); font-size: 13px; grid-column: 1/-1;">لا توجد أجهزة متصلة حالياً. يمكنك استخدام نموذج الإقران أدناه لإضافة جهاز Matter.</div>';
+      const nodeMap = new Map();
+      rawDevices.forEach(d => {
+        const nid = d.node_id;
+        if (!nodeMap.has(nid)) {
+          nodeMap.set(nid, []);
+        }
+        nodeMap.get(nid).push(d);
+
+        if (d.power) {
+          totalPower += parseFloat(d.power) || 0;
+        }
+      });
+
+      document.getElementById('statDevicesCount').textContent = nodeMap.size;
+      document.getElementById('statTotalPower').textContent = (totalPower > 0 ? totalPower.toFixed(1) : '0.0') + ' W';
+
+      nodeMap.forEach((eps, nid) => {
+        const primary = eps[0];
+        const cat = primary.category || 'other';
+        counts.all++;
+        if (counts[cat] !== undefined) counts[cat]++;
+      });
+
+      for (let k in counts) {
+        const el = document.getElementById('count-' + k);
+        if (el) el.textContent = counts[k];
+      }
+    }
+
+    function renderDevicesList() {
+      const container = document.getElementById('devicesListContainer');
+
+      const groupsMap = new Map();
+      rawDevices.forEach(d => {
+        const nid = d.node_id;
+        if (!groupsMap.has(nid)) {
+          groupsMap.set(nid, []);
+        }
+        groupsMap.get(nid).push(d);
+      });
+
+      const filteredGroups = [];
+      groupsMap.forEach((eps, nid) => {
+        const primary = eps[0];
+        const cat = primary.category || 'other';
+        if (currentCategoryFilter === 'all' || currentCategoryFilter === cat) {
+          filteredGroups.push({ nodeId: nid, endpoints: eps, primary });
+        }
+      });
+
+      if (filteredGroups.length === 0) {
+        container.innerHTML = `<div class="empty-state">لا توجد أجهزة متصلة ضمن هذا التصنيف حالياً.</div>`;
         return;
       }
 
-      devices.forEach(dev => {
-        const card = document.createElement('div');
-        card.className = 'device-card';
+      let html = '';
+      filteredGroups.forEach(group => {
+        const { nodeId, endpoints, primary } = group;
+        const isBridged = primary.is_bridged;
+        const cat = primary.category || 'other';
+        const icon = CATEGORY_ICONS[cat] || '⚙️';
+        const catLabel = CATEGORY_LABELS[cat] || 'جهاز ذكي';
+        const vendor = primary.vendor || 'Matter';
+        const model = primary.model || primary.device_type || 'Smart Device';
 
-        const isOnOff = (dev.has_onoff === true);
-        const isOn = (dev.state === 'ON' || dev.state === true);
+        const hasAnyOn = endpoints.some(e => e.state === 'ON');
 
-        let metricHtml = '';
-        if (dev.temperature !== undefined) {
-          metricHtml += `<div class="metric-item"><span class="metric-val">${dev.temperature}°C</span><span class="metric-lbl">الحرارة</span></div>`;
-        }
-        if (dev.humidity !== undefined) {
-          metricHtml += `<div class="metric-item"><span class="metric-val">${dev.humidity}%</span><span class="metric-lbl">الرطوبة</span></div>`;
-        }
-        if (dev.battery !== undefined) {
-          metricHtml += `<div class="metric-item"><span class="metric-val">${dev.battery}%</span><span class="metric-lbl">البطارية</span></div>`;
-        }
+        // Check power / energy stats
+        let powerVal = null, voltVal = null, currVal = null, energyVal = null;
+        let tempVal = null, humVal = null, battVal = null;
 
-        let controlHtml = '';
-        if (isOnOff) {
-          controlHtml = `
-            <label class="switch">
-              <input type="checkbox" ${isOn ? 'checked' : ''} onchange="toggleDeviceState('${dev.device_name}', this.checked)">
-              <span class="slider"></span>
-            </label>
-          `;
-        } else {
-          controlHtml = `<span style="font-size: 12px; color: var(--success);">نشط</span>`;
-        }
+        endpoints.forEach(e => {
+          if (e.power !== undefined && e.power !== null) powerVal = e.power;
+          if (e.voltage !== undefined && e.voltage !== null) voltVal = e.voltage;
+          if (e.current !== undefined && e.current !== null) currVal = e.current;
+          if (e.energy !== undefined && e.energy !== null) energyVal = e.energy;
+          if (e.temperature !== undefined && e.temperature !== null) tempVal = e.temperature;
+          if (e.humidity !== undefined && e.humidity !== null) humVal = e.humidity;
+          if (e.battery !== undefined && e.battery !== null) battVal = e.battery;
+        });
 
-        card.innerHTML = `
-          <div class="device-header">
-            <div>
-              <div class="device-name">${dev.device_name}</div>
-              <div class="device-type">${dev.device_type}</div>
-              <div class="device-tags">
-                <span class="tag">${dev.vendor || 'Matter'}</span>
-                <span class="tag">${dev.is_bridged ? 'جهاز فرعي (Bridge)' : 'Wi-Fi مباشر'}</span>
-                <span class="tag">Node ${dev.node_id}</span>
+        const isEnergyDevice = (cat === 'socket' || cat === 'switch' || powerVal !== null || voltVal !== null);
+
+        html += `
+          <div class="device-group-card ${hasAnyOn ? 'has-on' : ''}" id="node-card-${nodeId}">
+            
+            <!-- Card Header -->
+            <div class="device-card-header">
+              <div class="device-meta-left">
+                <div class="device-icon-box ${cat}">
+                  ${icon}
+                </div>
+                <div class="device-title-box">
+                  <div class="device-main-title">
+                    ${vendor} ${model}
+                    <span class="tag tag-category">${catLabel}</span>
+                    ${isBridged 
+                      ? `<span class="tag tag-bridge">🌉 عبر الجسر (${primary.bridge_name || 'Bridge'})</span>` 
+                      : `<span class="tag tag-wifi">📶 Wi-Fi</span>`
+                    }
+                  </div>
+                  <div class="device-sub-meta">
+                    <span>🏷️ <b>Node #${nodeId}</b></span>
+                    ${endpoints.length > 1 ? `<span>• 🎛️ <b>${endpoints.length} قنوات</b></span>` : ''}
+                    ${primary.serial_number ? `<span>• 🔢 S/N: ${primary.serial_number}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Top Quick Badges (Temp / Humidity / Battery) -->
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                ${tempVal !== null ? `<div class="badge">🌡️ ${tempVal} °C</div>` : ''}
+                ${humVal !== null ? `<div class="badge">💧 ${humVal} %</div>` : ''}
+                ${battVal !== null ? `<div class="badge">🔋 ${battVal} %</div>` : ''}
               </div>
             </div>
-            <button class="btn btn-outline" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.4); padding: 5px 12px; font-size: 11px; margin-right: auto;" onclick="deleteDevice('${dev.device_name}', ${dev.node_id})" title="حذف هذا الجهاز">حذف 🗑️</button>
-          </div>
-          <div class="device-body">
-            <div class="metrics">${metricHtml}</div>
-            <div>${controlHtml}</div>
+
+            <!-- Always-Visible Power & Energy Measurement Strip for Sockets/Switches -->
+            ${isEnergyDevice ? `
+              <div class="power-metrics-strip">
+                <div class="metric-item">
+                  <div class="metric-item-icon power">⚡</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">القدرة اللحظية (Power)</span>
+                    <span class="metric-item-val ${powerVal > 0 ? 'active' : ''}">${powerVal !== null ? powerVal + ' W' : '0.0 W'}</span>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-item-icon voltage">🔌</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">الجهد الكهربائي (Voltage)</span>
+                    <span class="metric-item-val">${voltVal !== null ? voltVal + ' V' : '230 V'}</span>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-item-icon current">📈</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">التيار (Current)</span>
+                    <span class="metric-item-val">${currVal !== null ? currVal + ' A' : '0.00 A'}</span>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-item-icon energy">📊</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">الاستهلاك التراكمي (Energy)</span>
+                    <span class="metric-item-val ${energyVal > 0 ? 'active-green' : ''}">${energyVal !== null ? energyVal + ' kWh' : '0.00 kWh'}</span>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Channels & Iconic Control Buttons -->
+            <div class="channels-grid">
+        `;
+
+        endpoints.forEach((ep) => {
+          const epId = ep.endpoint_id;
+          const epState = ep.state || 'OFF';
+          const isOn = (epState === 'ON');
+          const channelTitle = endpoints.length > 1 ? `قناة ${epId} (CH${epId})` : (ep.model || 'التحكم الرئيسي');
+
+          html += `
+            <div class="channel-pill ${isOn ? 'is-on' : ''}" id="ep-pill-${nodeId}-${epId}">
+              <div class="channel-info">
+                <div class="channel-status-icon ${isOn ? 'on' : ''}">
+                  ${isOn ? '💡' : '🌑'}
+                </div>
+                <div>
+                  <div class="channel-name">${channelTitle}</div>
+                  <div class="channel-state-text ${isOn ? 'on' : ''}">${isOn ? '● قيد التشغيل (ON)' : '○ متوقف (OFF)'}</div>
+                </div>
+              </div>
+
+              ${ep.has_onoff ? `
+                <button 
+                  class="icon-toggle-btn ${isOn ? 'is-on' : ''}" 
+                  id="btn-toggle-${nodeId}-${epId}"
+                  onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}')"
+                >
+                  <span class="power-symbol">⏻</span>
+                  <span>${isOn ? 'تشغيل' : 'إيقاف'}</span>
+                </button>
+              ` : `
+                <span class="badge">📡 قراءة فقط</span>
+              `}
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+
+            <!-- Quick Category Switcher & Actions -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; margin-top: 4px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>⚙️ التصنيف:</span>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'socket', 'Smart Socket')">🔌 مقبس</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'lighting', 'Smart Light')">💡 إنارة</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>
+                <button 
+                  class="btn btn-outline" 
+                  style="padding: 3px 8px; font-size: 10px; color: #94A3B8; border-color: rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer;"
+                  title="عرض جميع الـ Clusters والـ Datapoints الخام القادمة من الجهاز"
+                  onclick="inspectNodeDatapoints(${nodeId})"
+                >
+                  🔍 فحص الـ Datapoints
+                </button>
+                <button 
+                  class="btn btn-danger-soft" 
+                  id="btn-delete-${nodeId}"
+                  style="padding: 3px 10px; font-size: 11px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #F87171; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: inherit;" 
+                  onmouseover="this.style.background='rgba(239,68,68,0.25)'; this.style.borderColor='#EF4444';"
+                  onmouseout="this.style.background='rgba(239,68,68,0.12)'; this.style.borderColor='rgba(239,68,68,0.35)';"
+                  onclick="deleteDeviceHandler(${nodeId}, '${(first.device_name || first.product_name || 'Device').replace(/'/g, "\\'")}')"
+                >
+                  🗑️ حذف الجهاز
+                </button>
+              </div>
+            </div>
+
           </div>
         `;
-        listEl.appendChild(card);
       });
+
+      container.innerHTML = html;
     }
 
-    async function deleteDevice(deviceName, nodeId) {
-      if (!confirm(`هل أنت متأكد من رغبتك في حذف الجهاز:\n"${deviceName}"؟`)) {
-        return;
-      }
-      try {
-        const res = await fetch('/api/devices/delete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + authToken
-          },
-          body: JSON.stringify({ device: deviceName, node_id: nodeId })
-        });
-        const resp = await res.json();
-        if (resp.success) {
-          refreshData();
-        } else {
-          alert('تعذر حذف الجهاز: ' + (resp.error || 'فشلت العملية'));
-        }
-      } catch (err) {
-        alert('خطأ في إرسال طلب الحذف: ' + err);
-      }
-    }
+    // Toggle Channel State with Instant Single-Click Responsiveness
+    async function toggleChannelState(nodeId, endpointId, deviceName) {
+      const match = rawDevices.find(d => d.node_id === nodeId && d.endpoint_id === endpointId);
+      const currentIsOn = match ? (match.state === 'ON') : false;
+      const targetState = !currentIsOn;
+      const targetStateStr = targetState ? 'ON' : 'OFF';
 
-    async function toggleDeviceState(deviceName, newState) {
+      // 1. Update local state immediately
+      if (match) {
+        match.state = targetStateStr;
+      }
+      // 2. Re-render UI immediately so button classes, icons and colors are 100% updated on the spot
+      renderDevicesList();
 
+      // 3. Dispatch RPC command to local controller
       try {
-        await fetch('/api/control', {
+        const res = await fetch('/api/control', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -536,32 +862,167 @@
           },
           body: JSON.stringify({
             device: deviceName,
+            node_id: nodeId,
+            endpoint_id: endpointId,
             method: 'setState',
-            params: newState
+            params: targetState
           })
         });
-        refreshData();
+        const data = await res.json();
+        if (data.state && match) {
+          match.state = data.state;
+          renderDevicesList();
+        }
       } catch (err) {
-        alert('تعذر تنفيذ الأمر على الجهاز.');
+        console.error('Failed to send control command', err);
+        loadDevices(true);
       }
     }
 
-    async function handleCommission(e) {
-      e.preventDefault();
-      const code = document.getElementById('commCode').value;
-      const ssid = document.getElementById('commSsid').value;
-      const pass = document.getElementById('commPass').value;
-      const btn = document.getElementById('commBtn');
-      const msg = document.getElementById('commStatusMsg');
+    // Change Device Category dynamically
+    async function changeDeviceCategory(nodeId, endpointId, newCategory, newType) {
+      try {
+        const res = await fetch('/api/devices/set_category', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          },
+          body: JSON.stringify({
+            node_id: nodeId,
+            endpoint_id: endpointId,
+            category: newCategory,
+            device_type: newType
+          })
+        });
+        if (res.ok) {
+          rawDevices.forEach(d => {
+            if (d.node_id === nodeId) {
+              d.category = newCategory;
+              if (newType) d.device_type = newType;
+            }
+          });
+          updateCategoryCounts();
+          renderDevicesList();
+        }
+      } catch (err) {
+        console.error('Failed to update category', err);
+      }
+    }
 
-      btn.disabled = true;
-      btn.innerText = 'جاري الإقران والاتصال...';
-      msg.style.display = 'block';
-      msg.style.color = '#38BDF8';
-      msg.innerText = 'يتم الآن فحص الكود والتفاوض مع جهاز Matter عبر بروتوكول PASE...';
+    // Safe Device Removal Handler with Complete Lifecycle Cleanup
+    async function deleteDeviceHandler(nodeId, deviceName) {
+      const confirmMsg = `⚠️ هل أنت متأكد من رغبتك في حذف هذا الجهاز (${deviceName}) ذو المعرف (#${nodeId})؟\n\nالعمليات التي ستتم:\n1. فك الاقتران وإلغاء الجهاز من شبكة Matter المحلية.\n2. مسح جميع القنوات والإعدادات من سجل بوابة UNIQ.\n3. إيقاف مزامنة بيانات وتيليمتري الجهاز مع ThingsBoard.\n\nهل تود المتابعة؟`;
+      
+      if (!confirm(confirmMsg)) {
+        return;
+      }
+
+      const btn = document.getElementById(`btn-delete-${nodeId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `⏳ جارٍ الحذف...`;
+        btn.style.opacity = '0.6';
+      }
 
       try {
-        const res = await fetch('/matter/commission', {
+        const res = await fetch('/api/devices/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          },
+          body: JSON.stringify({
+            node_id: nodeId
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success !== false) {
+          // Remove from local memory
+          rawDevices = rawDevices.filter(d => d.node_id !== nodeId);
+          updateCategoryCounts();
+          renderDevicesList();
+          alert(`✅ تم حذف الجهاز #${nodeId} وفك اقترانه من شبكة Matter بنجاح.`);
+        } else {
+          alert(`❌ فشل حذف الجهاز: ` + (data.error || 'خطأ غير معروف'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `🗑️ حذف الجهاز`;
+            btn.style.opacity = '1';
+          }
+        }
+      } catch (err) {
+        console.error('Failed to delete device:', err);
+        alert(`❌ حدث خطأ في الاتصال أثناء حذف الجهاز: ` + err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `🗑️ حذف الجهاز`;
+          btn.style.opacity = '1';
+        }
+      }
+    }
+
+    // Inspect Node Datapoints & Raw Clusters
+    async function inspectNodeDatapoints(nodeId) {
+      try {
+        const res = await fetch(`/api/devices/raw?node_id=${nodeId}`, {
+          headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        const data = await res.json();
+        const jsonStr = JSON.stringify(data, null, 2);
+        
+        const win = window.open("", "_blank", "width=750,height=650,scrollbars=yes");
+        if (win) {
+          win.document.write(`
+            <!DOCTYPE html>
+            <html dir="ltr">
+            <head>
+              <meta charset="UTF-8">
+              <title>Node #${nodeId} Raw Matter Datapoints</title>
+              <style>
+                body { background: #0b1120; color: #38bdf8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; padding: 24px; font-size: 13px; line-height: 1.5; margin: 0; }
+                h2 { color: #f8fafc; margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; font-size: 16px; }
+                pre { background: #030712; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; overflow: auto; max-height: calc(100vh - 100px); color: #a5f3fc; }
+              </style>
+            </head>
+            <body>
+              <h2>🔍 Node #${nodeId} Raw Matter Clusters, Attributes & Datapoints</h2>
+              <pre>${jsonStr}</pre>
+            </body>
+            </html>
+          `);
+        } else {
+          alert(`Node #${nodeId} Raw Datapoints:\n\n` + jsonStr.substring(0, 1500));
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء جلب الـ Datapoints: ' + err.message);
+      }
+    }
+
+    // Handle Commissioning
+    async function handleCommission(e) {
+      e.preventDefault();
+      const code = document.getElementById('commCode').value.trim();
+      const ssid = document.getElementById('commSsid').value.trim();
+      const password = document.getElementById('commPassword').value.trim();
+      const submitBtn = document.getElementById('commSubmitBtn');
+      const statusMsg = document.getElementById('commStatusMsg');
+
+      if (!code) return;
+
+      if (ssid) localStorage.setItem('uniq_wifi_ssid', ssid);
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳ جاري البحث والإقران عبر البلوتوث والواي فاي (1-3 دقائق)...</span>';
+      statusMsg.style.display = 'block';
+      statusMsg.style.background = 'rgba(56, 189, 248, 0.15)';
+      statusMsg.style.color = '#38BDF8';
+      statusMsg.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+      statusMsg.innerHTML = '🔄 جاري الاتصال بالجهاز عبر BLE ومشاركته مفاتيح Matter وتوصيله بالواي فاي... يرجى الانتظار.';
+
+      try {
+        const res = await fetch('/api/commission', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -570,60 +1031,35 @@
           body: JSON.stringify({
             code: code,
             network_only: false,
-            wifi_ssid: ssid || undefined,
-            wifi_password: pass || undefined
+            wifi_ssid: ssid || null,
+            wifi_password: password || null
           })
         });
 
         const data = await res.json();
-        if (data.status === 'success') {
-          msg.style.color = 'var(--success)';
-          msg.innerText = `تم إقران الجهاز بنجاح! رقم الجهاز (Node ID: ${data.node_id}). تم إضافته لـ ThingsBoard فوراً.`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>➕ بدء الإقران والإضافة</span>';
+
+        if (res.ok && data.status === 'success') {
+          statusMsg.style.background = 'rgba(16, 185, 129, 0.15)';
+          statusMsg.style.color = '#10B981';
+          statusMsg.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+          statusMsg.innerHTML = `✅ <b>تم الإقران بنجاح!</b> تم ربط الجهاز (Node ID: ${data.node_id}) ومزامنته مع الجيت واي.`;
           document.getElementById('commCode').value = '';
-          refreshData();
+          loadDevices();
         } else {
-          msg.style.color = 'var(--danger)';
-          msg.innerText = 'فشل الإقران: ' + (data.error || 'تأكد من كود الجهاز.');
+          statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
+          statusMsg.style.color = '#EF4444';
+          statusMsg.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+          statusMsg.innerHTML = `❌ <b>فشل الإقران:</b> ${data.error || 'تأكد أن الجهاز في وضع الإقران وأن الكود صحيح.'}`;
         }
       } catch (err) {
-        msg.style.color = 'var(--danger)';
-        msg.innerText = 'خطأ في الاتصال بخادم الموزع.';
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'اقتران الجهاز بالموزع';
-      }
-    }
-
-    async function handleChangePin(e) {
-      e.preventDefault();
-      const cur = document.getElementById('curPin').value;
-      const nw = document.getElementById('newPin').value;
-      const msg = document.getElementById('pinMsg');
-
-      try {
-        const res = await fetch('/api/settings/pin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + authToken
-          },
-          body: JSON.stringify({ current_pin: cur, new_pin: nw })
-        });
-        const data = await res.json();
-        msg.style.display = 'block';
-        if (data.success) {
-          msg.style.color = 'var(--success)';
-          msg.innerText = 'تم تغيير رمز PIN بنجاح! استخدم الرمز الجديد عند الدخول القادم.';
-          document.getElementById('curPin').value = '';
-          document.getElementById('newPin').value = '';
-        } else {
-          msg.style.color = 'var(--danger)';
-          msg.innerText = data.error || 'الرمز الحالي غير صحيح.';
-        }
-      } catch (err) {
-        msg.style.display = 'block';
-        msg.style.color = 'var(--danger)';
-        msg.innerText = 'تعذر تحديث الرمز.';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>➕ بدء الإقران والإضافة</span>';
+        statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
+        statusMsg.style.color = '#EF4444';
+        statusMsg.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        statusMsg.innerHTML = `❌ تعذر إتمام الطلب: ${err.message}`;
       }
     }
   </script>

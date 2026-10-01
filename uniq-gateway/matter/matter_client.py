@@ -137,9 +137,21 @@ class MatterClient:
             log.error(f"Failed to parse incoming WebSocket message: {e} | Raw: {message[:100]}")
             return
 
+        # matterjs-server may send a list of events (batch) - process each item
+        if isinstance(msg, list):
+            for item in msg:
+                if isinstance(item, dict):
+                    self._process_single_message(item)
+            return
+
+        if isinstance(msg, dict):
+            self._process_single_message(msg)
+
+    def _process_single_message(self, msg: dict):
+        """Process a single message dict from matterjs-server."""
         # 1. Command Response resolution
         msg_id = str(msg.get("message_id", ""))
-        if msg_id in self._pending_commands:
+        if msg_id and msg_id in self._pending_commands:
             entry = self._pending_commands[msg_id]
             entry["response"] = msg
             entry["event"].set()
@@ -147,26 +159,106 @@ class MatterClient:
 
         # 2. Real-time Matter Server Events
         event_type = msg.get("event")
-        data = msg.get("data", {})
+        data = msg.get("data")
+
+        if not event_type:
+            return
 
         if event_type in ["node_added", "node_updated", "node_removed"]:
-            if self.on_node_event:
-                try:
-                    self.on_node_event(event_type, data)
-                except Exception as e:
-                    log.error(f"Error handling node event '{event_type}': {e}")
+            if isinstance(data, dict):
+                if self.on_node_event:
+                    try:
+                        self.on_node_event(event_type, data)
+                    except Exception as e:
+                        log.error(f"Error handling node event '{event_type}': {e}")
 
-        elif event_type in ["attribute_updated", "node_attribute_updated"]:
-            # Format: { node_id, endpoint_id, cluster_id, attribute_id, value }
-            node_id = data.get("node_id")
-            endpoint_id = data.get("endpoint_id", 0)
-            cluster_id = data.get("cluster_id")
-            attribute_id = data.get("attribute_id")
-            value = data.get("value")
+                # If node_updated contains a flat attributes dict, process each attribute
+                node_id = data.get("node_id") or data.get("nodeId")
+                flat_attrs = data.get("attributes", {})
+                if node_id is not None and isinstance(flat_attrs, dict) and self.on_attribute_event:
+                    for attr_path, value in flat_attrs.items():
+                        parts = str(attr_path).split("/")
+                        if len(parts) == 3:
+                            try:
+                                ep = int(parts[0])
+                                cl = int(parts[1])
+                                at = int(parts[2])
+                                self.on_attribute_event(int(node_id), ep, cl, at, value)
+                            except (ValueError, TypeError):
+                                pass
+
+        elif event_type in ["attribute_updated", "node_attribute_updated", "attributeUpdate", "attribute_update"]:
+            node_id = None
+            endpoint_id = 0
+            cluster_id = None
+            attribute_id = None
+            value = None
+
+            # Format 1: Array format [node_id, "endpoint/cluster/attribute", value] (Standard python-matter-server)
+            if isinstance(data, (list, tuple)):
+                if len(data) >= 3:
+                    node_id = data[0]
+                    path_str = str(data[1])
+                    value = data[2]
+                    parts = path_str.split("/")
+                    if len(parts) == 3:
+                        try:
+                            endpoint_id = int(parts[0])
+                            cluster_id = int(parts[1])
+                            attribute_id = int(parts[2])
+                        except (ValueError, TypeError):
+                            pass
+                    elif len(data) >= 5:
+                        # [node_id, endpoint_id, cluster_id, attribute_id, value]
+                        try:
+                            endpoint_id = int(data[1])
+                            cluster_id = int(data[2])
+                            attribute_id = int(data[3])
+                            value = data[4]
+                        except (ValueError, TypeError):
+                            pass
+
+            # Format 2: Dict format
+            elif isinstance(data, dict):
+                value = data.get("value")
+                node_id = data.get("node_id") or data.get("nodeId")
+
+                # Path string "1/6/0" or "node/1/6/0"
+                path = data.get("path") or data.get("attribute_path") or data.get("attributePath")
+                if isinstance(path, str) and "/" in path:
+                    parts = path.split("/")
+                    if len(parts) == 3:
+                        try:
+                            endpoint_id = int(parts[0])
+                            cluster_id = int(parts[1])
+                            attribute_id = int(parts[2])
+                        except (ValueError, TypeError):
+                            pass
+                    elif len(parts) == 4:
+                        try:
+                            node_id = int(parts[0])
+                            endpoint_id = int(parts[1])
+                            cluster_id = int(parts[2])
+                            attribute_id = int(parts[3])
+                        except (ValueError, TypeError):
+                            pass
+                elif isinstance(path, dict):
+                    node_id = path.get("nodeId") or path.get("node_id") or node_id
+                    endpoint_id = path.get("endpointId") or path.get("endpoint_id") or 0
+                    cluster_id = path.get("clusterId") or path.get("cluster_id")
+                    attribute_id = path.get("attributeId") or path.get("attribute_id")
+                else:
+                    endpoint_id = data.get("endpoint_id") or data.get("endpointId") or 0
+                    cluster_id = data.get("cluster_id") or data.get("clusterId")
+                    attribute_id = data.get("attribute_id") or data.get("attributeId")
 
             if self.on_attribute_event and node_id is not None and cluster_id is not None:
                 try:
-                    self.on_attribute_event(node_id, endpoint_id, cluster_id, attribute_id, value)
+                    self.on_attribute_event(
+                        int(node_id), int(endpoint_id),
+                        int(cluster_id), int(attribute_id) if attribute_id is not None else 0,
+                        value
+                    )
                 except Exception as e:
                     log.error(f"Error handling attribute event: {e}")
 
@@ -227,28 +319,63 @@ class MatterClient:
     ) -> Dict[str, Any]:
         """
         Executes a cluster command on a specific Matter node endpoint.
-        Example: device_command(node_id=2, endpoint_id=1, cluster_id=6, command_name="Off")
+        Supports both lowercase and PascalCase command names with automatic fallback.
         """
+        cmd_lower = str(command_name).lower()
         args = {
-            "node_id": node_id,
-            "endpoint_id": endpoint_id,
-            "cluster_id": cluster_id,
-            "command_name": command_name,
-            "args": command_args or {}
+            "node_id": int(node_id),
+            "endpoint_id": int(endpoint_id),
+            "cluster_id": int(cluster_id),
+            "command_name": cmd_lower,
+            "command": cmd_lower,
+            "args": command_args or {},
+            "payload": command_args or {}
         }
-        return self.send_command("device_command", args=args, timeout=timeout)
+        resp = self.send_command("device_command", args=args, timeout=timeout)
+        if not resp.get("success"):
+            # Try with capitalized command name
+            args["command_name"] = str(command_name).capitalize()
+            args["command"] = str(command_name).capitalize()
+            resp = self.send_command("device_command", args=args, timeout=timeout)
+        return resp
+
+    def remove_node(self, node_id: int, timeout: float = 20.0) -> Dict[str, Any]:
+        """
+        Decommissions and removes a Matter node from the local fabric and server.
+        Tries 'remove_node', 'uncommission_node', and 'uncommission' commands.
+        """
+        nid = int(node_id)
+        # 1. Try standard remove_node
+        res = self.send_command("remove_node", args={"node_id": nid}, timeout=timeout)
+        if res.get("success"):
+            return res
+        
+        # 2. Try uncommission_node
+        res = self.send_command("uncommission_node", args={"node_id": nid}, timeout=timeout)
+        if res.get("success"):
+            return res
+            
+        # 3. Try uncommission
+        res = self.send_command("uncommission", args={"node_id": nid}, timeout=timeout)
+        if res.get("success"):
+            return res
+
+        # 4. Try camelCase nodeId
+        res = self.send_command("remove_node", args={"nodeId": nid}, timeout=timeout)
+        return res
 
     def commission_with_code(
         self,
         code: str,
-        network_only: bool = False,
+        network_only: bool = False,  # False = allow BLE/PASE commissioning
         wifi_ssid: Optional[str] = None,
         wifi_password: Optional[str] = None,
-        timeout: float = 60.0
+        timeout: float = 180.0  # BLE commissioning can take 1-3 minutes
     ) -> Dict[str, Any]:
-
         """
         Commissions a Matter device using setup code (QR code or numeric manual code).
+        - network_only=False: Uses BLE (PASE) for initial pairing, then hands off to Wi-Fi/Thread
+        - network_only=True: Only commissions devices already on the same IP network
         """
         args: Dict[str, Any] = {
             "code": code,
@@ -259,4 +386,22 @@ class MatterClient:
         if wifi_password:
             args["wifi_password"] = wifi_password
 
+        log.info(f"Commissioning with code (network_only={network_only}, ble_enabled={not network_only})")
         return self.send_command("commission_with_code", args=args, timeout=timeout)
+
+    def set_wifi_credentials(
+        self,
+        ssid: str,
+        password: str,
+        timeout: float = 10.0
+    ) -> Dict[str, Any]:
+        """
+        Sets WiFi credentials on the Matter controller.
+        Must be called before commissioning a WiFi device for the first time.
+        """
+        args = {
+            "ssid": ssid,
+            "credentials": password
+        }
+        log.info(f"Setting WiFi credentials for SSID: {ssid}")
+        return self.send_command("set_wifi_credentials", args=args, timeout=timeout)

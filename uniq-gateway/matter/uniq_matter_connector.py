@@ -190,62 +190,242 @@ class UniqMatterConnector(Connector, Thread):
             log.error(f"Error synchronizing Matter node: {e}", exc_info=True)
 
     def _extract_initial_telemetry(self, node_data: Dict[str, Any], node_id: int, endpoint_id: int, device_name: str):
-        """Checks if the node payload contains initial cluster states and sends as telemetry."""
-        endpoints = node_data.get("endpoints", {})
-        ep_content = {}
-        if isinstance(endpoints, dict):
-            ep_content = endpoints.get(str(endpoint_id)) or endpoints.get(endpoint_id, {})
-        elif isinstance(endpoints, list):
-            for ep in endpoints:
-                if ep.get("endpoint_id") == endpoint_id:
-                    ep_content = ep
-                    break
-
-        clusters = ep_content.get("clusters", {})
+        """Extracts initial cluster states from node data and sends as telemetry. Supports flat matter.js format and nested."""
         telemetry_payload = {}
 
-        # OnOff Cluster (6)
-        onoff_cluster = clusters.get("6") or clusters.get(6, {})
-        if onoff_cluster:
-            state_val = onoff_cluster.get("onOff") if "onOff" in onoff_cluster else onoff_cluster.get("0")
-            if state_val is not None:
-                telemetry_payload["state"] = "ON" if state_val in [True, 1, "true", "True"] else "OFF"
-                telemetry_payload["onOff"] = bool(state_val)
+        flat_attrs = node_data.get("attributes", {})
+        if flat_attrs:
+            # 1. OnOff State: "{ep}/6/0"
+            for onoff_key in [f"{endpoint_id}/6/0", f"{endpoint_id}/6/onOff", "1/6/0"]:
+                if onoff_key in flat_attrs:
+                    val = flat_attrs[onoff_key]
+                    telemetry_payload["state"] = "ON" if val in [True, 1, "true", "True"] else "OFF"
+                    telemetry_payload["onOff"] = (telemetry_payload["state"] == "ON")
+                    break
 
-        # LevelControl (8)
-        level_cluster = clusters.get("8") or clusters.get(8, {})
-        if level_cluster:
-            lvl = level_cluster.get("currentLevel") if "currentLevel" in level_cluster else level_cluster.get("0")
-            if lvl is not None:
-                telemetry_payload["brightness"] = int(round((int(lvl) / 254.0) * 100))
+            # 2. LevelControl: "{ep}/8/0"
+            for lvl_key in [f"{endpoint_id}/8/0", f"{endpoint_id}/8/currentLevel", "1/8/0"]:
+                if lvl_key in flat_attrs:
+                    try:
+                        telemetry_payload["brightness"] = int(round(int(flat_attrs[lvl_key]) / 254.0 * 100))
+                        break
+                    except (ValueError, TypeError):
+                        pass
 
-        # Temperature (1026)
-        temp_cluster = clusters.get("1026") or clusters.get(1026, {})
-        if temp_cluster:
-            t = temp_cluster.get("measuredValue") if "measuredValue" in temp_cluster else temp_cluster.get("0")
-            if t is not None:
-                telemetry_payload["temperature"] = round(float(t) / 100.0, 2)
+            # 3. Dynamic scan across all attributes for sensors & electrical measurements
+            for attr_path, val in flat_attrs.items():
+                parts = str(attr_path).split("/")
+                if len(parts) != 3:
+                    continue
+                try:
+                    ep_k = int(parts[0])
+                    cl_k = int(parts[1])
+                    at_k = int(parts[2])
+                except (ValueError, TypeError):
+                    continue
 
-        # Humidity (1029)
-        hum_cluster = clusters.get("1029") or clusters.get(1029, {})
-        if hum_cluster:
-            h = hum_cluster.get("measuredValue") if "measuredValue" in hum_cluster else hum_cluster.get("0")
-            if h is not None:
-                telemetry_payload["humidity"] = round(float(h) / 100.0, 2)
+                # Match endpoint or primary endpoint
+                if ep_k != endpoint_id and ep_k not in [0, 1] and len(flat_attrs) > 20:
+                    continue
+
+                # Temperature (1026)
+                if cl_k == 1026 and at_k in [0, "0", "measuredValue"]:
+                    try:
+                        telemetry_payload["temperature"] = round(float(val) / 100.0, 2)
+                    except Exception:
+                        pass
+
+                # Humidity (1029)
+                elif cl_k == 1029 and at_k in [0, "0", "measuredValue"]:
+                    try:
+                        telemetry_payload["humidity"] = round(float(val) / 100.0, 2)
+                    except Exception:
+                        pass
+
+                # Electrical Measurement (2820 / 0x0B04)
+                elif cl_k == 2820:
+                    if at_k in [1291, 0x050B]:  # ActivePower
+                        try:
+                            telemetry_payload["power"] = round(float(val), 2)
+                        except Exception:
+                            pass
+                    elif at_k in [1285, 0x0505]:  # RMSVoltage
+                        try:
+                            telemetry_payload["voltage"] = round(float(val), 2)
+                        except Exception:
+                            pass
+                    elif at_k in [1288, 0x0508]:  # RMSCurrent
+                        try:
+                            c_val = float(val)
+                            telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 50 else round(c_val, 3)
+                        except Exception:
+                            pass
+
+                # Metering (1794 / 0x0702)
+                elif cl_k == 1794:
+                    if at_k in [0, 0x0000]:  # CurrentSummationDelivered
+                        try:
+                            e_val = float(val)
+                            telemetry_payload["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
+                        except Exception:
+                            pass
+                    elif at_k in [1024, 0x0400]:  # InstantaneousDemand
+                        try:
+                            telemetry_payload["power"] = round(float(val), 2)
+                        except Exception:
+                            pass
+
+                # Matter 1.3 Power (144 / 0x0090)
+                elif cl_k == 144:
+                    if at_k in [4, 9]:
+                        try:
+                            p_val = float(val)
+                            telemetry_payload["power"] = round(p_val / 1000.0, 2) if p_val > 1000 else round(p_val, 2)
+                        except Exception:
+                            pass
+                    elif at_k in [0, 7]:
+                        try:
+                            v_val = float(val)
+                            telemetry_payload["voltage"] = round(v_val / 1000.0, 2) if v_val > 1000 else round(v_val, 2)
+                        except Exception:
+                            pass
+                    elif at_k in [1, 8]:
+                        try:
+                            c_val = float(val)
+                            telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 1000 else round(c_val, 3)
+                        except Exception:
+                            pass
+
+                # Matter 1.3 Energy (145 / 0x0091)
+                elif cl_k == 145:
+                    if at_k in [0, 2]:
+                        try:
+                            e_val = float(val.get("energy", 0)) if isinstance(val, dict) else float(val)
+                            telemetry_payload["energy"] = round(e_val / 1000000.0, 3) if e_val > 10000 else round(e_val, 3)
+                        except Exception:
+                            pass
+
+                # Battery (1)
+                elif cl_k == 1 and at_k in [12, "12"]:
+                    try:
+                        telemetry_payload["battery"] = round(float(val) / 2.0, 1)
+                    except Exception:
+                        pass
+
+        else:
+            # Nested endpoint/cluster format (fallback)
+            endpoints = node_data.get("endpoints", {})
+            ep_content = {}
+            if isinstance(endpoints, dict):
+                ep_content = endpoints.get(str(endpoint_id)) or endpoints.get(endpoint_id, {})
+            elif isinstance(endpoints, list):
+                for ep in endpoints:
+                    if ep.get("endpoint_id") == endpoint_id:
+                        ep_content = ep
+                        break
+
+            clusters = ep_content.get("clusters", {})
+
+            # OnOff Cluster (6)
+            onoff_cluster = clusters.get("6") or clusters.get(6, {})
+            if onoff_cluster:
+                state_val = onoff_cluster.get("onOff") if "onOff" in onoff_cluster else onoff_cluster.get("0")
+                if state_val is not None:
+                    telemetry_payload["state"] = "ON" if state_val in [True, 1, "true", "True"] else "OFF"
+                    telemetry_payload["onOff"] = bool(state_val)
+
+            # LevelControl (8)
+            level_cluster = clusters.get("8") or clusters.get(8, {})
+            if level_cluster:
+                lvl = level_cluster.get("currentLevel") if "currentLevel" in level_cluster else level_cluster.get("0")
+                if lvl is not None:
+                    telemetry_payload["brightness"] = int(round((int(lvl) / 254.0) * 100))
+
+            # Temperature (1026)
+            temp_cluster = clusters.get("1026") or clusters.get(1026, {})
+            if temp_cluster:
+                t = temp_cluster.get("measuredValue") if "measuredValue" in temp_cluster else temp_cluster.get("0")
+                if t is not None:
+                    telemetry_payload["temperature"] = round(float(t) / 100.0, 2)
+
+            # Humidity (1029)
+            hum_cluster = clusters.get("1029") or clusters.get(1029, {})
+            if hum_cluster:
+                h = hum_cluster.get("measuredValue") if "measuredValue" in hum_cluster else hum_cluster.get("0")
+                if h is not None:
+                    telemetry_payload["humidity"] = round(float(h) / 100.0, 2)
+
+            # Electrical Measurement (2820)
+            elec_cluster = clusters.get("2820") or clusters.get(2820, {})
+            if elec_cluster:
+                p = elec_cluster.get("activePower") if "activePower" in elec_cluster else elec_cluster.get("1291")
+                if p is not None:
+                    telemetry_payload["power"] = round(float(p), 2)
+                v = elec_cluster.get("rmsVoltage") if "rmsVoltage" in elec_cluster else elec_cluster.get("1285")
+                if v is not None:
+                    telemetry_payload["voltage"] = round(float(v), 2)
+                c = elec_cluster.get("rmsCurrent") if "rmsCurrent" in elec_cluster else elec_cluster.get("1288")
+                if c is not None:
+                    c_val = float(c)
+                    telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 50 else round(c_val, 3)
+
+            # Metering (1794)
+            meter_cluster = clusters.get("1794") or clusters.get(1794, {})
+            if meter_cluster:
+                e = meter_cluster.get("currentSummationDelivered") if "currentSummationDelivered" in meter_cluster else meter_cluster.get("0")
+                if e is not None:
+                    e_val = float(e)
+                    telemetry_payload["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
 
         if telemetry_payload:
+            # Update live state cache in mapper
+            self.mapper.update_device_state(node_id, endpoint_id, telemetry_payload)
+
             converted = ConvertedData(device_name=device_name, device_type="Smart Device")
             converted.add_to_telemetry(TelemetryEntry(telemetry_payload, int(time.time() * 1000)))
             self._gateway.send_to_storage(self.get_name(), self.get_id(), converted)
             self.statistics["MessagesSent"] += 1
+
+    def remove_node(self, node_id: int) -> Dict[str, Any]:
+        """
+        Decommissions a node from Matter fabric, removes it from registry, and cleans up ThingsBoard gateway.
+        """
+        log.info(f"Removing/Decommissioning Matter Node #{node_id}...")
+        results = {"uncommission": None, "removed_devices": []}
+
+        # 1. Uncommission / remove from Matter server
+        if self.client and self.client.is_connected:
+            try:
+                resp = self.client.remove_node(int(node_id))
+                results["uncommission"] = resp
+                log.info(f"Matter server remove_node response for node {node_id}: {resp}")
+            except Exception as e:
+                log.error(f"Error calling remove_node on MatterClient: {e}")
+                results["uncommission"] = {"success": False, "error": str(e)}
+
+        # 2. Remove from device mapper registry & cached states
+        if self.mapper:
+            removed = self.mapper.remove_node(int(node_id))
+            results["removed_devices"] = removed
+            # 3. Clean up devices on ThingsBoard Gateway
+            for d_name in removed:
+                if hasattr(self._gateway, "del_device"):
+                    try:
+                        self._gateway.del_device(d_name)
+                    except Exception as e:
+                        log.debug(f"del_device on gateway error for {d_name}: {e}")
+
+        return results
 
     def _on_matter_node_event(self, event_type: str, data: Dict[str, Any]):
         log.info(f"Matter node event received: {event_type}")
         if event_type in ["node_added", "node_updated"]:
             self._sync_single_node(data)
         elif event_type == "node_removed":
-            node_id = data.get("node_id")
-            log.info(f"Matter node removed: {node_id}")
+            node_id = data.get("node_id") or data.get("nodeId")
+            log.info(f"Matter node removed event received for node: {node_id}")
+            if node_id is not None:
+                self.mapper.remove_node(int(node_id))
 
     def _on_matter_attribute_event(self, node_id: int, endpoint_id: int, cluster_id: int, attribute_id: int, value: Any):
         """Processes real-time Matter attribute updates and forwards them to ThingsBoard."""
@@ -309,11 +489,21 @@ class UniqMatterConnector(Connector, Thread):
         if resp.get("success"):
             log.info(f"Matter command '{command_name}' executed successfully on Node {node_id} (EP {endpoint_id})")
 
-            # Optimistic telemetry update back to ThingsBoard
+            # Optimistic telemetry update back to ThingsBoard + state cache
             if method in ["setState", "setValue", "writeState"]:
                 is_on = params in [True, 1, "ON", "true", "True", "on"]
+                state_update = {"state": "ON" if is_on else "OFF", "onOff": is_on}
+                self.mapper.update_device_state(node_id, endpoint_id, state_update)
                 opt_data = ConvertedData(device_name=device, device_type="Smart Device")
-                opt_data.add_to_telemetry(TelemetryEntry({"state": "ON" if is_on else "OFF", "onOff": is_on}, int(time.time() * 1000)))
+                opt_data.add_to_telemetry(TelemetryEntry(state_update, int(time.time() * 1000)))
+                self._gateway.send_to_storage(self.get_name(), self.get_id(), opt_data)
+            elif method in ["toggle", "toggleState"]:
+                cur = self.mapper.get_device_state(node_id, endpoint_id)
+                new_state = "OFF" if cur.get("state") == "ON" else "ON"
+                state_update = {"state": new_state, "onOff": (new_state == "ON")}
+                self.mapper.update_device_state(node_id, endpoint_id, state_update)
+                opt_data = ConvertedData(device_name=device, device_type="Smart Device")
+                opt_data.add_to_telemetry(TelemetryEntry(state_update, int(time.time() * 1000)))
                 self._gateway.send_to_storage(self.get_name(), self.get_id(), opt_data)
 
             return {"success": True, "result": resp.get("result")}
