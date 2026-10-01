@@ -22,30 +22,17 @@ _ROOT_DIR = os.path.dirname(_CUR_DIR)
 if _ROOT_DIR not in sys.path:
     sys.path.insert(0, _ROOT_DIR)
 
+log = logging.getLogger("UniqMatterConnector")
+
 try:
     from matter.matter_client import MatterClient
     from matter.commission_service import MatterCommissionService
     from matter.device_mapper import MatterDeviceMapper
-except Exception as e1:
-    try:
-        from ..matter.matter_client import MatterClient
-        from ..matter.commission_service import MatterCommissionService
-        from ..matter.device_mapper import MatterDeviceMapper
-    except Exception as e2:
-        try:
-            import matter.matter_client as _mc
-            import matter.commission_service as _cs
-            import matter.device_mapper as _dm
-            MatterClient = _mc.MatterClient
-            MatterCommissionService = _cs.MatterCommissionService
-            MatterDeviceMapper = _dm.MatterDeviceMapper
-        except Exception as e3:
-            log.error(f"Critical: Failed to import Matter modules: {e1} | {e2} | {e3}")
-            MatterClient = None
-            MatterCommissionService = None
-            MatterDeviceMapper = None
-
-log = logging.getLogger("UniqMatterConnector")
+except Exception as e:
+    log.warning(f"Matter modules could not be imported: {e}")
+    MatterClient = None
+    MatterCommissionService = None
+    MatterDeviceMapper = None
 
 # Standard Matter Cluster IDs
 CLUSTER_ON_OFF = 0x0006

@@ -1,0 +1,67 @@
+name: Build Frontend (ui-ngx)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'ui-ngx/**'
+  workflow_dispatch:
+
+jobs:
+  build-frontend:
+    name: Build Angular Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ui-ngx/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ui-ngx
+        run: npm ci --legacy-peer-deps
+
+      - name: Build production bundle
+        working-directory: ui-ngx
+        run: npm run build:prod
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+
+      - name: Package build output
+        run: |
+          mkdir -p release
+          cd ui-ngx/target/generated-resources/public
+          zip -r $GITHUB_WORKSPACE/release/uniq-frontend-${{ github.sha }}.zip .
+          echo "Build packaged successfully"
+          ls -lh $GITHUB_WORKSPACE/release/
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniq-frontend-${{ github.ref_name }}-${{ github.run_number }}
+          path: release/uniq-frontend-*.zip
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "## ✅ Frontend Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### نشر الواجهة على السيرفر:" >> $GITHUB_STEP_SUMMARY
+          echo "1. حمّل ملف zip من هذه الصفحة (Actions > Artifacts)" >> $GITHUB_STEP_SUMMARY
+          echo "2. ارفع الملف للسيرفر وفك ضغطه في مجلد ThingsBoard:" >> $GITHUB_STEP_SUMMARY
+          echo '   ```bash' >> $GITHUB_STEP_SUMMARY
+          echo "   unzip uniq-frontend-*.zip -d /tmp/tb-ui" >> $GITHUB_STEP_SUMMARY
+          echo "   sudo cp -r /tmp/tb-ui/* /usr/share/thingsboard/bin/public/static/" >> $GITHUB_STEP_SUMMARY
+          echo "   sudo systemctl restart thingsboard" >> $GITHUB_STEP_SUMMARY
+          echo '   ```' >> $GITHUB_STEP_SUMMARY
