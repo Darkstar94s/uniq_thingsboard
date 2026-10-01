@@ -343,11 +343,34 @@ class MatterCommissionService:
                 "error": resp.get("error", "Commissioning failed in matterjs-server.")
             }
 
-        result_data = resp.get("result", {})
-        node_id = result_data.get("node_id") if isinstance(result_data, dict) else None
+        result_data = resp.get("result")
+        node_id = None
+        if isinstance(result_data, int):
+            node_id = result_data
+        elif isinstance(result_data, str) and result_data.isdigit():
+            node_id = int(result_data)
+        elif isinstance(result_data, dict):
+            node_id = result_data.get("node_id") or result_data.get("nodeId")
 
+        # Synchronize newly commissioned node
         if node_id and hasattr(self.connector, "sync_node_by_id"):
             self.connector.sync_node_by_id(int(node_id))
+        else:
+            # Fallback: query nodes and find newest node
+            if hasattr(self.connector, "client") and self.connector.client and self.connector.client.is_connected:
+                nodes_resp = self.connector.client.get_nodes()
+                if nodes_resp.get("success"):
+                    nodes_list = nodes_resp.get("result", [])
+                    if isinstance(nodes_list, dict):
+                        nodes_list = list(nodes_list.values())
+                    if nodes_list:
+                        newest_node = max(nodes_list, key=lambda n: int(n.get("node_id", 0)))
+                        node_id = newest_node.get("node_id")
+                        if hasattr(self.connector, "sync_node_by_id"):
+                            self.connector.sync_node_by_id(int(node_id))
+
+        if hasattr(self.connector, "_initial_sync"):
+            self.connector._initial_sync()
 
         return {
             "status": "success",
@@ -355,6 +378,7 @@ class MatterCommissionService:
             "result": result_data,
             "message": f"Device successfully commissioned on Matter Fabric with Node ID {node_id}."
         }
+
 
     def delete_device(self, device_name: str, node_id: Optional[int] = None) -> dict:
         """Deletes a device from local registry and unpairs from Matter."""
