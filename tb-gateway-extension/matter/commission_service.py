@@ -249,7 +249,7 @@ class MatterCommissionService:
         if not self.connector or not hasattr(self.connector, "mapper"):
             return []
 
-        from .device_mapper import infer_device_category
+        from .device_mapper import resolve_device_type_and_category
 
         devices = []
         registry = self.connector.mapper._registry
@@ -259,7 +259,21 @@ class MatterCommissionService:
             node_id = dev.get("node_id")
             endpoint_id = dev.get("endpoint_id")
             dev_type = dev.get("device_type", "Smart Device")
-            category = dev.get("category") or infer_device_category(dev_type)
+            product_name = dev.get("product_name", "")
+            vendor_name = dev.get("vendor_name", "Matter")
+
+            # Resolve accurate category and device_type from product name and vendor
+            resolved_type, resolved_cat = resolve_device_type_and_category(
+                product_name=product_name,
+                vendor_name=vendor_name,
+                device_type_ids=[]
+            )
+
+            category = dev.get("category")
+            if not category or category == "other" or resolved_cat != "other":
+                category = resolved_cat
+                if resolved_type != "Smart Device":
+                    dev_type = resolved_type
 
             # Check if device has OnOff capability
             has_onoff = any(kw in dev_type for kw in ["Light", "Relay", "Socket", "Plug", "Switch", "Generic Switch"]) or category in ["lighting", "socket", "switch"]

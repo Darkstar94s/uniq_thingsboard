@@ -88,36 +88,103 @@ FUNCTIONAL_CLUSTERS = {
     str(CLUSTER_METERING),
 }
 
-def infer_device_category(device_type: str, clusters: dict = None) -> str:
-    """Classifies device into standard categories: lighting, socket, switch, sensor, climate, security, bridge, other."""
+def resolve_device_type_and_category(
+    product_name: str = "",
+    vendor_name: str = "",
+    device_type_ids: list = None,
+    clusters: dict = None,
+    endpoint_count: int = 1
+) -> Tuple[str, str]:
+    """
+    Accurately identifies device type (e.g. 'Smart Switch', 'Smart Socket', 'Smart Light')
+    and category ('switch', 'socket', 'lighting', 'sensor', 'climate', 'security', 'bridge', 'other')
+    by prioritizing product name and electrical measurement clusters over generic Matter device type IDs.
+    """
+    p_lower = (product_name or "").lower()
+    v_lower = (vendor_name or "").lower()
+    combined_name = f"{v_lower} {p_lower}"
+    cl_keys = set(str(k) for k in (clusters or {}).keys()) if clusters else set()
+    dt_ids = device_type_ids or []
+
+    # 1. Matter Bridges & Hubs
+    if any(k in combined_name for k in ["bridge", "aggregator", "hub", "gateway", "موزع", "جسر"]):
+        return ("Matter Bridge", "bridge")
+    if DEVICE_TYPE_AGGREGATOR_BRIDGE in dt_ids:
+        return ("Matter Bridge", "bridge")
+
+    # 2. Wall Switches / Multi-gang Switches (e.g. SONOFF SwitchMan, Aqara Switch, Tuya Switch)
+    if any(k in combined_name for k in ["switchman", "wall switch", "gang", "relay", "breaker", "مفتاح", "رليه", "قاطع"]) or (
+        "switch" in combined_name and "socket" not in combined_name and "plug" not in combined_name
+    ):
+        return ("Smart Switch", "switch")
+    if endpoint_count > 1 and any(dt in [DEVICE_TYPE_ON_OFF_LIGHT_SWITCH, DEVICE_TYPE_DIMMER_SWITCH, DEVICE_TYPE_GENERIC_SWITCH, DEVICE_TYPE_ON_OFF_LIGHT] for dt in dt_ids):
+        return ("Smart Switch", "switch")
+
+    # 3. Smart Sockets / Plugs / Outlets (e.g. Smart Plug, Socket, Outlet)
+    has_power_cluster = bool(cl_keys.intersection({
+        str(CLUSTER_ELECTRICAL_MEASUREMENT), "2820", "0x0B04", "0x0b04",
+        str(CLUSTER_POWER_MEASUREMENT), "144", "0x0090",
+        str(CLUSTER_METERING), "1794", "0x0702",
+        str(CLUSTER_ENERGY_MEASUREMENT), "145", "0x0091"
+    }))
+
+    if any(k in combined_name for k in ["plug", "socket", "outlet", "power plug", "مقبس", "فيش", "بلك", "افياش"]):
+        return ("Smart Socket", "socket")
+    if has_power_cluster:
+        return ("Smart Socket", "socket")
+    if any(dt in [DEVICE_TYPE_ON_OFF_PLUG, DEVICE_TYPE_DIMMABLE_PLUG] for dt in dt_ids):
+        return ("Smart Socket", "socket")
+
+    # 4. Smart Lighting (Bulbs, Lamps, Downlights, LED Strips)
+    if any(k in combined_name for k in ["bulb", "lamp", "downlight", "spotlight", "strip", "ceiling", "لمبة", "إنارة", "إضاءة", "سبوت"]) or (
+        "light" in combined_name and "switch" not in combined_name
+    ):
+        return ("Smart Light", "lighting")
+    if any(dt in [DEVICE_TYPE_COLOR_LIGHT, DEVICE_TYPE_EXT_COLOR_LIGHT, DEVICE_TYPE_DIMMABLE_LIGHT] for dt in dt_ids):
+        return ("Smart Light", "lighting")
+    if cl_keys.intersection({str(CLUSTER_COLOR_CONTROL), "768", str(CLUSTER_LEVEL_CONTROL), "8"}):
+        return ("Smart Light", "lighting")
+
+    # 5. Sensors
+    if any(k in combined_name for k in ["sensor", "temp", "humidity", "motion", "occupancy", "contact", "door", "window", "حساس"]):
+        return ("Sensor", "sensor")
+    if any(dt in [DEVICE_TYPE_TEMP_SENSOR, DEVICE_TYPE_HUMIDITY_SENSOR, DEVICE_TYPE_OCCUPANCY_SENSOR, DEVICE_TYPE_CONTACT_SENSOR, DEVICE_TYPE_LIGHT_SENSOR, DEVICE_TYPE_AIR_QUALITY_SENSOR] for dt in dt_ids):
+        for dt in dt_ids:
+            if dt in DEVICE_TYPE_NAMES:
+                return (DEVICE_TYPE_NAMES[dt], "sensor")
+        return ("Sensor", "sensor")
+    if cl_keys.intersection({str(CLUSTER_TEMP_MEASUREMENT), "1026", str(CLUSTER_HUMIDITY_MEASUREMENT), "1029", str(CLUSTER_OCCUPANCY_SENSING), "1030"}):
+        return ("Sensor", "sensor")
+
+    # 6. Climate & Security
+    if any(k in combined_name for k in ["thermostat", "fan", "hvac", "ac", "تكييف", "مروحة"]):
+        return ("Smart Thermostat", "climate")
+    if any(k in combined_name for k in ["lock", "curtain", "blind", "shade", "قفل", "ستارة"]):
+        return ("Smart Lock/Cover", "security")
+
+    # 7. Fallback based on Matter device type or OnOff cluster
+    for dt in dt_ids:
+        if dt in DEVICE_TYPE_NAMES:
+            name = DEVICE_TYPE_NAMES[dt]
+            cat = "switch" if "Switch" in name else ("socket" if "Socket" in name else ("lighting" if "Light" in name else "other"))
+            return (name, cat)
+
+    if cl_keys.intersection({str(CLUSTER_ON_OFF), "6"}):
+        return ("Smart Switch", "switch")
+
+    return ("Smart Device", "other")
+
+
+def infer_device_category(device_type: str, clusters: dict = None, product_name: str = "") -> str:
+    """Wrapper helper for backward compatibility."""
+    _, cat = resolve_device_type_and_category(product_name=product_name, clusters=clusters, device_type_ids=[])
+    if cat != "other":
+        return cat
     dt = (device_type or "").lower()
-    cl_keys = set(str(k) for k in (clusters or {}).keys())
-
-    if "bridge" in dt or "aggregator" in dt:
-        return "bridge"
-    if any(k in dt for k in ["plug", "socket", "outlet", "مقبس", "فيش"]):
-        return "socket"
-    if any(k in dt for k in ["light", "bulb", "lamp", "led", "إنارة", "إضاءة", "لمبة"]):
-        return "lighting"
-    if any(k in dt for k in ["switch", "relay", "مفتاح", "رليه", "زر"]):
-        return "switch"
-    if any(k in dt for k in ["sensor", "temp", "humidity", "motion", "occupancy", "contact", "door/window", "حساس"]):
-        return "sensor"
-    if any(k in dt for k in ["thermostat", "fan", "hvac", "ac", "تكييف", "مروحة"]):
-        return "climate"
-    if any(k in dt for k in ["lock", "curtain", "blind", "shade", "قفل", "ستارة"]):
-        return "security"
-
-    # Infer from clusters if available
-    if cl_keys.intersection({str(CLUSTER_ELECTRICAL_MEASUREMENT), str(CLUSTER_POWER_MEASUREMENT), str(CLUSTER_METERING)}):
-        return "socket"
-    if cl_keys.intersection({str(CLUSTER_COLOR_CONTROL), str(CLUSTER_LEVEL_CONTROL)}):
-        return "lighting"
-    if cl_keys.intersection({str(CLUSTER_TEMP_MEASUREMENT), str(CLUSTER_HUMIDITY_MEASUREMENT), str(CLUSTER_OCCUPANCY_SENSING)}):
-        return "sensor"
-    if cl_keys.intersection({str(CLUSTER_ON_OFF)}):
-        return "switch"
-
+    if any(k in dt for k in ["switch", "relay", "مفتاح"]): return "switch"
+    if any(k in dt for k in ["plug", "socket", "outlet", "مقبس"]): return "socket"
+    if any(k in dt for k in ["light", "bulb", "lamp", "إنارة"]): return "lighting"
+    if any(k in dt for k in ["sensor", "temp", "حساس"]): return "sensor"
     return "other"
 
 # Basic Information cluster attribute IDs (Matter spec)
@@ -400,20 +467,23 @@ class MatterDeviceMapper:
                 # Multi-endpoint device (e.g., 3-gang switch) → one device per endpoint
                 for ep_id in sorted(functional_eps.keys()):
                     ep_content = functional_eps[ep_id]
-                    inferred_type = "Smart Device"
-                    for dt in ep_content.get("device_types", []):
-                        dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
-                        if dt_id in DEVICE_TYPE_NAMES:
-                            inferred_type = DEVICE_TYPE_NAMES[dt_id]
-                            break
+                    dt_ids = [dt.get("device_type") if isinstance(dt, dict) else dt for dt in ep_content.get("device_types", [])]
+                    resolved_type, resolved_cat = resolve_device_type_and_category(
+                        product_name=product_name,
+                        vendor_name=vendor_name,
+                        device_type_ids=dt_ids,
+                        clusters=ep_content.get("clusters", {}),
+                        endpoint_count=len(functional_eps)
+                    )
 
                     ep_device_name = f"Matter - {product_name} CH{ep_id} (N{node_id})"
                     ep_device = self._get_or_create_device_entry(
                         node_id=node_id, endpoint_id=ep_id,
-                        device_name=ep_device_name, device_type=inferred_type,
+                        device_name=ep_device_name, device_type=resolved_type,
                         vendor_name=vendor_name, product_name=product_name,
                         serial_number=f"{serial_number}-CH{ep_id}",
-                        is_bridged=False, bridge_name=None
+                        is_bridged=False, bridge_name=None,
+                        category=resolved_cat
                     )
                     devices_to_sync.append(ep_device)
             else:
@@ -423,21 +493,24 @@ class MatterDeviceMapper:
                 else:
                     primary_ep_id = 1 if 1 in ep_dict else 0
                 primary_ep = ep_dict.get(primary_ep_id, {})
+                dt_ids = [dt.get("device_type") if isinstance(dt, dict) else dt for dt in primary_ep.get("device_types", [])]
 
-                inferred_type = "Matter Smart Device"
-                for dt in primary_ep.get("device_types", []):
-                    dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
-                    if dt_id in DEVICE_TYPE_NAMES:
-                        inferred_type = DEVICE_TYPE_NAMES[dt_id]
-                        break
+                resolved_type, resolved_cat = resolve_device_type_and_category(
+                    product_name=product_name,
+                    vendor_name=vendor_name,
+                    device_type_ids=dt_ids,
+                    clusters=primary_ep.get("clusters", {}),
+                    endpoint_count=1
+                )
 
                 direct_device_name = f"Matter - {vendor_name} {product_name} ({node_id})"
                 direct_device = self._get_or_create_device_entry(
                     node_id=node_id, endpoint_id=primary_ep_id,
-                    device_name=direct_device_name, device_type=inferred_type,
+                    device_name=direct_device_name, device_type=resolved_type,
                     vendor_name=vendor_name, product_name=product_name,
                     serial_number=serial_number,
-                    is_bridged=False, bridge_name=None
+                    is_bridged=False, bridge_name=None,
+                    category=resolved_cat
                 )
                 devices_to_sync.append(direct_device)
 
@@ -462,14 +535,15 @@ class MatterDeviceMapper:
     ) -> Dict[str, Any]:
         key = f"{node_id}_{endpoint_id}"
         if not category:
-            category = infer_device_category(device_type)
+            _, category = resolve_device_type_and_category(product_name=product_name, vendor_name=vendor_name)
 
         with self._lock:
             existing = self._registry.get(key)
             if existing:
                 # Keep existing consistent name
                 assigned_name = existing.get("device_name", device_name)
-                # Keep category updated
+                # Auto-correct category and device type if re-inferred
+                existing["device_type"] = device_type
                 existing["category"] = category
             else:
                 assigned_name = device_name
