@@ -7,7 +7,7 @@ import logging
 import os
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List, Tuple, Union
 
 try:
     from .hub_auth import HubAuthManager
