@@ -241,11 +241,12 @@ class MatterClient:
     def commission_with_code(
         self,
         code: str,
-        network_only: bool = True,
+        network_only: bool = False,
         wifi_ssid: Optional[str] = None,
         wifi_password: Optional[str] = None,
         timeout: float = 60.0
     ) -> Dict[str, Any]:
+
         """
         Commissions a Matter device using setup code (QR code or numeric manual code).
         """

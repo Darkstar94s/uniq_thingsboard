@@ -569,11 +569,12 @@
           },
           body: JSON.stringify({
             code: code,
-            network_only: true,
+            network_only: false,
             wifi_ssid: ssid || undefined,
             wifi_password: pass || undefined
           })
         });
+
         const data = await res.json();
         if (data.status === 'success') {
           msg.style.color = 'var(--success)';

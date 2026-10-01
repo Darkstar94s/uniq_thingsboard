@@ -155,9 +155,15 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 })
                 return
 
-            network_only = bool(req_data.get("network_only", True))
             wifi_ssid = req_data.get("wifi_ssid")
             wifi_password = req_data.get("wifi_password")
+
+            # If user provides Wi-Fi credentials or leaves it automatic, use Bluetooth BLE (network_only=False)
+            if "network_only" in req_data:
+                network_only = bool(req_data["network_only"])
+            else:
+                # If Wi-Fi credentials are provided, it is a Bluetooth Wi-Fi onboarding!
+                network_only = False if (wifi_ssid or wifi_password) else False
 
             result = service.commission_device(
                 code=code,
@@ -165,6 +171,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 wifi_ssid=wifi_ssid,
                 wifi_password=wifi_password
             )
+
 
             status_code = 200 if result.get("status") == "success" else 400
             self._send_json_response(status_code, result)
@@ -305,11 +312,12 @@ class MatterCommissionService:
     def commission_device(
         self,
         code: str,
-        network_only: bool = True,
+        network_only: bool = False,
         wifi_ssid: Optional[str] = None,
         wifi_password: Optional[str] = None
     ) -> dict:
-        log.info(f"Received commissioning request for code: {code[:12]}... (network_only={network_only})")
+        log.info(f"Received commissioning request for code: {code[:12]}... (network_only={network_only}, wifi_ssid={'SET' if wifi_ssid else 'NONE'})")
+
 
         if not self.connector or not self.connector.client:
             return {"status": "error", "error": "Matter Connector is not initialized or offline."}
