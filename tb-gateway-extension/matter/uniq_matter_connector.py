@@ -464,6 +464,14 @@ class UniqMatterConnector(Connector, Thread):
                 opt_data = ConvertedData(device_name=device, device_type="Smart Device")
                 opt_data.add_to_telemetry(TelemetryEntry(state_update, int(time.time() * 1000)))
                 self._gateway.send_to_storage(self.get_name(), self.get_id(), opt_data)
+            elif method in ["toggle", "toggleState"]:
+                cur = self.mapper.get_device_state(node_id, endpoint_id)
+                new_state = "OFF" if cur.get("state") == "ON" else "ON"
+                state_update = {"state": new_state, "onOff": (new_state == "ON")}
+                self.mapper.update_device_state(node_id, endpoint_id, state_update)
+                opt_data = ConvertedData(device_name=device, device_type="Smart Device")
+                opt_data.add_to_telemetry(TelemetryEntry(state_update, int(time.time() * 1000)))
+                self._gateway.send_to_storage(self.get_name(), self.get_id(), opt_data)
 
             return {"success": True, "result": resp.get("result")}
         else:

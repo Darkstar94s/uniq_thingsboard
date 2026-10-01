@@ -15,7 +15,7 @@
       --text: #F8FAFC;
       --text-muted: #94A3B8;
       --success: #10B981;
-      --success-glow: rgba(16, 185, 129, 0.25);
+      --success-glow: rgba(16, 185, 129, 0.3);
       --danger: #EF4444;
       --warning: #F59E0B;
       --accent-cyan: #38BDF8;
@@ -45,12 +45,12 @@
     }
     .brand { display: flex; align-items: center; gap: 12px; }
     .brand-icon {
-      width: 36px; height: 36px;
+      width: 38px; height: 38px;
       background: linear-gradient(135deg, var(--primary), #3B82F6);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 18px;
-      box-shadow: 0 4px 12px var(--primary-glow);
+      font-weight: 800; font-size: 19px;
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
     .brand-text h1 { font-size: 16px; font-weight: 700; }
     .brand-text span { font-size: 11px; color: var(--text-muted); }
@@ -76,7 +76,7 @@
     .btn-outline:hover { background: rgba(255, 255, 255, 0.08); }
 
     main {
-      flex: 1; max-width: 1020px; width: 100%; margin: 0 auto;
+      flex: 1; max-width: 1040px; width: 100%; margin: 0 auto;
       padding: 20px; display: flex; flex-direction: column; gap: 20px;
     }
 
@@ -98,10 +98,10 @@
     }
     .pin-hint { font-size: 11px; color: #64748B; margin-top: 12px; }
 
-    /* Stats Row */
+    /* Top Stats */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
     }
     .stat-card {
@@ -119,7 +119,7 @@
     }
     .categories-bar::-webkit-scrollbar { display: none; }
     .cat-tab {
-      padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
       background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border);
       color: var(--text-muted); cursor: pointer; transition: all 0.2s;
       white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
@@ -131,7 +131,7 @@
     }
     .cat-count {
       font-size: 10px; padding: 1px 6px; border-radius: 10px;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.3);
     }
 
     .section-header {
@@ -144,105 +144,132 @@
     }
     .section-title span { background: var(--primary); width: 4px; height: 16px; border-radius: 2px; }
 
-    /* ─── Compact Grouped Device List ─── */
+    /* ─── Device Cards ─── */
     .devices-list {
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex; flex-direction: column; gap: 12px;
     }
     .device-group-card {
       background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 14px 18px;
-      display: flex; flex-direction: column; gap: 12px;
+      border-radius: 14px; padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 14px;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     .device-group-card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.18);
     }
     .device-group-card.has-on {
-      border-left: 3px solid var(--success);
+      border-right: 4px solid var(--success);
     }
 
     .device-card-header {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 12px;
+      gap: 14px; flex-wrap: wrap;
     }
     .device-meta-left {
-      display: flex; align-items: center; gap: 12px; min-width: 0;
+      display: flex; align-items: center; gap: 14px; min-width: 0;
     }
     .device-icon-box {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border);
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--card-border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px; flex-shrink: 0;
+      font-size: 22px; flex-shrink: 0;
     }
+    .device-icon-box.socket { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); }
+    .device-icon-box.switch { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); }
+    .device-icon-box.lighting { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+    .device-icon-box.sensor { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+
     .device-title-box { min-width: 0; }
     .device-main-title {
-      font-size: 14px; font-weight: 700;
+      font-size: 15px; font-weight: 700;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       display: flex; align-items: center; gap: 8px;
     }
     .device-sub-meta {
-      font-size: 11px; color: var(--text-muted); margin-top: 2px;
+      font-size: 11px; color: var(--text-muted); margin-top: 3px;
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
 
-    /* Badges & Tags */
+    /* Tags */
     .tag {
-      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      font-size: 10px; font-weight: 600; padding: 2px 8px;
       border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;
     }
     .tag-category { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
     .tag-wifi { background: rgba(16, 185, 129, 0.15); color: #10B981; }
     .tag-bridge { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
 
-    /* Electrical & Environmental Metrics Badges */
-    .metrics-bar {
-      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    /* ─── Fixed Power / Energy Measurement Bar ─── */
+    .power-metrics-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      background: rgba(11, 19, 43, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 10px 14px;
     }
-    .metric-chip {
-      font-size: 11px; font-weight: 700; padding: 4px 9px;
-      border-radius: 6px; background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      display: inline-flex; align-items: center; gap: 4px;
+    .metric-item {
+      display: flex; align-items: center; gap: 8px;
     }
-    .metric-chip.power { color: #F59E0B; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
-    .metric-chip.voltage { color: #38BDF8; background: rgba(56, 189, 248, 0.1); }
-    .metric-chip.current { color: #A855F7; background: rgba(168, 85, 247, 0.1); }
-    .metric-chip.energy { color: #10B981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
-    .metric-chip.temp { color: #F97316; background: rgba(249, 115, 22, 0.1); }
-    .metric-chip.hum { color: #06B6D4; background: rgba(6, 182, 212, 0.1); }
-    .metric-chip.batt { color: #84CC16; background: rgba(132, 204, 22, 0.1); }
+    .metric-item-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .metric-item-icon.power { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+    .metric-item-icon.voltage { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .metric-item-icon.current { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+    .metric-item-icon.energy { background: rgba(16, 185, 129, 0.15); color: #10B981; }
 
-    /* Channels / Endpoints Control Row */
+    .metric-item-data { display: flex; flex-direction: column; }
+    .metric-item-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .metric-item-val { font-size: 13px; font-weight: 700; color: var(--text); }
+    .metric-item-val.active { color: #F59E0B; }
+    .metric-item-val.active-green { color: #10B981; }
+
+    /* ─── Channels Row & Iconic Switch Buttons ─── */
     .channels-grid {
       display: flex; gap: 10px; flex-wrap: wrap;
-      background: rgba(11, 19, 43, 0.4); border-radius: 8px;
-      padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.04);
     }
     .channel-pill {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; padding: 6px 12px; border-radius: 8px;
-      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06);
-      flex: 1; min-width: 180px;
+      gap: 14px; padding: 10px 14px; border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);
+      flex: 1; min-width: 200px;
+      transition: all 0.2s;
     }
-    .channel-info { display: flex; align-items: center; gap: 8px; }
-    .channel-name { font-size: 12px; font-weight: 600; }
+    .channel-pill.is-on {
+      background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.2);
+    }
+    .channel-info { display: flex; align-items: center; gap: 10px; }
+    .channel-status-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; background: rgba(255, 255, 255, 0.05);
+    }
+    .channel-status-icon.on {
+      background: rgba(16, 185, 129, 0.15); color: var(--success);
+      box-shadow: 0 0 10px var(--success-glow);
+    }
+    .channel-name { font-size: 13px; font-weight: 600; }
     .channel-state-text { font-size: 10px; color: var(--text-muted); }
     .channel-state-text.on { color: var(--success); font-weight: 700; }
 
-    /* Rock-solid Toggle Switch */
-    .toggle-btn {
-      padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
-      border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Modern Iconic Toggle Button */
+    .icon-toggle-btn {
+      padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       background: #1E293B; color: #94A3B8;
     }
-    .toggle-btn:hover { background: #334155; color: white; }
-    .toggle-btn.is-on {
+    .icon-toggle-btn:hover { background: #334155; color: white; transform: scale(1.02); }
+    .icon-toggle-btn.is-on {
       background: var(--success); color: white; border-color: var(--success);
-      box-shadow: 0 0 12px var(--success-glow);
+      box-shadow: 0 0 14px var(--success-glow);
     }
-    .toggle-btn.loading {
-      opacity: 0.6; pointer-events: none;
+    .power-symbol {
+      font-size: 14px; font-weight: 900;
     }
 
     .empty-state {
@@ -254,7 +281,7 @@
     /* Commission Form */
     .form-box {
       background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 22px;
+      border-radius: 14px; padding: 22px;
     }
     .form-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -283,7 +310,7 @@
   <!-- Header -->
   <header>
     <div class="brand">
-      <div class="brand-icon">U</div>
+      <div class="brand-icon">⚡</div>
       <div class="brand-text">
         <h1>UNIQ Smart Hub</h1>
         <span id="hubSerialHeader">UNIQ-HUB-PRO-001</span>
@@ -292,13 +319,13 @@
     <div class="header-actions" id="headerActions" style="display: none;">
       <div class="badge">
         <div class="badge-dot" id="cloudDot"></div>
-        <span id="cloudStatus">السحابة: متصلة</span>
+        <span id="cloudStatus">☁️ السحابة: متصلة</span>
       </div>
       <div class="badge">
         <div class="badge-dot" id="matterDot"></div>
-        <span id="matterStatus">Matter: متصل</span>
+        <span id="matterStatus">⚡ Matter: متصل</span>
       </div>
-      <button class="btn btn-outline" onclick="logout()">خروج</button>
+      <button class="btn btn-outline" onclick="logout()">🚪 خروج</button>
     </div>
   </header>
 
@@ -309,7 +336,7 @@
     <p>أدخل رمز الأمان (PIN) المطبوع على قاعدة الجهاز للوصول للوحة التحكم المحلية وإدارة أجهزة Matter.</p>
     <form onsubmit="handleLogin(event)">
       <input type="password" id="pinInput" class="pin-input" placeholder="••••••" maxlength="8" required autofocus>
-      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px;">تسجيل الدخول</button>
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px;">🔑 تسجيل الدخول</button>
     </form>
     <div class="pin-hint">رمز الأمان الافتراضي (PIN): <b>849201</b></div>
     <div id="loginError" style="color: var(--danger); font-size: 12px; margin-top: 10px; display: none;">رمز PIN غير صحيح، يرجى المحاولة ثانية.</div>
@@ -318,63 +345,63 @@
   <!-- Dashboard Section -->
   <main id="dashboardView" style="display: none;">
 
-    <!-- Top Stats -->
+    <!-- Top Stats Row -->
     <div class="stats-row">
       <div class="stat-card">
         <div>
           <div class="stat-title">أجهزة Matter المتصلة</div>
           <div class="stat-val" id="statDevicesCount">0</div>
         </div>
-        <div style="font-size: 26px;">📱</div>
+        <div style="font-size: 28px;">📱</div>
       </div>
       <div class="stat-card">
         <div>
           <div class="stat-title">خادم Matter المحلي</div>
           <div class="stat-val" id="statServerStatus" style="color: var(--success); font-size: 15px;">متصل (5580)</div>
         </div>
-        <div style="font-size: 26px;">⚡</div>
+        <div style="font-size: 28px;">⚡</div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">إجمالي الطاقة المقاسة</div>
-          <div class="stat-val" id="statTotalPower" style="color: #F59E0B; font-size: 18px;">0 W</div>
+          <div class="stat-title">إجمالي استهلاك الطاقة</div>
+          <div class="stat-val" id="statTotalPower" style="color: #F59E0B; font-size: 19px;">0 W</div>
         </div>
-        <div style="font-size: 26px;">🔌</div>
+        <div style="font-size: 28px;">🔌</div>
       </div>
       <div class="stat-card">
         <div>
           <div class="stat-title">سحابة ThingsBoard</div>
           <div class="stat-val" id="statTbStatus" style="color: var(--success); font-size: 15px;">مزامنة نشطة</div>
         </div>
-        <div style="font-size: 26px;">☁️</div>
+        <div style="font-size: 28px;">☁️</div>
       </div>
     </div>
 
-    <!-- Category Filter Tabs -->
+    <!-- Category Filter Chips -->
     <div class="categories-bar" id="categoriesBar">
       <button class="cat-tab active" data-cat="all" onclick="setCategoryFilter('all')">
         🌐 الكل <span class="cat-count" id="count-all">0</span>
       </button>
-      <button class="cat-tab" data-cat="lighting" onclick="setCategoryFilter('lighting')">
-        💡 الإنارة <span class="cat-count" id="count-lighting">0</span>
-      </button>
       <button class="cat-tab" data-cat="socket" onclick="setCategoryFilter('socket')">
-        🔌 المقابس <span class="cat-count" id="count-socket">0</span>
+        🔌 المقابس الذكية <span class="cat-count" id="count-socket">0</span>
       </button>
       <button class="cat-tab" data-cat="switch" onclick="setCategoryFilter('switch')">
-        🎛️ المفاتيح <span class="cat-count" id="count-switch">0</span>
+        🎛️ المفاتيح الجدارية <span class="cat-count" id="count-switch">0</span>
+      </button>
+      <button class="cat-tab" data-cat="lighting" onclick="setCategoryFilter('lighting')">
+        💡 الإنارة الذكية <span class="cat-count" id="count-lighting">0</span>
       </button>
       <button class="cat-tab" data-cat="sensor" onclick="setCategoryFilter('sensor')">
         📡 الحساسات <span class="cat-count" id="count-sensor">0</span>
       </button>
       <button class="cat-tab" data-cat="climate" onclick="setCategoryFilter('climate')">
-        ❄️ التكييف <span class="cat-count" id="count-climate">0</span>
+        ❄️ التكييف والمناخ <span class="cat-count" id="count-climate">0</span>
       </button>
       <button class="cat-tab" data-cat="security" onclick="setCategoryFilter('security')">
-        🔒 الأمان <span class="cat-count" id="count-security">0</span>
+        🔒 الأمان والأقفال <span class="cat-count" id="count-security">0</span>
       </button>
       <button class="cat-tab" data-cat="bridge" onclick="setCategoryFilter('bridge')">
-        🌉 الجسور <span class="cat-count" id="count-bridge">0</span>
+        🌉 الجسور الوسيطة <span class="cat-count" id="count-bridge">0</span>
       </button>
     </div>
 
@@ -382,10 +409,10 @@
     <div>
       <div class="section-header">
         <div class="section-title">
-          <span></span> أجهزة Matter الذكية
+          <span></span> أجهزة Matter المتصلة بالمنزل
         </div>
-        <button class="btn btn-outline" style="font-size: 11px; padding: 4px 10px;" onclick="loadDevices()">
-          🔄 تحديث الحالات
+        <button class="btn btn-outline" style="font-size: 11px; padding: 5px 12px;" onclick="loadDevices()">
+          🔄 تحديث الحالات والقراءات
         </button>
       </div>
 
@@ -397,7 +424,7 @@
     <!-- Commissioning Section -->
     <div class="form-box">
       <div class="section-title">
-        <span></span> إعداد وإقران جهاز Matter جديد
+        <span></span> ➕ إعداد وإقران جهاز Matter جديد
       </div>
       <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
         أدخل كود الإقران المطبوع على الجهاز أو امسح رمز QR. سيتم إقران الجهاز عبر البلوتوث وتوصيله بشبكة الواي فاي تلقائياً.
@@ -406,17 +433,17 @@
       <form onsubmit="handleCommission(event)">
         <div class="form-grid">
           <div class="form-group" style="grid-column: 1 / -1;">
-            <label>كود الإقران (Matter Setup PIN أو Manual Code أو MT:... QR String)</label>
+            <label>🔢 كود الإقران (Matter Setup PIN أو Manual Code أو MT:... QR String)</label>
             <input type="text" id="commCode" class="form-input" placeholder="مثال: 3549-103-9009 أو MT:Y.K90..." required>
           </div>
 
           <div class="form-group">
-            <label>اسم شبكة الواي فاي للمنزل (SSID)</label>
+            <label>📶 اسم شبكة الواي فاي للمنزل (SSID)</label>
             <input type="text" id="commSsid" class="form-input" placeholder="اسم شبكة Wi-Fi 2.4GHz">
           </div>
 
           <div class="form-group">
-            <label>كلمة مرور الواي فاي (Password)</label>
+            <label>🔑 كلمة مرور الواي فاي (Password)</label>
             <input type="password" id="commPassword" class="form-input" placeholder="كلمة المرور">
           </div>
         </div>
@@ -425,7 +452,7 @@
           <div style="font-size: 11px; color: var(--warning);">
             💡 تأكد أن الجهاز في وضع الإقران (Pairing Mode) بالضغط المطول على زره لمدة 5 ثوانٍ حتى يومض المؤشر.
           </div>
-          <button type="submit" id="commSubmitBtn" class="btn btn-primary" style="padding: 9px 24px;">
+          <button type="submit" id="commSubmitBtn" class="btn btn-primary" style="padding: 10px 24px;">
             <span>➕ بدء الإقران والإضافة</span>
           </button>
         </div>
@@ -447,7 +474,6 @@
     let rawDevices = [];
     let pollInterval = null;
 
-    // Category Icons Map
     const CATEGORY_ICONS = {
       lighting: '💡',
       socket: '🔌',
@@ -460,7 +486,7 @@
     };
 
     const CATEGORY_LABELS = {
-      lighting: 'إنارة',
+      lighting: 'إنارة ذكية',
       socket: 'مقبس ذكي',
       switch: 'مفتاح جداري',
       sensor: 'حساس',
@@ -470,9 +496,7 @@
       other: 'جهاز ذكي'
     };
 
-    // Auto-init
     window.addEventListener('DOMContentLoaded', () => {
-      // Pre-fill Wi-Fi credentials if stored
       const savedSsid = localStorage.getItem('uniq_wifi_ssid');
       if (savedSsid) document.getElementById('commSsid').value = savedSsid;
 
@@ -497,7 +521,6 @@
       loadStatus();
       loadDevices();
 
-      // Poll every 3 seconds for real-time telemetry updates
       if (pollInterval) clearInterval(pollInterval);
       pollInterval = setInterval(() => {
         loadDevices(true);
@@ -545,10 +568,10 @@
 
         if (data.matterjs_connected) {
           matterDot.className = 'badge-dot';
-          matterStatus.textContent = 'Matter: متصل';
+          matterStatus.textContent = '⚡ Matter: متصل';
         } else {
           matterDot.className = 'badge-dot off';
-          matterStatus.textContent = 'Matter: غير متصل';
+          matterStatus.textContent = '⚡ Matter: غير متصل';
         }
       } catch (e) {
         console.error('Status fetch error', e);
@@ -585,7 +608,6 @@
       const counts = { all: 0, lighting: 0, socket: 0, switch: 0, sensor: 0, climate: 0, security: 0, bridge: 0, other: 0 };
       let totalPower = 0;
 
-      // Group by node_id to count physical devices
       const nodeMap = new Map();
       rawDevices.forEach(d => {
         const nid = d.node_id;
@@ -600,7 +622,7 @@
       });
 
       document.getElementById('statDevicesCount').textContent = nodeMap.size;
-      document.getElementById('statTotalPower').textContent = Math.round(totalPower) + ' W';
+      document.getElementById('statTotalPower').textContent = (totalPower > 0 ? totalPower.toFixed(1) : '0.0') + ' W';
 
       nodeMap.forEach((eps, nid) => {
         const primary = eps[0];
@@ -618,7 +640,6 @@
     function renderDevicesList() {
       const container = document.getElementById('devicesListContainer');
 
-      // Group raw endpoint devices by node_id (physical device)
       const groupsMap = new Map();
       rawDevices.forEach(d => {
         const nid = d.node_id;
@@ -628,7 +649,6 @@
         groupsMap.get(nid).push(d);
       });
 
-      // Filter by category
       const filteredGroups = [];
       groupsMap.forEach((eps, nid) => {
         const primary = eps[0];
@@ -649,14 +669,13 @@
         const isBridged = primary.is_bridged;
         const cat = primary.category || 'other';
         const icon = CATEGORY_ICONS[cat] || '⚙️';
-        const catLabel = CATEGORY_LABELS[cat] || 'جهاز';
+        const catLabel = CATEGORY_LABELS[cat] || 'جهاز ذكي';
         const vendor = primary.vendor || 'Matter';
         const model = primary.model || primary.device_type || 'Smart Device';
 
-        // Check if any channel is ON
         const hasAnyOn = endpoints.some(e => e.state === 'ON');
 
-        // Check electrical metrics on any endpoint
+        // Check power / energy stats
         let powerVal = null, voltVal = null, currVal = null, energyVal = null;
         let tempVal = null, humVal = null, battVal = null;
 
@@ -670,11 +689,17 @@
           if (e.battery !== undefined && e.battery !== null) battVal = e.battery;
         });
 
+        const isEnergyDevice = (cat === 'socket' || cat === 'switch' || powerVal !== null || voltVal !== null);
+
         html += `
           <div class="device-group-card ${hasAnyOn ? 'has-on' : ''}" id="node-card-${nodeId}">
+            
+            <!-- Card Header -->
             <div class="device-card-header">
               <div class="device-meta-left">
-                <div class="device-icon-box">${icon}</div>
+                <div class="device-icon-box ${cat}">
+                  ${icon}
+                </div>
                 <div class="device-title-box">
                   <div class="device-main-title">
                     ${vendor} ${model}
@@ -685,39 +710,71 @@
                     }
                   </div>
                   <div class="device-sub-meta">
-                    <span><b>Node #${nodeId}</b></span>
-                    ${endpoints.length > 1 ? `<span>• <b>${endpoints.length} قنوات</b></span>` : ''}
-                    ${primary.serial_number ? `<span>• S/N: ${primary.serial_number}</span>` : ''}
+                    <span>🏷️ <b>Node #${nodeId}</b></span>
+                    ${endpoints.length > 1 ? `<span>• 🎛️ <b>${endpoints.length} قنوات</b></span>` : ''}
+                    ${primary.serial_number ? `<span>• 🔢 S/N: ${primary.serial_number}</span>` : ''}
                   </div>
                 </div>
               </div>
 
-              <!-- Top Metrics Chips (Power, Temp, Battery) -->
-              <div class="metrics-bar">
-                ${powerVal !== null ? `<div class="metric-chip power" title="القدرة اللحظية">⚡ ${powerVal} W</div>` : ''}
-                ${voltVal !== null ? `<div class="metric-chip voltage" title="الجهد الكهربائي">🔌 ${voltVal} V</div>` : ''}
-                ${currVal !== null ? `<div class="metric-chip current" title="التيار">📈 ${currVal} A</div>` : ''}
-                ${energyVal !== null ? `<div class="metric-chip energy" title="الاستهلاك التراكمي">📊 ${energyVal} kWh</div>` : ''}
-                ${tempVal !== null ? `<div class="metric-chip temp" title="درجة الحرارة">🌡️ ${tempVal} °C</div>` : ''}
-                ${humVal !== null ? `<div class="metric-chip hum" title="الرطوبة">💧 ${humVal} %</div>` : ''}
-                ${battVal !== null ? `<div class="metric-chip batt" title="البطارية">🔋 ${battVal} %</div>` : ''}
+              <!-- Top Quick Badges (Temp / Humidity / Battery) -->
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                ${tempVal !== null ? `<div class="badge">🌡️ ${tempVal} °C</div>` : ''}
+                ${humVal !== null ? `<div class="badge">💧 ${humVal} %</div>` : ''}
+                ${battVal !== null ? `<div class="badge">🔋 ${battVal} %</div>` : ''}
               </div>
             </div>
 
-            <!-- Channels & Controls Row -->
+            <!-- Always-Visible Power & Energy Measurement Strip for Sockets/Switches -->
+            ${isEnergyDevice ? `
+              <div class="power-metrics-strip">
+                <div class="metric-item">
+                  <div class="metric-item-icon power">⚡</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">القدرة اللحظية (Power)</span>
+                    <span class="metric-item-val ${powerVal > 0 ? 'active' : ''}">${powerVal !== null ? powerVal + ' W' : '0.0 W'}</span>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-item-icon voltage">🔌</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">الجهد الكهربائي (Voltage)</span>
+                    <span class="metric-item-val">${voltVal !== null ? voltVal + ' V' : '230 V'}</span>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-item-icon current">📈</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">التيار (Current)</span>
+                    <span class="metric-item-val">${currVal !== null ? currVal + ' A' : '0.00 A'}</span>
+                  </div>
+                </div>
+                <div class="metric-item">
+                  <div class="metric-item-icon energy">📊</div>
+                  <div class="metric-item-data">
+                    <span class="metric-item-label">الاستهلاك التراكمي (Energy)</span>
+                    <span class="metric-item-val ${energyVal > 0 ? 'active-green' : ''}">${energyVal !== null ? energyVal + ' kWh' : '0.00 kWh'}</span>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Channels & Iconic Control Buttons -->
             <div class="channels-grid">
         `;
 
-        endpoints.forEach((ep, idx) => {
+        endpoints.forEach((ep) => {
           const epId = ep.endpoint_id;
           const epState = ep.state || 'OFF';
           const isOn = (epState === 'ON');
           const channelTitle = endpoints.length > 1 ? `قناة ${epId} (CH${epId})` : (ep.model || 'التحكم الرئيسي');
 
           html += `
-            <div class="channel-pill" id="ep-pill-${nodeId}-${epId}">
+            <div class="channel-pill ${isOn ? 'is-on' : ''}" id="ep-pill-${nodeId}-${epId}">
               <div class="channel-info">
-                <span style="font-size: 15px;">${isOn ? '💡' : '🌑'}</span>
+                <div class="channel-status-icon ${isOn ? 'on' : ''}">
+                  ${isOn ? '💡' : '🌑'}
+                </div>
                 <div>
                   <div class="channel-name">${channelTitle}</div>
                   <div class="channel-state-text ${isOn ? 'on' : ''}">${isOn ? '● قيد التشغيل (ON)' : '○ متوقف (OFF)'}</div>
@@ -726,14 +783,15 @@
 
               ${ep.has_onoff ? `
                 <button 
-                  class="toggle-btn ${isOn ? 'is-on' : ''}" 
+                  class="icon-toggle-btn ${isOn ? 'is-on' : ''}" 
                   id="btn-toggle-${nodeId}-${epId}"
                   onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}', '${epState}')"
                 >
-                  ${isOn ? 'تشغيل ON' : 'إيقاف OFF'}
+                  <span class="power-symbol">⏻</span>
+                  <span>${isOn ? 'تشغيل' : 'إيقاف'}</span>
                 </button>
               ` : `
-                <span style="font-size: 11px; color: var(--text-muted);">قراءة فقط</span>
+                <span class="badge">📡 قراءة فقط</span>
               `}
             </div>
           `;
@@ -748,21 +806,26 @@
       container.innerHTML = html;
     }
 
-    // Toggle Channel State with Instant Optimistic UI + Explicit setState (true/false)
+    // Toggle Channel State with Instant UI Feedback
     async function toggleChannelState(nodeId, endpointId, deviceName, currentState) {
       const btn = document.getElementById(`btn-toggle-${nodeId}-${endpointId}`);
       const pill = document.getElementById(`ep-pill-${nodeId}-${endpointId}`);
       
-      const targetState = (currentState !== 'ON'); // true = ON, false = OFF
+      const targetState = (currentState !== 'ON');
       const targetStateStr = targetState ? 'ON' : 'OFF';
 
-      // Optimistic UI update
+      // Immediate Optimistic UI Feedback
       if (btn) {
-        btn.classList.add('loading');
         btn.classList.toggle('is-on', targetState);
-        btn.textContent = targetState ? 'تشغيل ON' : 'إيقاف OFF';
+        btn.innerHTML = `<span class="power-symbol">⏻</span> <span>${targetState ? 'تشغيل' : 'إيقاف'}</span>`;
       }
       if (pill) {
+        pill.classList.toggle('is-on', targetState);
+        const iconEl = pill.querySelector('.channel-status-icon');
+        if (iconEl) {
+          iconEl.className = 'channel-status-icon ' + (targetState ? 'on' : '');
+          iconEl.textContent = targetState ? '💡' : '🌑';
+        }
         const textEl = pill.querySelector('.channel-state-text');
         if (textEl) {
           textEl.className = 'channel-state-text ' + (targetState ? 'on' : '');
@@ -770,8 +833,14 @@
         }
       }
 
+      // Update local array immediately
+      const match = rawDevices.find(d => d.node_id === nodeId && d.endpoint_id === endpointId);
+      if (match) {
+        match.state = targetStateStr;
+      }
+
       try {
-        const res = await fetch('/api/control', {
+        await fetch('/api/control', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -785,22 +854,8 @@
             params: targetState
           })
         });
-
-        const data = await res.json();
-        if (btn) btn.classList.remove('loading');
-
-        // Update local memory
-        const match = rawDevices.find(d => d.node_id === nodeId && d.endpoint_id === endpointId);
-        if (match) {
-          match.state = targetStateStr;
-        }
-
-        // Re-render to reflect clean states
-        renderDevicesList();
       } catch (err) {
         console.error('Failed to send control command', err);
-        if (btn) btn.classList.remove('loading');
-        // Rollback
         loadDevices(true);
       }
     }
@@ -816,7 +871,6 @@
 
       if (!code) return;
 
-      // Save WiFi in local storage
       if (ssid) localStorage.setItem('uniq_wifi_ssid', ssid);
 
       submitBtn.disabled = true;

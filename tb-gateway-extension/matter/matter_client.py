@@ -319,16 +319,25 @@ class MatterClient:
     ) -> Dict[str, Any]:
         """
         Executes a cluster command on a specific Matter node endpoint.
-        Example: device_command(node_id=2, endpoint_id=1, cluster_id=6, command_name="Off")
+        Supports both lowercase and PascalCase command names with automatic fallback.
         """
+        cmd_lower = str(command_name).lower()
         args = {
-            "node_id": node_id,
-            "endpoint_id": endpoint_id,
-            "cluster_id": cluster_id,
-            "command_name": command_name,
-            "args": command_args or {}
+            "node_id": int(node_id),
+            "endpoint_id": int(endpoint_id),
+            "cluster_id": int(cluster_id),
+            "command_name": cmd_lower,
+            "command": cmd_lower,
+            "args": command_args or {},
+            "payload": command_args or {}
         }
-        return self.send_command("device_command", args=args, timeout=timeout)
+        resp = self.send_command("device_command", args=args, timeout=timeout)
+        if not resp.get("success"):
+            # Try with capitalized command name
+            args["command_name"] = str(command_name).capitalize()
+            args["command"] = str(command_name).capitalize()
+            resp = self.send_command("device_command", args=args, timeout=timeout)
+        return resp
 
     def commission_with_code(
         self,
