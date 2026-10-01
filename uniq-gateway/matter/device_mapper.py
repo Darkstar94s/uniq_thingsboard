@@ -219,20 +219,44 @@ class MatterDeviceMapper:
                 if ep_id == 0:
                     continue
 
-                clusters = ep_content.get("clusters", {})
-                bridged_info = clusters.get(str(CLUSTER_BRIDGED_DEVICE_BASIC), {}) or clusters.get(CLUSTER_BRIDGED_DEVICE_BASIC, {})
-                node_label = bridged_info.get("nodeLabel") or bridged_info.get("1") or ""
-                b_vendor = bridged_info.get("vendorName") or bridged_info.get("2") or vendor_name
-                b_product = bridged_info.get("productName") or bridged_info.get("3") or ""
-                b_serial = bridged_info.get("serialNumber") or bridged_info.get("4") or f"{serial_number}-EP{ep_id}"
+                # Skip Aggregator container endpoint (ep 1 on Matter bridges)
+                dt_ids = [dt.get("device_type") if isinstance(dt, dict) else dt for dt in ep_content.get("device_types", [])]
+                if 14 in dt_ids or DEVICE_TYPE_AGGREGATOR_BRIDGE in dt_ids:
+                    continue
 
-                # Infer device type name
+                clusters = ep_content.get("clusters", {})
+                bridged_info = clusters.get(str(CLUSTER_BRIDGED_DEVICE_BASIC), {}) or clusters.get(CLUSTER_BRIDGED_DEVICE_BASIC, {}) or {}
+                node_label = bridged_info.get("nodeLabel") or bridged_info.get("1") or bridged_info.get(1) or ""
+                b_vendor = bridged_info.get("vendorName") or bridged_info.get("2") or bridged_info.get(2) or vendor_name
+                b_product = bridged_info.get("productName") or bridged_info.get("3") or bridged_info.get(3) or ""
+                b_serial = bridged_info.get("serialNumber") or bridged_info.get("4") or bridged_info.get(4) or f"{serial_number}-EP{ep_id}"
+
+                # Infer device type name from device types
                 inferred_type = "Bridged Smart Device"
-                for dt in ep_content.get("device_types", []):
-                    dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
+                for dt_id in dt_ids:
                     if dt_id in DEVICE_TYPE_NAMES:
                         inferred_type = DEVICE_TYPE_NAMES[dt_id]
                         break
+
+                # Also infer from clusters!
+                has_temp = (1026 in clusters or "1026" in clusters or CLUSTER_TEMP_MEASUREMENT in clusters)
+                has_humidity = (1029 in clusters or "1029" in clusters or CLUSTER_HUMIDITY_MEASUREMENT in clusters)
+                has_onoff = (6 in clusters or "6" in clusters or CLUSTER_ON_OFF in clusters)
+                has_lock = (257 in clusters or "257" in clusters or CLUSTER_DOOR_LOCK in clusters)
+                has_occupancy = (1030 in clusters or "1030" in clusters or CLUSTER_OCCUPANCY_SENSING in clusters)
+
+                if has_temp and has_humidity:
+                    inferred_type = "Temperature & Humidity Sensor"
+                elif has_temp:
+                    inferred_type = "Temperature Sensor"
+                elif has_humidity:
+                    inferred_type = "Humidity Sensor"
+                elif has_lock:
+                    inferred_type = "Smart Lock"
+                elif has_onoff:
+                    inferred_type = "Smart Switch"
+                elif has_occupancy:
+                    inferred_type = "Motion Sensor"
 
                 display_title = node_label if node_label else (b_product if b_product else inferred_type)
                 bridged_device_name = f"Bridged - {vendor_name} {display_title} (N{node_id}-EP{ep_id})"
@@ -249,6 +273,7 @@ class MatterDeviceMapper:
                     bridge_name=bridge_name
                 )
                 devices_to_sync.append(bridged_device)
+
 
         else:
             # Direct Matter Device (Wi-Fi Plug, Light, Lock, Sensor)

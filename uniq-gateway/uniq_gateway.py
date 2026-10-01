@@ -208,6 +208,17 @@ class UniqGateway:
             }
             client.publish("v1/devices/me/attributes", json.dumps(hub_attributes))
             log.info(f"Published Hub telemetry and license attributes: {hub_attributes}")
+
+            # Re-announce all known sub-devices to Cloud!
+            for c_name, connector in list(self.connectors.items()):
+                if hasattr(connector, "mapper") and connector.mapper:
+                    for key, dev in connector.mapper._registry.items():
+                        d_name = dev.get("device_name")
+                        d_type = dev.get("device_type", "Matter Device")
+                        if d_name:
+                            client.publish("v1/gateway/connect", json.dumps({"device": d_name, "type": d_type}))
+                            log.info(f"Announced sub-device to Cloud on connect: [{d_name}] ({d_type})")
+
         else:
             log.error(f"Cloud connection failed with code: {rc}")
 
