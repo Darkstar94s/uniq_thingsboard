@@ -159,47 +159,98 @@ class MatterClient:
 
         # 2. Real-time Matter Server Events
         event_type = msg.get("event")
-        data = msg.get("data", {})
+        data = msg.get("data")
+
+        if not event_type:
+            return
 
         if event_type in ["node_added", "node_updated", "node_removed"]:
-            if self.on_node_event:
-                try:
-                    self.on_node_event(event_type, data)
-                except Exception as e:
-                    log.error(f"Error handling node event '{event_type}': {e}")
+            if isinstance(data, dict):
+                if self.on_node_event:
+                    try:
+                        self.on_node_event(event_type, data)
+                    except Exception as e:
+                        log.error(f"Error handling node event '{event_type}': {e}")
 
-        elif event_type in ["attribute_updated", "node_attribute_updated", "attributeUpdate"]:
-            # Support multiple event formats from different matter server versions
+                # If node_updated contains a flat attributes dict, process each attribute
+                node_id = data.get("node_id") or data.get("nodeId")
+                flat_attrs = data.get("attributes", {})
+                if node_id is not None and isinstance(flat_attrs, dict) and self.on_attribute_event:
+                    for attr_path, value in flat_attrs.items():
+                        parts = str(attr_path).split("/")
+                        if len(parts) == 3:
+                            try:
+                                ep = int(parts[0])
+                                cl = int(parts[1])
+                                at = int(parts[2])
+                                self.on_attribute_event(int(node_id), ep, cl, at, value)
+                            except (ValueError, TypeError):
+                                pass
+
+        elif event_type in ["attribute_updated", "node_attribute_updated", "attributeUpdate", "attribute_update"]:
             node_id = None
             endpoint_id = 0
             cluster_id = None
             attribute_id = None
-            value = data.get("value")
+            value = None
 
-            # Format A: path-based dict {"path": {"nodeId": ..., "endpointId": ...}}
-            path = data.get("path", {})
-            if isinstance(path, dict) and path:
-                node_id = path.get("nodeId") or path.get("node_id")
-                endpoint_id = path.get("endpointId") or path.get("endpoint_id") or 0
-                cluster_id = path.get("clusterId") or path.get("cluster_id")
-                attribute_id = path.get("attributeId") or path.get("attribute_id")
-            elif isinstance(path, str) and "/" in path:
-                # Format B: string path "nodeId/endpointId/clusterId/attributeId"
-                parts = path.split("/")
-                if len(parts) == 4:
-                    try:
-                        node_id = int(parts[0])
-                        endpoint_id = int(parts[1])
-                        cluster_id = int(parts[2])
-                        attribute_id = int(parts[3])
-                    except (ValueError, TypeError):
-                        pass
-            else:
-                # Format C: flat keys {"node_id": ..., "endpoint_id": ...}
+            # Format 1: Array format [node_id, "endpoint/cluster/attribute", value] (Standard python-matter-server)
+            if isinstance(data, (list, tuple)):
+                if len(data) >= 3:
+                    node_id = data[0]
+                    path_str = str(data[1])
+                    value = data[2]
+                    parts = path_str.split("/")
+                    if len(parts) == 3:
+                        try:
+                            endpoint_id = int(parts[0])
+                            cluster_id = int(parts[1])
+                            attribute_id = int(parts[2])
+                        except (ValueError, TypeError):
+                            pass
+                    elif len(data) >= 5:
+                        # [node_id, endpoint_id, cluster_id, attribute_id, value]
+                        try:
+                            endpoint_id = int(data[1])
+                            cluster_id = int(data[2])
+                            attribute_id = int(data[3])
+                            value = data[4]
+                        except (ValueError, TypeError):
+                            pass
+
+            # Format 2: Dict format
+            elif isinstance(data, dict):
+                value = data.get("value")
                 node_id = data.get("node_id") or data.get("nodeId")
-                endpoint_id = data.get("endpoint_id") or data.get("endpointId") or 0
-                cluster_id = data.get("cluster_id") or data.get("clusterId")
-                attribute_id = data.get("attribute_id") or data.get("attributeId")
+
+                # Path string "1/6/0" or "node/1/6/0"
+                path = data.get("path") or data.get("attribute_path") or data.get("attributePath")
+                if isinstance(path, str) and "/" in path:
+                    parts = path.split("/")
+                    if len(parts) == 3:
+                        try:
+                            endpoint_id = int(parts[0])
+                            cluster_id = int(parts[1])
+                            attribute_id = int(parts[2])
+                        except (ValueError, TypeError):
+                            pass
+                    elif len(parts) == 4:
+                        try:
+                            node_id = int(parts[0])
+                            endpoint_id = int(parts[1])
+                            cluster_id = int(parts[2])
+                            attribute_id = int(parts[3])
+                        except (ValueError, TypeError):
+                            pass
+                elif isinstance(path, dict):
+                    node_id = path.get("nodeId") or path.get("node_id") or node_id
+                    endpoint_id = path.get("endpointId") or path.get("endpoint_id") or 0
+                    cluster_id = path.get("clusterId") or path.get("cluster_id")
+                    attribute_id = path.get("attributeId") or path.get("attribute_id")
+                else:
+                    endpoint_id = data.get("endpoint_id") or data.get("endpointId") or 0
+                    cluster_id = data.get("cluster_id") or data.get("clusterId")
+                    attribute_id = data.get("attribute_id") or data.get("attributeId")
 
             if self.on_attribute_event and node_id is not None and cluster_id is not None:
                 try:
