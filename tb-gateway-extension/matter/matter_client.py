@@ -339,6 +339,31 @@ class MatterClient:
             resp = self.send_command("device_command", args=args, timeout=timeout)
         return resp
 
+    def remove_node(self, node_id: int, timeout: float = 20.0) -> Dict[str, Any]:
+        """
+        Decommissions and removes a Matter node from the local fabric and server.
+        Tries 'remove_node', 'uncommission_node', and 'uncommission' commands.
+        """
+        nid = int(node_id)
+        # 1. Try standard remove_node
+        res = self.send_command("remove_node", args={"node_id": nid}, timeout=timeout)
+        if res.get("success"):
+            return res
+        
+        # 2. Try uncommission_node
+        res = self.send_command("uncommission_node", args={"node_id": nid}, timeout=timeout)
+        if res.get("success"):
+            return res
+            
+        # 3. Try uncommission
+        res = self.send_command("uncommission", args={"node_id": nid}, timeout=timeout)
+        if res.get("success"):
+            return res
+
+        # 4. Try camelCase nodeId
+        res = self.send_command("remove_node", args={"nodeId": nid}, timeout=timeout)
+        return res
+
     def commission_with_code(
         self,
         code: str,

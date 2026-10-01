@@ -803,12 +803,24 @@
             <!-- Quick Category Switcher & Actions -->
             <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; margin-top: 4px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 6px;">
-                <span>⚙️ تعديل التصنيف:</span>
-                <button class="btn btn-outline" style="padding: 3px 10px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'socket', 'Smart Socket')">🔌 مقبس</button>
-                <button class="btn btn-outline" style="padding: 3px 10px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
-                <button class="btn btn-outline" style="padding: 3px 10px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'lighting', 'Smart Light')">💡 إنارة</button>
+                <span>⚙️ التصنيف:</span>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'socket', 'Smart Socket')">🔌 مقبس</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'lighting', 'Smart Light')">💡 إنارة</button>
               </div>
-              <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>
+                <button 
+                  class="btn btn-danger-soft" 
+                  id="btn-delete-${nodeId}"
+                  style="padding: 3px 10px; font-size: 11px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #F87171; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: inherit;" 
+                  onmouseover="this.style.background='rgba(239,68,68,0.25)'; this.style.borderColor='#EF4444';"
+                  onmouseout="this.style.background='rgba(239,68,68,0.12)'; this.style.borderColor='rgba(239,68,68,0.35)';"
+                  onclick="deleteDeviceHandler(${nodeId}, '${(first.device_name || first.product_name || 'Device').replace(/'/g, "\\'")}')"
+                >
+                  🗑️ حذف الجهاز
+                </button>
+              </div>
             </div>
 
           </div>
@@ -887,6 +899,59 @@
         }
       } catch (err) {
         console.error('Failed to update category', err);
+      }
+    }
+
+    // Safe Device Removal Handler with Complete Lifecycle Cleanup
+    async function deleteDeviceHandler(nodeId, deviceName) {
+      const confirmMsg = `⚠️ هل أنت متأكد من رغبتك في حذف هذا الجهاز (${deviceName}) ذو المعرف (#${nodeId})؟\n\nالعمليات التي ستتم:\n1. فك الاقتران وإلغاء الجهاز من شبكة Matter المحلية.\n2. مسح جميع القنوات والإعدادات من سجل بوابة UNIQ.\n3. إيقاف مزامنة بيانات وتيليمتري الجهاز مع ThingsBoard.\n\nهل تود المتابعة؟`;
+      
+      if (!confirm(confirmMsg)) {
+        return;
+      }
+
+      const btn = document.getElementById(`btn-delete-${nodeId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `⏳ جارٍ الحذف...`;
+        btn.style.opacity = '0.6';
+      }
+
+      try {
+        const res = await fetch('/api/devices/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          },
+          body: JSON.stringify({
+            node_id: nodeId
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success !== false) {
+          // Remove from local memory
+          rawDevices = rawDevices.filter(d => d.node_id !== nodeId);
+          updateCategoryCounts();
+          renderDevicesList();
+          alert(`✅ تم حذف الجهاز #${nodeId} وفك اقترانه من شبكة Matter بنجاح.`);
+        } else {
+          alert(`❌ فشل حذف الجهاز: ` + (data.error || 'خطأ غير معروف'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `🗑️ حذف الجهاز`;
+            btn.style.opacity = '1';
+          }
+        }
+      } catch (err) {
+        console.error('Failed to delete device:', err);
+        alert(`❌ حدث خطأ في الاتصال أثناء حذف الجهاز: ` + err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `🗑️ حذف الجهاز`;
+          btn.style.opacity = '1';
+        }
       }
     }
 

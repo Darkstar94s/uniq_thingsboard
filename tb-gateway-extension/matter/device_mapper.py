@@ -289,6 +289,31 @@ class MatterDeviceMapper:
             fallback = self._device_states.get(f"{node_id}_1")
             return dict(fallback) if fallback else {}
 
+    def remove_node(self, node_id: int) -> List[str]:
+        """
+        Removes all endpoints, states, and mappings for a given node_id from registry.
+        Returns the list of removed ThingsBoard device names.
+        """
+        removed_devices = []
+        with self._lock:
+            prefix = f"{node_id}_"
+            keys_to_del = [k for k in self._registry.keys() if k.startswith(prefix) or k == str(node_id)]
+            for k in keys_to_del:
+                entry = self._registry.pop(k, None)
+                if entry and "device_name" in entry:
+                    d_name = entry["device_name"]
+                    removed_devices.append(d_name)
+                    self._name_to_node_ep.pop(d_name, None)
+
+            # Remove from device states cache
+            state_keys_to_del = [k for k in self._device_states.keys() if k.startswith(prefix) or k == str(node_id)]
+            for k in state_keys_to_del:
+                self._device_states.pop(k, None)
+
+            self._save_registry()
+            log.info(f"Removed node {node_id} from registry. Removed device names: {removed_devices}")
+        return removed_devices
+
     # =========================================================================
     # Flat Attribute Format Parser (matter.js server)
     # =========================================================================

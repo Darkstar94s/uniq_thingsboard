@@ -155,7 +155,23 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 self._send_json_response(400, {"success": False, "error": "Missing node_id"})
             return
 
-        # 4. Change PIN API
+        # 4. Delete / Decommission Device API
+        elif self.path in ["/api/devices/delete", "/api/devices/remove"]:
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+
+            nid = req_data.get("node_id")
+            if nid is None:
+                self._send_json_response(400, {"success": False, "error": "Missing node_id parameter"})
+                return
+
+            res = service.remove_device(int(nid))
+            self._send_json_response(200, res)
+            return
+
+        # 5. Change PIN API
         elif self.path == "/api/settings/pin":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
@@ -375,6 +391,27 @@ class MatterCommissionService:
         }
         res = self.connector.server_side_rpc_handler(rpc_request)
         return res
+
+    def remove_device(self, node_id: int) -> Dict[str, Any]:
+        """
+        Safely decommissions and removes a Matter node from the local fabric,
+        cleans up registry and device states, and unbinds from ThingsBoard Gateway.
+        """
+        log.info(f"Initiating full decommissioning and removal for Matter Node #{node_id}")
+        if not self.connector:
+            return {"success": False, "error": "Matter Connector is not initialized or offline."}
+
+        try:
+            results = self.connector.remove_node(int(node_id))
+            return {
+                "success": True,
+                "node_id": node_id,
+                "message": f"Device #{node_id} successfully decommissioned and removed.",
+                "details": results
+            }
+        except Exception as e:
+            log.error(f"Error removing device #{node_id}: {e}")
+            return {"success": False, "error": str(e)}
 
     def commission_device(
         self,

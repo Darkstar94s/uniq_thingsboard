@@ -386,13 +386,46 @@ class UniqMatterConnector(Connector, Thread):
             self._gateway.send_to_storage(self.get_name(), self.get_id(), converted)
             self.statistics["MessagesSent"] += 1
 
+    def remove_node(self, node_id: int) -> Dict[str, Any]:
+        """
+        Decommissions a node from Matter fabric, removes it from registry, and cleans up ThingsBoard gateway.
+        """
+        log.info(f"Removing/Decommissioning Matter Node #{node_id}...")
+        results = {"uncommission": None, "removed_devices": []}
+
+        # 1. Uncommission / remove from Matter server
+        if self.client and self.client.is_connected:
+            try:
+                resp = self.client.remove_node(int(node_id))
+                results["uncommission"] = resp
+                log.info(f"Matter server remove_node response for node {node_id}: {resp}")
+            except Exception as e:
+                log.error(f"Error calling remove_node on MatterClient: {e}")
+                results["uncommission"] = {"success": False, "error": str(e)}
+
+        # 2. Remove from device mapper registry & cached states
+        if self.mapper:
+            removed = self.mapper.remove_node(int(node_id))
+            results["removed_devices"] = removed
+            # 3. Clean up devices on ThingsBoard Gateway
+            for d_name in removed:
+                if hasattr(self._gateway, "del_device"):
+                    try:
+                        self._gateway.del_device(d_name)
+                    except Exception as e:
+                        log.debug(f"del_device on gateway error for {d_name}: {e}")
+
+        return results
+
     def _on_matter_node_event(self, event_type: str, data: Dict[str, Any]):
         log.info(f"Matter node event received: {event_type}")
         if event_type in ["node_added", "node_updated"]:
             self._sync_single_node(data)
         elif event_type == "node_removed":
-            node_id = data.get("node_id")
-            log.info(f"Matter node removed: {node_id}")
+            node_id = data.get("node_id") or data.get("nodeId")
+            log.info(f"Matter node removed event received for node: {node_id}")
+            if node_id is not None:
+                self.mapper.remove_node(int(node_id))
 
     def _on_matter_attribute_event(self, node_id: int, endpoint_id: int, cluster_id: int, attribute_id: int, value: Any):
         """Processes real-time Matter attribute updates and forwards them to ThingsBoard."""
