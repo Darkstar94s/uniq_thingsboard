@@ -11,22 +11,28 @@ from typing import Dict, Any, List, Tuple, Optional
 log = logging.getLogger("UniqMatterDeviceMapper")
 
 # Standard Matter Device Types
-DEVICE_TYPE_ROOT_NODE = 0x0016
-DEVICE_TYPE_AGGREGATOR_BRIDGE = 0x000E
-DEVICE_TYPE_BRIDGED_NODE = 0x0013
-DEVICE_TYPE_ON_OFF_LIGHT = 0x0100
-DEVICE_TYPE_DIMMABLE_LIGHT = 0x0101
-DEVICE_TYPE_ON_OFF_PLUG = 0x010A
-DEVICE_TYPE_DOOR_LOCK = 0x000A
-DEVICE_TYPE_TEMP_SENSOR = 0x0302
-DEVICE_TYPE_HUMIDITY_SENSOR = 0x0307
-DEVICE_TYPE_OCCUPANCY_SENSOR = 0x0107
-DEVICE_TYPE_CONTACT_SENSOR = 0x0015
+DEVICE_TYPE_ROOT_NODE = 0x0016           # 22
+DEVICE_TYPE_AGGREGATOR_BRIDGE = 0x000E   # 14
+DEVICE_TYPE_BRIDGED_NODE = 0x0013        # 19
+DEVICE_TYPE_ON_OFF_LIGHT = 0x0100        # 256
+DEVICE_TYPE_DIMMABLE_LIGHT = 0x0101      # 257
+DEVICE_TYPE_ON_OFF_LIGHT_SWITCH = 0x0103 # 259
+DEVICE_TYPE_DIMMER_SWITCH = 0x0104       # 260
+DEVICE_TYPE_ON_OFF_PLUG = 0x010A         # 266
+DEVICE_TYPE_DIMMABLE_PLUG = 0x010B       # 267
+DEVICE_TYPE_DOOR_LOCK = 0x000A           # 10
+DEVICE_TYPE_TEMP_SENSOR = 0x0302         # 770
+DEVICE_TYPE_HUMIDITY_SENSOR = 0x0307     # 775
+DEVICE_TYPE_OCCUPANCY_SENSOR = 0x0107    # 263
+DEVICE_TYPE_CONTACT_SENSOR = 0x0015      # 21
 
 DEVICE_TYPE_NAMES = {
     DEVICE_TYPE_ON_OFF_LIGHT: "Smart Light",
     DEVICE_TYPE_DIMMABLE_LIGHT: "Dimmable Light",
+    DEVICE_TYPE_ON_OFF_LIGHT_SWITCH: "Smart Switch",
+    DEVICE_TYPE_DIMMER_SWITCH: "Dimmer Switch",
     DEVICE_TYPE_ON_OFF_PLUG: "Smart Socket",
+    DEVICE_TYPE_DIMMABLE_PLUG: "Dimmable Socket",
     DEVICE_TYPE_DOOR_LOCK: "Smart Door Lock",
     DEVICE_TYPE_TEMP_SENSOR: "Temperature Sensor",
     DEVICE_TYPE_HUMIDITY_SENSOR: "Humidity Sensor",
@@ -35,34 +41,64 @@ DEVICE_TYPE_NAMES = {
 }
 
 # Standard Matter Cluster IDs
+CLUSTER_DESCRIPTOR = 0x001D              # 29
 CLUSTER_POWER_SOURCE = 0x0001
 CLUSTER_ON_OFF = 0x0006
 CLUSTER_LEVEL_CONTROL = 0x0008
-CLUSTER_BASIC_INFORMATION = 0x0028
-CLUSTER_BRIDGED_DEVICE_BASIC = 0x0039
+CLUSTER_BASIC_INFORMATION = 0x0028       # 40
+CLUSTER_BRIDGED_DEVICE_BASIC = 0x0039    # 57
 CLUSTER_DOOR_LOCK = 0x0101
 CLUSTER_COLOR_CONTROL = 0x0300
-CLUSTER_TEMP_MEASUREMENT = 0x0402
-CLUSTER_HUMIDITY_MEASUREMENT = 0x0405
-CLUSTER_OCCUPANCY_SENSING = 0x0406
+CLUSTER_TEMP_MEASUREMENT = 0x0402        # 1026
+CLUSTER_HUMIDITY_MEASUREMENT = 0x0405    # 1029
+CLUSTER_OCCUPANCY_SENSING = 0x0406       # 1030
 CLUSTER_ELECTRICAL_MEASUREMENT = 0x0B04
 CLUSTER_METERING = 0x0702
+
+# Functional clusters that indicate an actionable smart-home endpoint
+FUNCTIONAL_CLUSTERS = {
+    str(CLUSTER_ON_OFF),
+    str(CLUSTER_LEVEL_CONTROL),
+    str(CLUSTER_DOOR_LOCK),
+    str(CLUSTER_TEMP_MEASUREMENT),
+    str(CLUSTER_HUMIDITY_MEASUREMENT),
+    str(CLUSTER_OCCUPANCY_SENSING),
+    str(CLUSTER_ELECTRICAL_MEASUREMENT),
+    str(CLUSTER_METERING),
+}
+
+# Basic Information cluster attribute IDs (Matter spec)
+BASIC_ATTR_VENDOR_NAME = "1"
+BASIC_ATTR_VENDOR_ID = "2"
+BASIC_ATTR_PRODUCT_NAME = "3"
+BASIC_ATTR_PRODUCT_ID = "4"
+BASIC_ATTR_NODE_LABEL = "5"
+BASIC_ATTR_SERIAL_NUMBER = "15"
+BASIC_ATTR_UNIQUE_ID = "18"
 
 
 class MatterDeviceMapper:
     """
     Manages persistent registry of Matter devices and converts Matter clusters into
-    ThingsBoard telemetry and attributes. Correctly isolates bridged nodes from Matter bridges.
+    ThingsBoard telemetry and attributes.  Correctly isolates bridged nodes from
+    Matter bridges.  Supports both nested endpoint/cluster format and flat
+    matter.js ``"ep/cluster/attr"`` attribute format.
     """
 
     def __init__(self, registry_file_path: str):
         self.registry_file_path = registry_file_path
         self._lock = threading.Lock()
-        # Mapping: "(node_id, endpoint_id)" -> device metadata dict
+        # Mapping: "(node_id)_(endpoint_id)" -> device metadata dict
         self._registry: Dict[str, Dict[str, Any]] = {}
         # Reverse mapping: "ThingsBoard Device Name" -> (node_id, endpoint_id)
         self._name_to_node_ep: Dict[str, Tuple[int, int]] = {}
+        # Live device states cache: "(node_id)_(endpoint_id)" -> {state, brightness, …}
+        self._device_states: Dict[str, Dict[str, Any]] = {}
         self._load_registry()
+
+    # =========================================================================
+    # Persistence
+    # =========================================================================
 
     def _load_registry(self):
         with self._lock:
@@ -89,44 +125,138 @@ class MatterDeviceMapper:
         except Exception as e:
             log.error(f"Failed to save Matter device registry: {e}")
 
+    # =========================================================================
+    # Public helpers
+    # =========================================================================
+
     def get_node_endpoint_by_device_name(self, device_name: str) -> Optional[Tuple[int, int]]:
         return self._name_to_node_ep.get(device_name)
+
+    def update_device_state(self, node_id: int, endpoint_id: int, state_data: Dict[str, Any]):
+        """Update the live state cache for a device endpoint."""
+        key = f"{node_id}_{endpoint_id}"
+        with self._lock:
+            if key not in self._device_states:
+                self._device_states[key] = {}
+            self._device_states[key].update(state_data)
+
+    def get_device_state(self, node_id: int, endpoint_id: int) -> Dict[str, Any]:
+        """Get the cached live state for a device endpoint."""
+        return self._device_states.get(f"{node_id}_{endpoint_id}", {})
+
+    # =========================================================================
+    # Flat Attribute Format Parser (matter.js server)
+    # =========================================================================
+
+    def _parse_flat_attributes_to_endpoints(self, attributes: Dict[str, Any]) -> Dict[int, Dict[str, Any]]:
+        """
+        Converts matter.js flat attribute format (e.g., ``"1/6/0": false``)
+        into structured endpoint dict with clusters and device_types.
+        """
+        ep_dict: Dict[int, Dict[str, Any]] = {}
+
+        for attr_path, value in attributes.items():
+            parts = str(attr_path).split("/")
+            if len(parts) != 3:
+                continue
+            try:
+                ep_id = int(parts[0])
+                cluster_id = int(parts[1])
+                attr_id = int(parts[2])
+            except (ValueError, TypeError):
+                continue
+
+            if ep_id not in ep_dict:
+                ep_dict[ep_id] = {"endpoint_id": ep_id, "clusters": {}, "device_types": []}
+
+            cluster_key = str(cluster_id)
+            if cluster_key not in ep_dict[ep_id]["clusters"]:
+                ep_dict[ep_id]["clusters"][cluster_key] = {}
+
+            ep_dict[ep_id]["clusters"][cluster_key][str(attr_id)] = value
+
+            # Descriptor cluster (29), attribute 0 = deviceTypeList
+            if cluster_id == CLUSTER_DESCRIPTOR and attr_id == 0 and isinstance(value, list):
+                for dt_entry in value:
+                    if isinstance(dt_entry, dict):
+                        dt_id = dt_entry.get("0") or dt_entry.get("device_type")
+                        if dt_id is not None:
+                            ep_dict[ep_id]["device_types"].append({"device_type": int(dt_id)})
+
+        return ep_dict
+
+    @staticmethod
+    def _has_functional_cluster(ep_content: Dict[str, Any]) -> bool:
+        """Check if endpoint has actionable smart home clusters."""
+        clusters = ep_content.get("clusters", {})
+        return bool(FUNCTIONAL_CLUSTERS.intersection(clusters.keys()))
+
+    # =========================================================================
+    # Node Topology Parsing
+    # =========================================================================
 
     def parse_node_topology(self, node_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Parses a Matter node object received from matterjs-server.
+        Supports both nested endpoint format and flat matter.js attribute format.
         Splits Matter bridges into separate ThingsBoard device definitions.
+        Creates separate devices for multi-endpoint nodes (e.g., 3-gang switches).
         Returns a list of device definitions to register/update in ThingsBoard.
         """
         node_id = int(node_data.get("node_id", 0))
         if not node_id:
             return []
 
+        # ── Build endpoint dict from either nested or flat format ──
         endpoints = node_data.get("endpoints", {})
-        # Normalize endpoints dict/list
         ep_dict: Dict[int, Dict[str, Any]] = {}
-        if isinstance(endpoints, dict):
-            for k, v in endpoints.items():
-                try:
-                    ep_dict[int(k)] = v
-                except ValueError:
-                    pass
-        elif isinstance(endpoints, list):
-            for ep in endpoints:
-                ep_id = ep.get("endpoint_id")
-                if ep_id is not None:
-                    ep_dict[int(ep_id)] = ep
 
-        # Check root endpoint (0) for node basic info
+        if endpoints:
+            if isinstance(endpoints, dict):
+                for k, v in endpoints.items():
+                    try:
+                        ep_dict[int(k)] = v
+                    except ValueError:
+                        pass
+            elif isinstance(endpoints, list):
+                for ep in endpoints:
+                    ep_id = ep.get("endpoint_id")
+                    if ep_id is not None:
+                        ep_dict[int(ep_id)] = ep
+
+        if not ep_dict and "attributes" in node_data:
+            ep_dict = self._parse_flat_attributes_to_endpoints(node_data.get("attributes", {}))
+
+        if not ep_dict:
+            log.warning(f"No endpoints found for node {node_id}. Cannot parse topology.")
+            return []
+
+        # ── Extract basic node info from root endpoint (0) ──
         root_ep = ep_dict.get(0, {})
         root_clusters = root_ep.get("clusters", {})
-        basic_info = root_clusters.get(str(CLUSTER_BASIC_INFORMATION), {}) or root_clusters.get(CLUSTER_BASIC_INFORMATION, {})
+        basic_info = (
+            root_clusters.get(str(CLUSTER_BASIC_INFORMATION), {})
+            or root_clusters.get(CLUSTER_BASIC_INFORMATION, {})
+        )
 
-        vendor_name = basic_info.get("vendorName") or basic_info.get("0") or "Matter"
-        product_name = basic_info.get("productName") or basic_info.get("1") or "Device"
-        serial_number = basic_info.get("serialNumber") or basic_info.get("15") or f"NODE-{node_id}"
+        # Matter Basic Information attribute IDs (1=vendorName, 3=productName, 15=serialNumber)
+        vendor_name = (
+            basic_info.get("vendorName")
+            or basic_info.get(BASIC_ATTR_VENDOR_NAME)
+            or "Matter"
+        )
+        product_name = (
+            basic_info.get("productName")
+            or basic_info.get(BASIC_ATTR_PRODUCT_NAME)
+            or "Device"
+        )
+        serial_number = (
+            basic_info.get("serialNumber")
+            or basic_info.get(BASIC_ATTR_SERIAL_NUMBER)
+            or f"NODE-{node_id}"
+        )
 
-        # Determine if node is a Matter Bridge (Aggregator)
+        # ── Determine if node is a Matter Bridge (Aggregator) ──
         is_bridge = False
         for ep_id, ep_content in ep_dict.items():
             device_types = ep_content.get("device_types", [])
@@ -139,34 +269,30 @@ class MatterDeviceMapper:
         devices_to_sync = []
 
         if is_bridge:
-            # 1. Register Bridge Root Device
+            # ── Bridge Device ──
             bridge_name = f"Matter Bridge - {vendor_name} {product_name} ({node_id})"
             root_device = self._get_or_create_device_entry(
-                node_id=node_id,
-                endpoint_id=0,
-                device_name=bridge_name,
-                device_type="Matter Bridge",
-                vendor_name=vendor_name,
-                product_name=product_name,
-                serial_number=serial_number,
-                is_bridged=False,
-                bridge_name=None
+                node_id=node_id, endpoint_id=0, device_name=bridge_name,
+                device_type="Matter Bridge", vendor_name=vendor_name,
+                product_name=product_name, serial_number=serial_number,
+                is_bridged=False, bridge_name=None
             )
             devices_to_sync.append(root_device)
 
-            # 2. Iterate Bridged Endpoints (1..N) and create individual ThingsBoard devices
             for ep_id, ep_content in ep_dict.items():
                 if ep_id == 0:
                     continue
 
                 clusters = ep_content.get("clusters", {})
-                bridged_info = clusters.get(str(CLUSTER_BRIDGED_DEVICE_BASIC), {}) or clusters.get(CLUSTER_BRIDGED_DEVICE_BASIC, {})
-                node_label = bridged_info.get("nodeLabel") or bridged_info.get("1") or ""
-                b_vendor = bridged_info.get("vendorName") or bridged_info.get("2") or vendor_name
+                bridged_info = (
+                    clusters.get(str(CLUSTER_BRIDGED_DEVICE_BASIC), {})
+                    or clusters.get(CLUSTER_BRIDGED_DEVICE_BASIC, {})
+                )
+                node_label = bridged_info.get("nodeLabel") or bridged_info.get("5") or ""
+                b_vendor = bridged_info.get("vendorName") or bridged_info.get("1") or vendor_name
                 b_product = bridged_info.get("productName") or bridged_info.get("3") or ""
-                b_serial = bridged_info.get("serialNumber") or bridged_info.get("4") or f"{serial_number}-EP{ep_id}"
+                b_serial = bridged_info.get("serialNumber") or bridged_info.get("15") or f"{serial_number}-EP{ep_id}"
 
-                # Infer device type name
                 inferred_type = "Bridged Smart Device"
                 for dt in ep_content.get("device_types", []):
                     dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
@@ -174,49 +300,77 @@ class MatterDeviceMapper:
                         inferred_type = DEVICE_TYPE_NAMES[dt_id]
                         break
 
-                display_title = node_label if node_label else (b_product if b_product else inferred_type)
+                display_title = node_label or b_product or inferred_type
                 bridged_device_name = f"Bridged - {vendor_name} {display_title} (N{node_id}-EP{ep_id})"
 
                 bridged_device = self._get_or_create_device_entry(
-                    node_id=node_id,
-                    endpoint_id=ep_id,
-                    device_name=bridged_device_name,
-                    device_type=inferred_type,
-                    vendor_name=b_vendor,
-                    product_name=b_product or display_title,
-                    serial_number=b_serial,
-                    is_bridged=True,
-                    bridge_name=bridge_name
+                    node_id=node_id, endpoint_id=ep_id, device_name=bridged_device_name,
+                    device_type=inferred_type, vendor_name=b_vendor,
+                    product_name=b_product or display_title, serial_number=b_serial,
+                    is_bridged=True, bridge_name=bridge_name
                 )
                 devices_to_sync.append(bridged_device)
 
         else:
-            # Direct Matter Device (Wi-Fi Plug, Light, Lock, Sensor)
-            primary_ep_id = 1 if 1 in ep_dict else 0
-            primary_ep = ep_dict.get(primary_ep_id, {})
-            
-            inferred_type = "Matter Smart Device"
-            for dt in primary_ep.get("device_types", []):
-                dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
-                if dt_id in DEVICE_TYPE_NAMES:
-                    inferred_type = DEVICE_TYPE_NAMES[dt_id]
-                    break
+            # ── Direct Matter Device (Wi-Fi Plug, Switch, Light, Lock, Sensor) ──
+            # Find all functional endpoints (skip root endpoint 0)
+            functional_eps = {}
+            for ep_id, ep_content in ep_dict.items():
+                if ep_id == 0:
+                    continue
+                if self._has_functional_cluster(ep_content):
+                    functional_eps[ep_id] = ep_content
 
-            direct_device_name = f"Matter - {vendor_name} {product_name} ({node_id})"
-            direct_device = self._get_or_create_device_entry(
-                node_id=node_id,
-                endpoint_id=primary_ep_id,
-                device_name=direct_device_name,
-                device_type=inferred_type,
-                vendor_name=vendor_name,
-                product_name=product_name,
-                serial_number=serial_number,
-                is_bridged=False,
-                bridge_name=None
-            )
-            devices_to_sync.append(direct_device)
+            if len(functional_eps) > 1:
+                # Multi-endpoint device (e.g., 3-gang switch) → one device per endpoint
+                for ep_id in sorted(functional_eps.keys()):
+                    ep_content = functional_eps[ep_id]
+                    inferred_type = "Smart Device"
+                    for dt in ep_content.get("device_types", []):
+                        dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
+                        if dt_id in DEVICE_TYPE_NAMES:
+                            inferred_type = DEVICE_TYPE_NAMES[dt_id]
+                            break
+
+                    ep_device_name = f"Matter - {product_name} CH{ep_id} (N{node_id})"
+                    ep_device = self._get_or_create_device_entry(
+                        node_id=node_id, endpoint_id=ep_id,
+                        device_name=ep_device_name, device_type=inferred_type,
+                        vendor_name=vendor_name, product_name=product_name,
+                        serial_number=f"{serial_number}-CH{ep_id}",
+                        is_bridged=False, bridge_name=None
+                    )
+                    devices_to_sync.append(ep_device)
+            else:
+                # Single endpoint device
+                if functional_eps:
+                    primary_ep_id = list(functional_eps.keys())[0]
+                else:
+                    primary_ep_id = 1 if 1 in ep_dict else 0
+                primary_ep = ep_dict.get(primary_ep_id, {})
+
+                inferred_type = "Matter Smart Device"
+                for dt in primary_ep.get("device_types", []):
+                    dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
+                    if dt_id in DEVICE_TYPE_NAMES:
+                        inferred_type = DEVICE_TYPE_NAMES[dt_id]
+                        break
+
+                direct_device_name = f"Matter - {vendor_name} {product_name} ({node_id})"
+                direct_device = self._get_or_create_device_entry(
+                    node_id=node_id, endpoint_id=primary_ep_id,
+                    device_name=direct_device_name, device_type=inferred_type,
+                    vendor_name=vendor_name, product_name=product_name,
+                    serial_number=serial_number,
+                    is_bridged=False, bridge_name=None
+                )
+                devices_to_sync.append(direct_device)
 
         return devices_to_sync
+
+    # =========================================================================
+    # Device Entry Factory
+    # =========================================================================
 
     def _get_or_create_device_entry(
         self,
@@ -270,6 +424,10 @@ class MatterDeviceMapper:
                 }
             }
 
+    # =========================================================================
+    # Attribute Update Conversion
+    # =========================================================================
+
     def convert_attribute_update(
         self,
         node_id: int,
@@ -280,6 +438,7 @@ class MatterDeviceMapper:
     ) -> Optional[Tuple[str, Dict[str, Any], Dict[str, Any]]]:
         """
         Translates a Matter cluster attribute update into ThingsBoard (device_name, telemetry, attributes).
+        Also updates the internal state cache.
         Returns None if attribute does not map to relevant smart home state.
         """
         key = f"{node_id}_{endpoint_id}"
@@ -375,7 +534,15 @@ class MatterDeviceMapper:
         if not telemetry and not attributes:
             return None
 
+        # Update live state cache
+        if telemetry:
+            self.update_device_state(node_id, endpoint_id, telemetry)
+
         return (device_name, telemetry, attributes)
+
+    # =========================================================================
+    # RPC to Matter Command Mapping
+    # =========================================================================
 
     def map_rpc_to_matter_command(
         self,

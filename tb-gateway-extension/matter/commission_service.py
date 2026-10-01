@@ -155,7 +155,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 })
                 return
 
-            network_only = bool(req_data.get("network_only", True))
+            network_only = bool(req_data.get("network_only", False))  # False = allow BLE commissioning
             wifi_ssid = req_data.get("wifi_ssid")
             wifi_password = req_data.get("wifi_password")
 
@@ -251,7 +251,11 @@ class MatterCommissionService:
             dev_type = dev.get("device_type", "Smart Device")
 
             # Check if device has OnOff capability
-            has_onoff = "Light" in dev_type or "Relay" in dev_type or "Socket" in dev_type or "Plug" in dev_type or "Switch" in dev_type
+            has_onoff = any(kw in dev_type for kw in ["Light", "Relay", "Socket", "Plug", "Switch"])
+
+            # Get live state from mapper cache
+            state_data = self.connector.mapper.get_device_state(node_id, endpoint_id)
+            current_state = state_data.get("state", "OFF")
 
             dev_info = {
                 "device_name": device_name,
@@ -262,7 +266,11 @@ class MatterCommissionService:
                 "model": dev.get("product_name", ""),
                 "is_bridged": is_bridged,
                 "has_onoff": has_onoff,
-                "state": "OFF"
+                "state": current_state,
+                "temperature": state_data.get("temperature"),
+                "humidity": state_data.get("humidity"),
+                "battery": state_data.get("battery"),
+                "brightness": state_data.get("brightness"),
             }
             devices.append(dev_info)
 
@@ -286,7 +294,7 @@ class MatterCommissionService:
     def commission_device(
         self,
         code: str,
-        network_only: bool = True,
+        network_only: bool = False,  # False = allow BLE/PASE commissioning
         wifi_ssid: Optional[str] = None,
         wifi_password: Optional[str] = None
     ) -> dict:
@@ -302,12 +310,20 @@ class MatterCommissionService:
                 "error": "Cannot commission: UNIQ Hub is not currently connected to matterjs-server."
             }
 
+        # Auto-set WiFi credentials on the matter server before commissioning
+        if wifi_ssid and wifi_password:
+            wifi_resp = client.set_wifi_credentials(wifi_ssid, wifi_password, timeout=10.0)
+            if wifi_resp.get("success"):
+                log.info(f"WiFi credentials set successfully for SSID: {wifi_ssid}")
+            else:
+                log.warning(f"WiFi credentials setting returned: {wifi_resp} - proceeding with commission anyway")
+
         resp = client.commission_with_code(
             code=code,
             network_only=network_only,
             wifi_ssid=wifi_ssid,
             wifi_password=wifi_password,
-            timeout=60.0
+            timeout=180.0
         )
 
         if not resp.get("success"):
@@ -317,10 +333,30 @@ class MatterCommissionService:
             }
 
         result_data = resp.get("result", {})
-        node_id = result_data.get("node_id") if isinstance(result_data, dict) else None
 
-        if node_id and hasattr(self.connector, "sync_node_by_id"):
-            self.connector.sync_node_by_id(int(node_id))
+        # Support multiple matterjs-server response formats for node_id
+        node_id = None
+        if isinstance(result_data, dict):
+            node_id = (
+                result_data.get("node_id")
+                or result_data.get("nodeId")
+                or result_data.get("id")
+                or result_data.get("fabricNodeId")
+            )
+        elif isinstance(result_data, (int, str)):
+            # Some versions return node_id directly as result
+            try:
+                node_id = int(result_data)
+            except (ValueError, TypeError):
+                pass
+
+        log.info(f"Commissioning result: node_id={node_id}, raw_result={result_data}")
+
+        if node_id is not None and hasattr(self.connector, "sync_node_by_id"):
+            try:
+                self.connector.sync_node_by_id(int(node_id))
+            except Exception as e:
+                log.warning(f"sync_node_by_id failed: {e}")
 
         return {
             "status": "success",

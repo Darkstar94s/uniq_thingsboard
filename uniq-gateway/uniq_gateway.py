@@ -209,18 +209,29 @@ class UniqGateway:
             client.publish("v1/devices/me/attributes", json.dumps(hub_attributes))
             log.info(f"Published Hub telemetry and license attributes: {hub_attributes}")
 
-            # Re-announce all known sub-devices to Cloud!
-            for c_name, connector in list(self.connectors.items()):
-                if hasattr(connector, "mapper") and connector.mapper:
-                    for key, dev in connector.mapper._registry.items():
-                        d_name = dev.get("device_name")
-                        d_type = dev.get("device_type", "Matter Device")
-                        if d_name:
-                            client.publish("v1/gateway/connect", json.dumps({"device": d_name, "type": d_type}))
-                            client.publish("v1/gateway/attributes", json.dumps({d_name: {"integration": "Matter", "managedBy": "UNIQ Hub"}}))
-                            client.publish("v1/gateway/telemetry", json.dumps({d_name: [{"ts": int(round(time.time() * 1000)), "values": {"status": "online"}}] }))
-                            log.info(f"Announced sub-device to Cloud on connect: [{d_name}] ({d_type})")
-
+            # Re-announce all known sub-devices to Cloud (only on first connect or explicit reconnect)
+            if not getattr(self, "_cloud_announced", False):
+                self._cloud_announced = True
+                for c_name, connector in list(self.connectors.items()):
+                    if hasattr(connector, "mapper") and connector.mapper:
+                        for key, dev in connector.mapper._registry.items():
+                            d_name = dev.get("device_name")
+                            d_type = dev.get("device_type", "Matter Device")
+                            if d_name:
+                                client.publish("v1/gateway/connect", json.dumps({"device": d_name, "type": d_type}))
+                                client.publish("v1/gateway/attributes", json.dumps({d_name: {"integration": "Matter", "managedBy": "UNIQ Hub"}}))
+                                client.publish("v1/gateway/telemetry", json.dumps({d_name: [{"ts": int(round(time.time() * 1000)), "values": {"status": "online"}}]}))
+                                log.info(f"Announced sub-device to Cloud on connect: [{d_name}] ({d_type})")
+            else:
+                # On reconnect: only re-announce without spamming telemetry
+                log.info("Cloud reconnected - re-announcing sub-devices...")
+                for c_name, connector in list(self.connectors.items()):
+                    if hasattr(connector, "mapper") and connector.mapper:
+                        for key, dev in connector.mapper._registry.items():
+                            d_name = dev.get("device_name")
+                            d_type = dev.get("device_type", "Matter Device")
+                            if d_name:
+                                client.publish("v1/gateway/connect", json.dumps({"device": d_name, "type": d_type}))
 
         else:
             log.error(f"Cloud connection failed with code: {rc}")
