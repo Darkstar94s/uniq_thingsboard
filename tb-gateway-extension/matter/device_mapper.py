@@ -158,23 +158,38 @@ class MatterDeviceMapper:
             if os.path.exists(self.registry_file_path):
                 try:
                     with open(self.registry_file_path, "r", encoding="utf-8") as f:
-                        self._registry = json.load(f)
+                        raw_data = json.load(f)
+
+                    # Support both new structure { "registry": ..., "device_states": ... } and legacy flat dict
+                    if isinstance(raw_data, dict) and "registry" in raw_data:
+                        self._registry = raw_data.get("registry", {})
+                        self._device_states = raw_data.get("device_states", {})
+                    elif isinstance(raw_data, dict):
+                        self._registry = raw_data
+                        self._device_states = {}
+
                     for key, data in self._registry.items():
                         device_name = data.get("device_name")
                         node_id = data.get("node_id")
                         endpoint_id = data.get("endpoint_id")
                         if device_name and node_id is not None and endpoint_id is not None:
                             self._name_to_node_ep[device_name] = (int(node_id), int(endpoint_id))
-                    log.info(f"Loaded {len(self._registry)} mapped Matter devices from persistent registry.")
+
+                    log.info(f"Loaded {len(self._registry)} mapped Matter devices and {len(self._device_states)} cached device states.")
                 except Exception as e:
                     log.error(f"Failed to load Matter device registry: {e}")
                     self._registry = {}
+                    self._device_states = {}
 
     def _save_registry(self):
         try:
             os.makedirs(os.path.dirname(os.path.abspath(self.registry_file_path)), exist_ok=True)
             with open(self.registry_file_path, "w", encoding="utf-8") as f:
-                json.dump(self._registry, f, indent=2, ensure_ascii=False)
+                data_to_save = {
+                    "registry": self._registry,
+                    "device_states": self._device_states
+                }
+                json.dump(data_to_save, f, indent=2, ensure_ascii=False)
         except Exception as e:
             log.error(f"Failed to save Matter device registry: {e}")
 
@@ -186,16 +201,23 @@ class MatterDeviceMapper:
         return self._name_to_node_ep.get(device_name)
 
     def update_device_state(self, node_id: int, endpoint_id: int, state_data: Dict[str, Any]):
-        """Update the live state cache for a device endpoint."""
+        """Update the live state cache for a device endpoint and persist."""
         key = f"{node_id}_{endpoint_id}"
         with self._lock:
             if key not in self._device_states:
                 self._device_states[key] = {}
             self._device_states[key].update(state_data)
+            self._save_registry()
 
     def get_device_state(self, node_id: int, endpoint_id: int) -> Dict[str, Any]:
         """Get the cached live state for a device endpoint."""
-        return self._device_states.get(f"{node_id}_{endpoint_id}", {})
+        with self._lock:
+            state = self._device_states.get(f"{node_id}_{endpoint_id}")
+            if state:
+                return dict(state)
+            # Fallback to endpoint 1 if looking up node
+            fallback = self._device_states.get(f"{node_id}_1")
+            return dict(fallback) if fallback else {}
 
     # =========================================================================
     # Flat Attribute Format Parser (matter.js server)

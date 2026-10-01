@@ -190,91 +190,127 @@ class UniqMatterConnector(Connector, Thread):
             log.error(f"Error synchronizing Matter node: {e}", exc_info=True)
 
     def _extract_initial_telemetry(self, node_data: Dict[str, Any], node_id: int, endpoint_id: int, device_name: str):
-        """Extracts initial cluster states from node data and sends as telemetry. Supports flat matter.js format."""
+        """Extracts initial cluster states from node data and sends as telemetry. Supports flat matter.js format and nested."""
         telemetry_payload = {}
 
-        # Check for flat matter.js attributes format first ("ep/cluster/attr": value)
         flat_attrs = node_data.get("attributes", {})
         if flat_attrs:
-            # OnOff: "{ep}/6/0"
-            onoff_key = f"{endpoint_id}/6/0"
-            if onoff_key in flat_attrs:
-                val = flat_attrs[onoff_key]
-                telemetry_payload["state"] = "ON" if val in [True, 1, "true"] else "OFF"
-                telemetry_payload["onOff"] = bool(val in [True, 1, "true"])
+            # 1. OnOff State: "{ep}/6/0"
+            for onoff_key in [f"{endpoint_id}/6/0", f"{endpoint_id}/6/onOff", "1/6/0"]:
+                if onoff_key in flat_attrs:
+                    val = flat_attrs[onoff_key]
+                    telemetry_payload["state"] = "ON" if val in [True, 1, "true", "True"] else "OFF"
+                    telemetry_payload["onOff"] = (telemetry_payload["state"] == "ON")
+                    break
 
-            # LevelControl: "{ep}/8/0"
-            level_key = f"{endpoint_id}/8/0"
-            if level_key in flat_attrs:
-                try:
-                    telemetry_payload["brightness"] = int(round(int(flat_attrs[level_key]) / 254.0 * 100))
-                except (ValueError, TypeError):
-                    pass
+            # 2. LevelControl: "{ep}/8/0"
+            for lvl_key in [f"{endpoint_id}/8/0", f"{endpoint_id}/8/currentLevel", "1/8/0"]:
+                if lvl_key in flat_attrs:
+                    try:
+                        telemetry_payload["brightness"] = int(round(int(flat_attrs[lvl_key]) / 254.0 * 100))
+                        break
+                    except (ValueError, TypeError):
+                        pass
 
-            # Temperature: "{ep}/1026/0"
-            temp_key = f"{endpoint_id}/1026/0"
-            if temp_key in flat_attrs:
+            # 3. Dynamic scan across all attributes for sensors & electrical measurements
+            for attr_path, val in flat_attrs.items():
+                parts = str(attr_path).split("/")
+                if len(parts) != 3:
+                    continue
                 try:
-                    telemetry_payload["temperature"] = round(float(flat_attrs[temp_key]) / 100.0, 2)
+                    ep_k = int(parts[0])
+                    cl_k = int(parts[1])
+                    at_k = int(parts[2])
                 except (ValueError, TypeError):
-                    pass
+                    continue
 
-            # Humidity: "{ep}/1029/0"
-            hum_key = f"{endpoint_id}/1029/0"
-            if hum_key in flat_attrs:
-                try:
-                    telemetry_payload["humidity"] = round(float(flat_attrs[hum_key]) / 100.0, 2)
-                except (ValueError, TypeError):
-                    pass
+                # Match endpoint or primary endpoint
+                if ep_k != endpoint_id and ep_k not in [0, 1] and len(flat_attrs) > 20:
+                    continue
 
-            # Electrical Measurement (2820): Active Power (1291), Voltage (1285), Current (1288)
-            power_key = f"{endpoint_id}/2820/1291"
-            if power_key in flat_attrs:
-                try:
-                    telemetry_payload["power"] = round(float(flat_attrs[power_key]), 2)
-                except (ValueError, TypeError):
-                    pass
+                # Temperature (1026)
+                if cl_k == 1026 and at_k in [0, "0", "measuredValue"]:
+                    try:
+                        telemetry_payload["temperature"] = round(float(val) / 100.0, 2)
+                    except Exception:
+                        pass
 
-            volt_key = f"{endpoint_id}/2820/1285"
-            if volt_key in flat_attrs:
-                try:
-                    telemetry_payload["voltage"] = round(float(flat_attrs[volt_key]), 2)
-                except (ValueError, TypeError):
-                    pass
+                # Humidity (1029)
+                elif cl_k == 1029 and at_k in [0, "0", "measuredValue"]:
+                    try:
+                        telemetry_payload["humidity"] = round(float(val) / 100.0, 2)
+                    except Exception:
+                        pass
 
-            curr_key = f"{endpoint_id}/2820/1288"
-            if curr_key in flat_attrs:
-                try:
-                    c_val = float(flat_attrs[curr_key])
-                    telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 50 else round(c_val, 3)
-                except (ValueError, TypeError):
-                    pass
+                # Electrical Measurement (2820 / 0x0B04)
+                elif cl_k == 2820:
+                    if at_k in [1291, 0x050B]:  # ActivePower
+                        try:
+                            telemetry_payload["power"] = round(float(val), 2)
+                        except Exception:
+                            pass
+                    elif at_k in [1285, 0x0505]:  # RMSVoltage
+                        try:
+                            telemetry_payload["voltage"] = round(float(val), 2)
+                        except Exception:
+                            pass
+                    elif at_k in [1288, 0x0508]:  # RMSCurrent
+                        try:
+                            c_val = float(val)
+                            telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 50 else round(c_val, 3)
+                        except Exception:
+                            pass
 
-            # Simple Metering (1794): CurrentSummationDelivered (0)
-            meter_key = f"{endpoint_id}/1794/0"
-            if meter_key in flat_attrs:
-                try:
-                    e_val = float(flat_attrs[meter_key])
-                    telemetry_payload["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
-                except (ValueError, TypeError):
-                    pass
+                # Metering (1794 / 0x0702)
+                elif cl_k == 1794:
+                    if at_k in [0, 0x0000]:  # CurrentSummationDelivered
+                        try:
+                            e_val = float(val)
+                            telemetry_payload["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
+                        except Exception:
+                            pass
+                    elif at_k in [1024, 0x0400]:  # InstantaneousDemand
+                        try:
+                            telemetry_payload["power"] = round(float(val), 2)
+                        except Exception:
+                            pass
 
-            # Matter 1.3 Power Measurement (144) & Energy (145)
-            p_meas_key = f"{endpoint_id}/144/4"
-            if p_meas_key in flat_attrs:
-                try:
-                    p_val = float(flat_attrs[p_meas_key])
-                    telemetry_payload["power"] = round(p_val / 1000.0, 2) if p_val > 1000 else round(p_val, 2)
-                except (ValueError, TypeError):
-                    pass
+                # Matter 1.3 Power (144 / 0x0090)
+                elif cl_k == 144:
+                    if at_k in [4, 9]:
+                        try:
+                            p_val = float(val)
+                            telemetry_payload["power"] = round(p_val / 1000.0, 2) if p_val > 1000 else round(p_val, 2)
+                        except Exception:
+                            pass
+                    elif at_k in [0, 7]:
+                        try:
+                            v_val = float(val)
+                            telemetry_payload["voltage"] = round(v_val / 1000.0, 2) if v_val > 1000 else round(v_val, 2)
+                        except Exception:
+                            pass
+                    elif at_k in [1, 8]:
+                        try:
+                            c_val = float(val)
+                            telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 1000 else round(c_val, 3)
+                        except Exception:
+                            pass
 
-            # Battery (1): batteryPercentRemaining (12)
-            batt_key = f"{endpoint_id}/1/12"
-            if batt_key in flat_attrs:
-                try:
-                    telemetry_payload["battery"] = round(float(flat_attrs[batt_key]) / 2.0, 1)
-                except (ValueError, TypeError):
-                    pass
+                # Matter 1.3 Energy (145 / 0x0091)
+                elif cl_k == 145:
+                    if at_k in [0, 2]:
+                        try:
+                            e_val = float(val.get("energy", 0)) if isinstance(val, dict) else float(val)
+                            telemetry_payload["energy"] = round(e_val / 1000000.0, 3) if e_val > 10000 else round(e_val, 3)
+                        except Exception:
+                            pass
+
+                # Battery (1)
+                elif cl_k == 1 and at_k in [12, "12"]:
+                    try:
+                        telemetry_payload["battery"] = round(float(val) / 2.0, 1)
+                    except Exception:
+                        pass
 
         else:
             # Nested endpoint/cluster format (fallback)
