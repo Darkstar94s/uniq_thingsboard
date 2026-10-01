@@ -16,56 +16,109 @@ DEVICE_TYPE_AGGREGATOR_BRIDGE = 0x000E   # 14
 DEVICE_TYPE_BRIDGED_NODE = 0x0013        # 19
 DEVICE_TYPE_ON_OFF_LIGHT = 0x0100        # 256
 DEVICE_TYPE_DIMMABLE_LIGHT = 0x0101      # 257
+DEVICE_TYPE_COLOR_LIGHT = 0x0102         # 258
+DEVICE_TYPE_EXT_COLOR_LIGHT = 0x010D     # 269
 DEVICE_TYPE_ON_OFF_LIGHT_SWITCH = 0x0103 # 259
 DEVICE_TYPE_DIMMER_SWITCH = 0x0104       # 260
+DEVICE_TYPE_GENERIC_SWITCH = 0x000F      # 15
 DEVICE_TYPE_ON_OFF_PLUG = 0x010A         # 266
 DEVICE_TYPE_DIMMABLE_PLUG = 0x010B       # 267
 DEVICE_TYPE_DOOR_LOCK = 0x000A           # 10
+DEVICE_TYPE_WINDOW_COVERING = 0x0202     # 514
+DEVICE_TYPE_THERMOSTAT = 0x0301          # 769
+DEVICE_TYPE_FAN = 0x002B                 # 43
 DEVICE_TYPE_TEMP_SENSOR = 0x0302         # 770
 DEVICE_TYPE_HUMIDITY_SENSOR = 0x0307     # 775
 DEVICE_TYPE_OCCUPANCY_SENSOR = 0x0107    # 263
 DEVICE_TYPE_CONTACT_SENSOR = 0x0015      # 21
+DEVICE_TYPE_LIGHT_SENSOR = 0x0106        # 262
+DEVICE_TYPE_AIR_QUALITY_SENSOR = 0x002C  # 44
 
 DEVICE_TYPE_NAMES = {
     DEVICE_TYPE_ON_OFF_LIGHT: "Smart Light",
     DEVICE_TYPE_DIMMABLE_LIGHT: "Dimmable Light",
+    DEVICE_TYPE_COLOR_LIGHT: "Color Light",
+    DEVICE_TYPE_EXT_COLOR_LIGHT: "Extended Color Light",
     DEVICE_TYPE_ON_OFF_LIGHT_SWITCH: "Smart Switch",
     DEVICE_TYPE_DIMMER_SWITCH: "Dimmer Switch",
+    DEVICE_TYPE_GENERIC_SWITCH: "Generic Switch",
     DEVICE_TYPE_ON_OFF_PLUG: "Smart Socket",
     DEVICE_TYPE_DIMMABLE_PLUG: "Dimmable Socket",
     DEVICE_TYPE_DOOR_LOCK: "Smart Door Lock",
+    DEVICE_TYPE_WINDOW_COVERING: "Smart Curtain/Cover",
+    DEVICE_TYPE_THERMOSTAT: "Smart Thermostat",
+    DEVICE_TYPE_FAN: "Smart Fan",
     DEVICE_TYPE_TEMP_SENSOR: "Temperature Sensor",
     DEVICE_TYPE_HUMIDITY_SENSOR: "Humidity Sensor",
     DEVICE_TYPE_OCCUPANCY_SENSOR: "Motion Sensor",
-    DEVICE_TYPE_CONTACT_SENSOR: "Door/Window Sensor"
+    DEVICE_TYPE_CONTACT_SENSOR: "Door/Window Sensor",
+    DEVICE_TYPE_LIGHT_SENSOR: "Light Sensor",
+    DEVICE_TYPE_AIR_QUALITY_SENSOR: "Air Quality Sensor",
 }
 
 # Standard Matter Cluster IDs
 CLUSTER_DESCRIPTOR = 0x001D              # 29
-CLUSTER_POWER_SOURCE = 0x0001
-CLUSTER_ON_OFF = 0x0006
-CLUSTER_LEVEL_CONTROL = 0x0008
+CLUSTER_POWER_SOURCE = 0x0001            # 1
+CLUSTER_ON_OFF = 0x0006                  # 6
+CLUSTER_LEVEL_CONTROL = 0x0008           # 8
 CLUSTER_BASIC_INFORMATION = 0x0028       # 40
 CLUSTER_BRIDGED_DEVICE_BASIC = 0x0039    # 57
-CLUSTER_DOOR_LOCK = 0x0101
-CLUSTER_COLOR_CONTROL = 0x0300
+CLUSTER_DOOR_LOCK = 0x0101               # 257
+CLUSTER_COLOR_CONTROL = 0x0300           # 768
 CLUSTER_TEMP_MEASUREMENT = 0x0402        # 1026
 CLUSTER_HUMIDITY_MEASUREMENT = 0x0405    # 1029
 CLUSTER_OCCUPANCY_SENSING = 0x0406       # 1030
-CLUSTER_ELECTRICAL_MEASUREMENT = 0x0B04
-CLUSTER_METERING = 0x0702
+CLUSTER_POWER_MEASUREMENT = 0x0090       # 144 (Matter 1.3 Electrical Power Measurement)
+CLUSTER_ENERGY_MEASUREMENT = 0x0091      # 145 (Matter 1.3 Electrical Energy Measurement)
+CLUSTER_METERING = 0x0702                # 1794 (Simple Metering)
+CLUSTER_ELECTRICAL_MEASUREMENT = 0x0B04  # 2820 (Electrical Measurement)
 
 # Functional clusters that indicate an actionable smart-home endpoint
 FUNCTIONAL_CLUSTERS = {
     str(CLUSTER_ON_OFF),
     str(CLUSTER_LEVEL_CONTROL),
+    str(CLUSTER_COLOR_CONTROL),
     str(CLUSTER_DOOR_LOCK),
     str(CLUSTER_TEMP_MEASUREMENT),
     str(CLUSTER_HUMIDITY_MEASUREMENT),
     str(CLUSTER_OCCUPANCY_SENSING),
     str(CLUSTER_ELECTRICAL_MEASUREMENT),
+    str(CLUSTER_POWER_MEASUREMENT),
+    str(CLUSTER_ENERGY_MEASUREMENT),
     str(CLUSTER_METERING),
 }
+
+def infer_device_category(device_type: str, clusters: dict = None) -> str:
+    """Classifies device into standard categories: lighting, socket, switch, sensor, climate, security, bridge, other."""
+    dt = (device_type or "").lower()
+    cl_keys = set(str(k) for k in (clusters or {}).keys())
+
+    if "bridge" in dt or "aggregator" in dt:
+        return "bridge"
+    if any(k in dt for k in ["plug", "socket", "outlet", "مقبس", "فيش"]):
+        return "socket"
+    if any(k in dt for k in ["light", "bulb", "lamp", "led", "إنارة", "إضاءة", "لمبة"]):
+        return "lighting"
+    if any(k in dt for k in ["switch", "relay", "مفتاح", "رليه", "زر"]):
+        return "switch"
+    if any(k in dt for k in ["sensor", "temp", "humidity", "motion", "occupancy", "contact", "door/window", "حساس"]):
+        return "sensor"
+    if any(k in dt for k in ["thermostat", "fan", "hvac", "ac", "تكييف", "مروحة"]):
+        return "climate"
+    if any(k in dt for k in ["lock", "curtain", "blind", "shade", "قفل", "ستارة"]):
+        return "security"
+
+    # Infer from clusters if available
+    if cl_keys.intersection({str(CLUSTER_ELECTRICAL_MEASUREMENT), str(CLUSTER_POWER_MEASUREMENT), str(CLUSTER_METERING)}):
+        return "socket"
+    if cl_keys.intersection({str(CLUSTER_COLOR_CONTROL), str(CLUSTER_LEVEL_CONTROL)}):
+        return "lighting"
+    if cl_keys.intersection({str(CLUSTER_TEMP_MEASUREMENT), str(CLUSTER_HUMIDITY_MEASUREMENT), str(CLUSTER_OCCUPANCY_SENSING)}):
+        return "sensor"
+    if cl_keys.intersection({str(CLUSTER_ON_OFF)}):
+        return "switch"
+
+    return "other"
 
 # Basic Information cluster attribute IDs (Matter spec)
 BASIC_ATTR_VENDOR_NAME = "1"
@@ -382,14 +435,20 @@ class MatterDeviceMapper:
         product_name: str,
         serial_number: str,
         is_bridged: bool,
-        bridge_name: Optional[str]
+        bridge_name: Optional[str],
+        category: Optional[str] = None
     ) -> Dict[str, Any]:
         key = f"{node_id}_{endpoint_id}"
+        if not category:
+            category = infer_device_category(device_type)
+
         with self._lock:
             existing = self._registry.get(key)
             if existing:
                 # Keep existing consistent name
                 assigned_name = existing.get("device_name", device_name)
+                # Keep category updated
+                existing["category"] = category
             else:
                 assigned_name = device_name
                 self._registry[key] = {
@@ -397,6 +456,7 @@ class MatterDeviceMapper:
                     "endpoint_id": endpoint_id,
                     "device_name": assigned_name,
                     "device_type": device_type,
+                    "category": category,
                     "vendor_name": vendor_name,
                     "product_name": product_name,
                     "serial_number": serial_number,
@@ -412,9 +472,11 @@ class MatterDeviceMapper:
                 "endpoint_id": endpoint_id,
                 "device_name": assigned_name,
                 "device_type": device_type,
+                "category": category,
                 "attributes": {
                     "vendor": vendor_name,
                     "model": product_name,
+                    "category": category,
                     "serialNumber": serial_number,
                     "nodeId": node_id,
                     "endpointId": endpoint_id,
@@ -458,14 +520,14 @@ class MatterDeviceMapper:
         # 1. OnOff Cluster (0x0006)
         if cluster_id == CLUSTER_ON_OFF:
             # Attribute 0 is onOff
-            if attribute_id in [0, "onOff"]:
+            if attribute_id in [0, "0", "onOff"]:
                 state_val = "ON" if value in [True, 1, "true", "True"] else "OFF"
                 telemetry["state"] = state_val
                 telemetry["onOff"] = (state_val == "ON")
 
         # 2. LevelControl Cluster (0x0008 - Dimmers)
         elif cluster_id == CLUSTER_LEVEL_CONTROL:
-            if attribute_id in [0, "currentLevel"]:
+            if attribute_id in [0, "0", "currentLevel"]:
                 try:
                     level_int = int(value)
                     # Matter level ranges 0..254
@@ -474,9 +536,9 @@ class MatterDeviceMapper:
                 except Exception:
                     pass
 
-        # 3. Temperature Measurement (0x0402)
+        # 3. Temperature Measurement (0x0402 / 1026)
         elif cluster_id == CLUSTER_TEMP_MEASUREMENT:
-            if attribute_id in [0, "measuredValue"]:
+            if attribute_id in [0, "0", "measuredValue"]:
                 try:
                     raw_temp = float(value)
                     # Matter reports temperature in 100ths of a degree Celsius (e.g. 2150 = 21.5°C)
@@ -484,9 +546,9 @@ class MatterDeviceMapper:
                 except Exception:
                     pass
 
-        # 4. Relative Humidity Measurement (0x0405)
+        # 4. Relative Humidity Measurement (0x0405 / 1029)
         elif cluster_id == CLUSTER_HUMIDITY_MEASUREMENT:
-            if attribute_id in [0, "measuredValue"]:
+            if attribute_id in [0, "0", "measuredValue"]:
                 try:
                     raw_hum = float(value)
                     # Matter reports relative humidity in 100ths of 1% (e.g. 5500 = 55.0%)
@@ -494,41 +556,68 @@ class MatterDeviceMapper:
                 except Exception:
                     pass
 
-        # 5. Door Lock Cluster (0x0101)
+        # 5. Door Lock Cluster (0x0101 / 257)
         elif cluster_id == CLUSTER_DOOR_LOCK:
-            if attribute_id in [0, "lockState"]:
+            if attribute_id in [0, "0", "lockState"]:
                 # 1 = Locked, 2 = Unlocked
                 is_locked = (value == 1 or value == "Locked")
                 telemetry["lockState"] = "LOCKED" if is_locked else "UNLOCKED"
                 telemetry["locked"] = is_locked
 
-        # 6. Power Source Cluster (0x0001 - Battery)
+        # 6. Power Source Cluster (0x0001 / 1 - Battery)
         elif cluster_id == CLUSTER_POWER_SOURCE:
-            if attribute_id in [12, "batteryPercentRemaining"]:
+            if attribute_id in [12, "12", "batteryPercentRemaining"]:
                 try:
                     # Stored in half percents (0..200 represents 0..100%)
                     telemetry["battery"] = round(float(value) / 2.0, 1)
                 except Exception:
                     pass
 
-        # 7. Electrical Measurement (0x0B04)
+        # 7. Electrical Measurement (0x0B04 / 2820)
         elif cluster_id == CLUSTER_ELECTRICAL_MEASUREMENT:
-            # RMSVoltage = 0x0505, RMSCurrent = 0x0508, ActivePower = 0x050B
-            if attribute_id in [0x050B, "activePower"]:
+            # RMSVoltage = 0x0505 (1285), RMSCurrent = 0x0508 (1288), ActivePower = 0x050B (1291)
+            if attribute_id in [0x050B, 1291, "1291", "activePower"]:
                 telemetry["power"] = round(float(value), 2)
-            elif attribute_id in [0x0505, "rmsVoltage"]:
+            elif attribute_id in [0x0505, 1285, "1285", "rmsVoltage"]:
                 telemetry["voltage"] = round(float(value), 2)
-            elif attribute_id in [0x0508, "rmsCurrent"]:
-                telemetry["current"] = round(float(value), 3)
+            elif attribute_id in [0x0508, 1288, "1288", "rmsCurrent"]:
+                # In mA or A
+                cur_val = float(value)
+                telemetry["current"] = round(cur_val / 1000.0, 3) if cur_val > 50 else round(cur_val, 3)
 
-        # 8. Metering (0x0702)
+        # 8. Metering (0x0702 / 1794)
         elif cluster_id == CLUSTER_METERING:
-            if attribute_id in [0, "currentSummationDelivered"]:
-                telemetry["energy"] = round(float(value), 3)
+            if attribute_id in [0, "0", "currentSummationDelivered"]:
+                telemetry["energy"] = round(float(value) / 1000.0 if float(value) > 10000 else float(value), 3)
 
-        # 9. Occupancy (0x0406)
+        # 9. Electrical Power Measurement (0x0090 / 144 - Matter 1.3)
+        elif cluster_id == CLUSTER_POWER_MEASUREMENT:
+            if attribute_id in [4, "4", "activePower"]:
+                # in mW or W
+                p_val = float(value)
+                telemetry["power"] = round(p_val / 1000.0, 2) if p_val > 1000 else round(p_val, 2)
+            elif attribute_id in [0, "0", "voltage"]:
+                v_val = float(value)
+                telemetry["voltage"] = round(v_val / 1000.0, 2) if v_val > 1000 else round(v_val, 2)
+            elif attribute_id in [1, "1", "activeCurrent"]:
+                c_val = float(value)
+                telemetry["current"] = round(c_val / 1000.0, 3) if c_val > 1000 else round(c_val, 3)
+
+        # 10. Electrical Energy Measurement (0x0091 / 145 - Matter 1.3)
+        elif cluster_id == CLUSTER_ENERGY_MEASUREMENT:
+            if attribute_id in [0, "0", "cumulativeEnergyImported"]:
+                try:
+                    if isinstance(value, dict):
+                        e_val = float(value.get("energy", 0))
+                    else:
+                        e_val = float(value)
+                    telemetry["energy"] = round(e_val / 1000000.0, 3) if e_val > 10000 else round(e_val, 3)
+                except Exception:
+                    pass
+
+        # 11. Occupancy (0x0406 / 1030)
         elif cluster_id == CLUSTER_OCCUPANCY_SENSING:
-            if attribute_id in [0, "occupancy"]:
+            if attribute_id in [0, "0", "occupancy"]:
                 telemetry["occupancy"] = bool(int(value) & 1)
 
         if not telemetry and not attributes:

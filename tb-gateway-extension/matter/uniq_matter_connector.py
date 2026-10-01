@@ -226,6 +226,56 @@ class UniqMatterConnector(Connector, Thread):
                     telemetry_payload["humidity"] = round(float(flat_attrs[hum_key]) / 100.0, 2)
                 except (ValueError, TypeError):
                     pass
+
+            # Electrical Measurement (2820): Active Power (1291), Voltage (1285), Current (1288)
+            power_key = f"{endpoint_id}/2820/1291"
+            if power_key in flat_attrs:
+                try:
+                    telemetry_payload["power"] = round(float(flat_attrs[power_key]), 2)
+                except (ValueError, TypeError):
+                    pass
+
+            volt_key = f"{endpoint_id}/2820/1285"
+            if volt_key in flat_attrs:
+                try:
+                    telemetry_payload["voltage"] = round(float(flat_attrs[volt_key]), 2)
+                except (ValueError, TypeError):
+                    pass
+
+            curr_key = f"{endpoint_id}/2820/1288"
+            if curr_key in flat_attrs:
+                try:
+                    c_val = float(flat_attrs[curr_key])
+                    telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 50 else round(c_val, 3)
+                except (ValueError, TypeError):
+                    pass
+
+            # Simple Metering (1794): CurrentSummationDelivered (0)
+            meter_key = f"{endpoint_id}/1794/0"
+            if meter_key in flat_attrs:
+                try:
+                    e_val = float(flat_attrs[meter_key])
+                    telemetry_payload["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
+                except (ValueError, TypeError):
+                    pass
+
+            # Matter 1.3 Power Measurement (144) & Energy (145)
+            p_meas_key = f"{endpoint_id}/144/4"
+            if p_meas_key in flat_attrs:
+                try:
+                    p_val = float(flat_attrs[p_meas_key])
+                    telemetry_payload["power"] = round(p_val / 1000.0, 2) if p_val > 1000 else round(p_val, 2)
+                except (ValueError, TypeError):
+                    pass
+
+            # Battery (1): batteryPercentRemaining (12)
+            batt_key = f"{endpoint_id}/1/12"
+            if batt_key in flat_attrs:
+                try:
+                    telemetry_payload["battery"] = round(float(flat_attrs[batt_key]) / 2.0, 1)
+                except (ValueError, TypeError):
+                    pass
+
         else:
             # Nested endpoint/cluster format (fallback)
             endpoints = node_data.get("endpoints", {})
@@ -268,6 +318,28 @@ class UniqMatterConnector(Connector, Thread):
                 h = hum_cluster.get("measuredValue") if "measuredValue" in hum_cluster else hum_cluster.get("0")
                 if h is not None:
                     telemetry_payload["humidity"] = round(float(h) / 100.0, 2)
+
+            # Electrical Measurement (2820)
+            elec_cluster = clusters.get("2820") or clusters.get(2820, {})
+            if elec_cluster:
+                p = elec_cluster.get("activePower") if "activePower" in elec_cluster else elec_cluster.get("1291")
+                if p is not None:
+                    telemetry_payload["power"] = round(float(p), 2)
+                v = elec_cluster.get("rmsVoltage") if "rmsVoltage" in elec_cluster else elec_cluster.get("1285")
+                if v is not None:
+                    telemetry_payload["voltage"] = round(float(v), 2)
+                c = elec_cluster.get("rmsCurrent") if "rmsCurrent" in elec_cluster else elec_cluster.get("1288")
+                if c is not None:
+                    c_val = float(c)
+                    telemetry_payload["current"] = round(c_val / 1000.0, 3) if c_val > 50 else round(c_val, 3)
+
+            # Metering (1794)
+            meter_cluster = clusters.get("1794") or clusters.get(1794, {})
+            if meter_cluster:
+                e = meter_cluster.get("currentSummationDelivered") if "currentSummationDelivered" in meter_cluster else meter_cluster.get("0")
+                if e is not None:
+                    e_val = float(e)
+                    telemetry_payload["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
 
         if telemetry_payload:
             # Update live state cache in mapper

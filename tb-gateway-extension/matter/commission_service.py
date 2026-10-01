@@ -122,10 +122,18 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 return
 
             device_name = req_data.get("device")
-            method = req_data.get("method")
-            params = req_data.get("params")
+            method = req_data.get("method", "setState")
+            params = req_data.get("params", True)
+            node_id = req_data.get("node_id")
+            endpoint_id = req_data.get("endpoint_id")
 
-            result = service.control_device(device_name, method, params)
+            result = service.control_device(
+                device_name=device_name,
+                method=method,
+                params=params,
+                node_id=int(node_id) if node_id is not None else None,
+                endpoint_id=int(endpoint_id) if endpoint_id is not None else None
+            )
             self._send_json_response(200, result)
             return
 
@@ -241,6 +249,8 @@ class MatterCommissionService:
         if not self.connector or not hasattr(self.connector, "mapper"):
             return []
 
+        from .device_mapper import infer_device_category
+
         devices = []
         registry = self.connector.mapper._registry
         for key, dev in registry.items():
@@ -249,9 +259,10 @@ class MatterCommissionService:
             node_id = dev.get("node_id")
             endpoint_id = dev.get("endpoint_id")
             dev_type = dev.get("device_type", "Smart Device")
+            category = dev.get("category") or infer_device_category(dev_type)
 
             # Check if device has OnOff capability
-            has_onoff = any(kw in dev_type for kw in ["Light", "Relay", "Socket", "Plug", "Switch"])
+            has_onoff = any(kw in dev_type for kw in ["Light", "Relay", "Socket", "Plug", "Switch", "Generic Switch"]) or category in ["lighting", "socket", "switch"]
 
             # Get live state from mapper cache
             state_data = self.connector.mapper.get_device_state(node_id, endpoint_id)
@@ -260,25 +271,42 @@ class MatterCommissionService:
             dev_info = {
                 "device_name": device_name,
                 "device_type": dev_type,
+                "category": category,
                 "node_id": node_id,
                 "endpoint_id": endpoint_id,
                 "vendor": dev.get("vendor_name", "Matter"),
                 "model": dev.get("product_name", ""),
+                "serial_number": dev.get("serial_number", ""),
                 "is_bridged": is_bridged,
+                "bridge_name": dev.get("bridge_name"),
                 "has_onoff": has_onoff,
                 "state": current_state,
                 "temperature": state_data.get("temperature"),
                 "humidity": state_data.get("humidity"),
                 "battery": state_data.get("battery"),
                 "brightness": state_data.get("brightness"),
+                "power": state_data.get("power"),
+                "voltage": state_data.get("voltage"),
+                "current": state_data.get("current"),
+                "energy": state_data.get("energy"),
             }
             devices.append(dev_info)
 
         return devices
 
-    def control_device(self, device_name: str, method: str, params: Any) -> dict:
+    def control_device(self, device_name: Optional[str] = None, method: str = "setState", params: Any = True, node_id: Optional[int] = None, endpoint_id: Optional[int] = None) -> dict:
         if not self.connector:
             return {"success": False, "error": "Connector not initialized"}
+
+        # If node_id and endpoint_id are given, resolve device_name if needed
+        if not device_name and node_id is not None and endpoint_id is not None:
+            key = f"{node_id}_{endpoint_id}"
+            reg_entry = self.connector.mapper._registry.get(key)
+            if reg_entry:
+                device_name = reg_entry.get("device_name")
+
+        if not device_name:
+            return {"success": False, "error": "device_name or (node_id, endpoint_id) is required"}
 
         rpc_request = {
             "device": device_name,
