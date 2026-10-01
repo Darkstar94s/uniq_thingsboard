@@ -92,7 +92,28 @@ class MatterDeviceMapper:
     def get_node_endpoint_by_device_name(self, device_name: str) -> Optional[Tuple[int, int]]:
         return self._name_to_node_ep.get(device_name)
 
+    def remove_device(self, device_name: Optional[str] = None, node_id: Optional[int] = None):
+        """Removes a device or entire node from the local registry."""
+        with self._lock:
+            keys_to_delete = []
+            for key, dev in list(self._registry.items()):
+                if device_name and dev.get("device_name") == device_name:
+                    keys_to_delete.append(key)
+                elif node_id is not None and int(dev.get("node_id", -1)) == int(node_id):
+                    keys_to_delete.append(key)
+
+            for k in keys_to_delete:
+                dev_data = self._registry.pop(k, None)
+                if dev_data:
+                    d_name = dev_data.get("device_name")
+                    if d_name:
+                        self._name_to_node_ep.pop(d_name, None)
+
+            self._save_registry()
+            log.info(f"Removed {len(keys_to_delete)} device(s) from persistent registry. Remaining: {len(self._registry)}")
+
     def parse_node_topology(self, node_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+
         """
         Parses a Matter node object received from matterjs-server.
         Splits Matter bridges into separate ThingsBoard device definitions.

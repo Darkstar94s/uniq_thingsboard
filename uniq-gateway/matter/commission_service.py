@@ -170,8 +170,23 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             self._send_json_response(status_code, result)
             return
 
+        # 5. Delete Device Endpoint
+        elif self.path in ["/api/devices/delete", "/api/device/delete"]:
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+
+            device_name = req_data.get("device")
+            node_id = req_data.get("node_id")
+
+            result = service.delete_device(device_name, node_id)
+            self._send_json_response(200, result)
+            return
+
         else:
             self._send_json_response(404, {"error": "Not Found", "path": self.path})
+
 
 
 class MatterCommissionService:
@@ -332,3 +347,28 @@ class MatterCommissionService:
             "result": result_data,
             "message": f"Device successfully commissioned on Matter Fabric with Node ID {node_id}."
         }
+
+    def delete_device(self, device_name: str, node_id: Optional[int] = None) -> dict:
+        """Deletes a device from local registry and unpairs from Matter."""
+        if not self.connector:
+            return {"success": False, "error": "Connector not initialized"}
+
+        log.info(f"Deleting device [{device_name}] (Node ID: {node_id})...")
+
+        # 1. Unpair from Matter Controller if node_id provided
+        if node_id and hasattr(self.connector, "client") and self.connector.client and self.connector.client.is_connected:
+            try:
+                self.connector.client.send_command("remove_node", args={"node_id": int(node_id)})
+            except Exception as e:
+                log.warning(f"Failed to remove node from matter server: {e}")
+
+        # 2. Remove from local mapper registry
+        if hasattr(self.connector, "mapper") and self.connector.mapper:
+            self.connector.mapper.remove_device(device_name, node_id)
+
+        # 3. Disconnect from Gateway / Cloud
+        if hasattr(self.connector, "send_to_gateway"):
+            self.connector.send_to_gateway("disconnect", {"device": device_name})
+
+        return {"success": True, "message": f"Device {device_name} removed successfully"}
+

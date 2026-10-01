@@ -490,6 +490,7 @@
                 <span class="tag">Node ${dev.node_id}</span>
               </div>
             </div>
+            <button class="btn btn-outline" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.4); padding: 5px 12px; font-size: 11px; margin-right: auto;" onclick="deleteDevice('${dev.device_name}', ${dev.node_id})" title="حذف هذا الجهاز">حذف 🗑️</button>
           </div>
           <div class="device-body">
             <div class="metrics">${metricHtml}</div>
@@ -500,7 +501,32 @@
       });
     }
 
+    async function deleteDevice(deviceName, nodeId) {
+      if (!confirm(`هل أنت متأكد من رغبتك في حذف الجهاز:\n"${deviceName}"؟`)) {
+        return;
+      }
+      try {
+        const res = await fetch('/api/devices/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          },
+          body: JSON.stringify({ device: deviceName, node_id: nodeId })
+        });
+        const resp = await res.json();
+        if (resp.success) {
+          refreshData();
+        } else {
+          alert('تعذر حذف الجهاز: ' + (resp.error || 'فشلت العملية'));
+        }
+      } catch (err) {
+        alert('خطأ في إرسال طلب الحذف: ' + err);
+      }
+    }
+
     async function toggleDeviceState(deviceName, newState) {
+
       try {
         await fetch('/api/control', {
           method: 'POST',

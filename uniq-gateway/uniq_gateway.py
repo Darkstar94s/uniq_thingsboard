@@ -217,7 +217,10 @@ class UniqGateway:
                         d_type = dev.get("device_type", "Matter Device")
                         if d_name:
                             client.publish("v1/gateway/connect", json.dumps({"device": d_name, "type": d_type}))
+                            client.publish("v1/gateway/attributes", json.dumps({d_name: {"integration": "Matter", "managedBy": "UNIQ Hub"}}))
+                            client.publish("v1/gateway/telemetry", json.dumps({d_name: [{"ts": int(round(time.time() * 1000)), "values": {"status": "online"}}] }))
                             log.info(f"Announced sub-device to Cloud on connect: [{d_name}] ({d_type})")
+
 
         else:
             log.error(f"Cloud connection failed with code: {rc}")
@@ -293,9 +296,13 @@ class UniqGateway:
 
         if message_type == "connect":
             # Inform Cloud of newly connected device
-            payload = {"device": device}
+            d_type = data.get("type", "Matter Device")
+            payload = {"device": device, "type": d_type}
             self.mqtt_client.publish("v1/gateway/connect", json.dumps(payload))
-            log.info(f"Published sub-device connected: {device}")
+            self.mqtt_client.publish("v1/gateway/attributes", json.dumps({device: {"integration": "Matter", "managedBy": "UNIQ Hub"}}))
+            self.mqtt_client.publish("v1/gateway/telemetry", json.dumps({device: [{"ts": int(round(time.time() * 1000)), "values": {"status": "online"}}] }))
+            log.info(f"Published sub-device connected and initialized on Cloud: {device} ({d_type})")
+
 
         elif message_type == "disconnect":
             payload = {"device": device}
