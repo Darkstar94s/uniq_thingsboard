@@ -112,15 +112,7 @@ def resolve_device_type_and_category(
     if DEVICE_TYPE_AGGREGATOR_BRIDGE in dt_ids:
         return ("Matter Bridge", "bridge")
 
-    # 2. Wall Switches / Multi-gang Switches (e.g. SONOFF SwitchMan, Aqara Switch, Tuya Switch)
-    if any(k in combined_name for k in ["switchman", "wall switch", "gang", "relay", "breaker", "مفتاح", "رليه", "قاطع"]) or (
-        "switch" in combined_name and "socket" not in combined_name and "plug" not in combined_name
-    ):
-        return ("Smart Switch", "switch")
-    if endpoint_count > 1 and any(dt in [DEVICE_TYPE_ON_OFF_LIGHT_SWITCH, DEVICE_TYPE_DIMMER_SWITCH, DEVICE_TYPE_GENERIC_SWITCH, DEVICE_TYPE_ON_OFF_LIGHT] for dt in dt_ids):
-        return ("Smart Switch", "switch")
-
-    # 3. Smart Sockets / Plugs / Outlets (e.g. Smart Plug, Socket, Outlet)
+    # 2. Smart Sockets / Plugs / Outlets (e.g. Smart Plug, Socket, Outlet, Huayu Lian plug, Tuya plug)
     has_power_cluster = bool(cl_keys.intersection({
         str(CLUSTER_ELECTRICAL_MEASUREMENT), "2820", "0x0B04", "0x0b04",
         str(CLUSTER_POWER_MEASUREMENT), "144", "0x0090",
@@ -128,12 +120,23 @@ def resolve_device_type_and_category(
         str(CLUSTER_ENERGY_MEASUREMENT), "145", "0x0091"
     }))
 
+    is_known_plug_vendor = any(k in v_lower or k in combined_name for k in ["huayu", "huayu lian", "huayulian", "tuya", "gosund", "meross", "kasa", "tapo", "eve"])
     if any(k in combined_name for k in ["plug", "socket", "outlet", "power plug", "مقبس", "فيش", "بلك", "افياش"]):
+        return ("Smart Socket", "socket")
+    if is_known_plug_vendor and endpoint_count <= 1:
         return ("Smart Socket", "socket")
     if has_power_cluster:
         return ("Smart Socket", "socket")
     if any(dt in [DEVICE_TYPE_ON_OFF_PLUG, DEVICE_TYPE_DIMMABLE_PLUG] for dt in dt_ids):
         return ("Smart Socket", "socket")
+
+    # 3. Wall Switches / Multi-gang Switches (e.g. SONOFF SwitchMan, Aqara Switch, Tuya Switch)
+    if any(k in combined_name for k in ["switchman", "wall switch", "gang", "relay", "breaker", "مفتاح", "رليه", "قاطع"]) or (
+        "switch" in combined_name and "socket" not in combined_name and "plug" not in combined_name
+    ):
+        return ("Smart Switch", "switch")
+    if endpoint_count > 1 and any(dt in [DEVICE_TYPE_ON_OFF_LIGHT_SWITCH, DEVICE_TYPE_DIMMER_SWITCH, DEVICE_TYPE_GENERIC_SWITCH, DEVICE_TYPE_ON_OFF_LIGHT] for dt in dt_ids):
+        return ("Smart Switch", "switch")
 
     # 4. Smart Lighting (Bulbs, Lamps, Downlights, LED Strips)
     if any(k in combined_name for k in ["bulb", "lamp", "downlight", "spotlight", "strip", "ceiling", "لمبة", "إنارة", "إضاءة", "سبوت"]) or (
@@ -725,35 +728,53 @@ class MatterDeviceMapper:
 
         return (device_name, telemetry, attributes)
 
+    def set_device_category(self, node_id: int, endpoint_id: int, category: str, device_type: Optional[str] = None) -> bool:
+        """Manually override the category of a device endpoint and save."""
+        key = f"{node_id}_{endpoint_id}"
+        with self._lock:
+            entry = self._registry.get(key)
+            if entry:
+                entry["category"] = category
+                if device_type:
+                    entry["device_type"] = device_type
+                self._save_registry()
+                return True
+        return False
+
     # =========================================================================
     # RPC to Matter Command Mapping
     # =========================================================================
 
     def map_rpc_to_matter_command(
         self,
-        device_name: str,
-        method: str,
-        params: Any
+        device_name: Optional[str] = None,
+        method: str = "setState",
+        params: Any = True,
+        node_id: Optional[int] = None,
+        endpoint_id: Optional[int] = None
     ) -> Optional[Tuple[int, int, int, str, Dict[str, Any]]]:
         """
         Maps a ThingsBoard RPC command to a Matter cluster command.
         Returns: (node_id, endpoint_id, cluster_id, command_name, command_args)
         """
-        node_ep = self.get_node_endpoint_by_device_name(device_name)
-        if not node_ep:
-            log.warning(f"Device name '{device_name}' not found in Matter registry for RPC.")
-            return None
+        if node_id is None or endpoint_id is None:
+            if device_name:
+                node_ep = self.get_node_endpoint_by_device_name(device_name)
+                if node_ep:
+                    node_id, endpoint_id = node_ep
 
-        node_id, endpoint_id = node_ep
+        if node_id is None or endpoint_id is None:
+            log.warning(f"Device name '{device_name}' or (node_id, endpoint_id) not found in Matter registry for RPC.")
+            return None
 
         # A. On / Off commands
         if method in ["setState", "setValue", "writeState"]:
             is_on = params in [True, 1, "ON", "true", "True", "on"]
-            cmd_name = "On" if is_on else "Off"
+            cmd_name = "on" if is_on else "off"
             return (node_id, endpoint_id, CLUSTER_ON_OFF, cmd_name, {})
 
         elif method in ["toggle", "toggleState"]:
-            return (node_id, endpoint_id, CLUSTER_ON_OFF, "Toggle", {})
+            return (node_id, endpoint_id, CLUSTER_ON_OFF, "toggle", {})
 
         # B. Level / Dimmer commands
         elif method in ["setBrightness", "setLevel"]:

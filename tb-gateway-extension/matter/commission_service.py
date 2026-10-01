@@ -137,7 +137,25 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             self._send_json_response(200, result)
             return
 
-        # 3. Change PIN API
+        # 3. Change Device Category API
+        elif self.path == "/api/devices/set_category":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+
+            nid = req_data.get("node_id")
+            epid = req_data.get("endpoint_id", 1)
+            new_cat = req_data.get("category", "socket")
+            new_type = req_data.get("device_type")
+            if nid is not None and service.connector and service.connector.mapper:
+                service.connector.mapper.set_device_category(int(nid), int(epid), str(new_cat), new_type)
+                self._send_json_response(200, {"success": True, "message": f"Category updated to {new_cat}"})
+            else:
+                self._send_json_response(400, {"success": False, "error": "Missing node_id"})
+            return
+
+        # 4. Change PIN API
         elif self.path == "/api/settings/pin":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
@@ -153,7 +171,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 self._send_json_response(400, {"success": False, "error": "Current PIN is incorrect or new PIN is too short"})
             return
 
-        # 4. Matter Commissioning Endpoint
+        # 5. Matter Commissioning Endpoint
         elif self.path in ["/matter/commission", "/commission", "/api/commission"]:
             code = req_data.get("code")
             if not code:
@@ -311,6 +329,31 @@ class MatterCommissionService:
     def control_device(self, device_name: Optional[str] = None, method: str = "setState", params: Any = True, node_id: Optional[int] = None, endpoint_id: Optional[int] = None) -> dict:
         if not self.connector:
             return {"success": False, "error": "Connector not initialized"}
+
+        # Direct cluster command execution
+        if node_id is not None and endpoint_id is not None and self.connector.client and self.connector.client.is_connected:
+            is_on = params in [True, 1, "ON", "true", "True", "on"]
+            cmd_name = "on" if is_on else "off"
+            if method in ["toggle", "toggleState"]:
+                cmd_name = "toggle"
+
+            resp = self.connector.client.device_command(
+                node_id=int(node_id),
+                endpoint_id=int(endpoint_id),
+                cluster_id=6,
+                command_name=cmd_name,
+                command_args={},
+                timeout=8.0
+            )
+
+            # Update live state in mapper cache immediately
+            if method in ["toggle", "toggleState"]:
+                cur = self.connector.mapper.get_device_state(int(node_id), int(endpoint_id))
+                is_on = (cur.get("state") != "ON")
+
+            state_update = {"state": "ON" if is_on else "OFF", "onOff": is_on}
+            self.connector.mapper.update_device_state(int(node_id), int(endpoint_id), state_update)
+            return {"success": True, "result": resp.get("result"), "state": state_update["state"]}
 
         # If node_id and endpoint_id are given, resolve device_name if needed
         if not device_name and node_id is not None and endpoint_id is not None:

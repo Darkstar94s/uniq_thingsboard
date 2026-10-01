@@ -785,7 +785,7 @@
                 <button 
                   class="icon-toggle-btn ${isOn ? 'is-on' : ''}" 
                   id="btn-toggle-${nodeId}-${epId}"
-                  onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}', '${epState}')"
+                  onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}')"
                 >
                   <span class="power-symbol">⏻</span>
                   <span>${isOn ? 'تشغيل' : 'إيقاف'}</span>
@@ -799,6 +799,18 @@
 
         html += `
             </div>
+
+            <!-- Quick Category Switcher & Actions -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; margin-top: 4px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>⚙️ تعديل التصنيف:</span>
+                <button class="btn btn-outline" style="padding: 3px 10px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'socket', 'Smart Socket')">🔌 مقبس</button>
+                <button class="btn btn-outline" style="padding: 3px 10px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
+                <button class="btn btn-outline" style="padding: 3px 10px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'lighting', 'Smart Light')">💡 إنارة</button>
+              </div>
+              <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>
+            </div>
+
           </div>
         `;
       });
@@ -806,41 +818,23 @@
       container.innerHTML = html;
     }
 
-    // Toggle Channel State with Instant UI Feedback
-    async function toggleChannelState(nodeId, endpointId, deviceName, currentState) {
-      const btn = document.getElementById(`btn-toggle-${nodeId}-${endpointId}`);
-      const pill = document.getElementById(`ep-pill-${nodeId}-${endpointId}`);
-      
-      const targetState = (currentState !== 'ON');
+    // Toggle Channel State with Instant Single-Click Responsiveness
+    async function toggleChannelState(nodeId, endpointId, deviceName) {
+      const match = rawDevices.find(d => d.node_id === nodeId && d.endpoint_id === endpointId);
+      const currentIsOn = match ? (match.state === 'ON') : false;
+      const targetState = !currentIsOn;
       const targetStateStr = targetState ? 'ON' : 'OFF';
 
-      // Immediate Optimistic UI Feedback
-      if (btn) {
-        btn.classList.toggle('is-on', targetState);
-        btn.innerHTML = `<span class="power-symbol">⏻</span> <span>${targetState ? 'تشغيل' : 'إيقاف'}</span>`;
-      }
-      if (pill) {
-        pill.classList.toggle('is-on', targetState);
-        const iconEl = pill.querySelector('.channel-status-icon');
-        if (iconEl) {
-          iconEl.className = 'channel-status-icon ' + (targetState ? 'on' : '');
-          iconEl.textContent = targetState ? '💡' : '🌑';
-        }
-        const textEl = pill.querySelector('.channel-state-text');
-        if (textEl) {
-          textEl.className = 'channel-state-text ' + (targetState ? 'on' : '');
-          textEl.textContent = targetState ? '● قيد التشغيل (ON)' : '○ متوقف (OFF)';
-        }
-      }
-
-      // Update local array immediately
-      const match = rawDevices.find(d => d.node_id === nodeId && d.endpoint_id === endpointId);
+      // 1. Update local state immediately
       if (match) {
         match.state = targetStateStr;
       }
+      // 2. Re-render UI immediately so button classes, icons and colors are 100% updated on the spot
+      renderDevicesList();
 
+      // 3. Dispatch RPC command to local controller
       try {
-        await fetch('/api/control', {
+        const res = await fetch('/api/control', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -854,9 +848,45 @@
             params: targetState
           })
         });
+        const data = await res.json();
+        if (data.state && match) {
+          match.state = data.state;
+          renderDevicesList();
+        }
       } catch (err) {
         console.error('Failed to send control command', err);
         loadDevices(true);
+      }
+    }
+
+    // Change Device Category dynamically
+    async function changeDeviceCategory(nodeId, endpointId, newCategory, newType) {
+      try {
+        const res = await fetch('/api/devices/set_category', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          },
+          body: JSON.stringify({
+            node_id: nodeId,
+            endpoint_id: endpointId,
+            category: newCategory,
+            device_type: newType
+          })
+        });
+        if (res.ok) {
+          rawDevices.forEach(d => {
+            if (d.node_id === nodeId) {
+              d.category = newCategory;
+              if (newType) d.device_type = newType;
+            }
+          });
+          updateCategoryCounts();
+          renderDevicesList();
+        }
+      } catch (err) {
+        console.error('Failed to update category', err);
       }
     }
 
