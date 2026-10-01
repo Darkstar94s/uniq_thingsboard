@@ -60,9 +60,12 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         service = self.server.service  # type: ignore
+        from urllib.parse import urlparse, parse_qs
+        parsed_path = urlparse(self.path)
+        query_params = parse_qs(parsed_path.query)
 
         # 1. Web Dashboard (Home Page)
-        if self.path in ["/", "/index.html"]:
+        if parsed_path.path in ["/", "/index.html"]:
             if os.path.exists(INDEX_HTML_PATH):
                 with open(INDEX_HTML_PATH, "r", encoding="utf-8") as f:
                     self._send_html_response(f.read())
@@ -85,6 +88,29 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
 
             devices_data = service.get_live_devices()
             self._send_json_response(200, {"devices": devices_data})
+            return
+
+        # 4. Raw Matter Node Clusters & Datapoints Inspection (Protected)
+        elif parsed_path.path in ["/api/devices/raw", "/api/node/raw"]:
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+
+            nid_list = query_params.get("node_id", []) or query_params.get("id", [])
+            if not nid_list:
+                self._send_json_response(400, {"error": "Missing node_id query param"})
+                return
+
+            try:
+                nid = int(nid_list[0])
+                if service.connector and service.connector.client:
+                    node_raw = service.connector.client.get_node(nid)
+                    self._send_json_response(200, node_raw)
+                else:
+                    self._send_json_response(503, {"error": "Matter client not available"})
+            except Exception as e:
+                self._send_json_response(500, {"error": str(e)})
             return
 
         else:

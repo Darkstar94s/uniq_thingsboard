@@ -698,38 +698,65 @@ class MatterDeviceMapper:
                     pass
 
         # 7. Electrical Measurement (0x0B04 / 2820)
-        elif cluster_id == CLUSTER_ELECTRICAL_MEASUREMENT:
-            # RMSVoltage = 0x0505 (1285), RMSCurrent = 0x0508 (1288), ActivePower = 0x050B (1291)
-            if attribute_id in [0x050B, 1291, "1291", "activePower"]:
-                telemetry["power"] = round(float(value), 2)
-            elif attribute_id in [0x0505, 1285, "1285", "rmsVoltage"]:
-                telemetry["voltage"] = round(float(value), 2)
-            elif attribute_id in [0x0508, 1288, "1288", "rmsCurrent"]:
-                # In mA or A
-                cur_val = float(value)
-                telemetry["current"] = round(cur_val / 1000.0, 3) if cur_val > 50 else round(cur_val, 3)
+        elif cluster_id in [CLUSTER_ELECTRICAL_MEASUREMENT, 2820, "2820", 0x0B04]:
+            if attribute_id in [0x050B, 1291, "1291", "activePower", "active_power", "power", 1290, "1290"]:
+                try:
+                    p_val = float(value)
+                    telemetry["power"] = round(p_val / 1000.0 if p_val > 50000 else (p_val / 10.0 if p_val > 5000 else p_val), 2)
+                except Exception:
+                    pass
+            elif attribute_id in [0x0505, 1285, "1285", "rmsVoltage", "rms_voltage", "voltage"]:
+                try:
+                    v_val = float(value)
+                    telemetry["voltage"] = round(v_val / 100.0 if v_val > 1000 else (v_val / 10.0 if v_val > 500 else v_val), 2)
+                except Exception:
+                    pass
+            elif attribute_id in [0x0508, 1288, "1288", "rmsCurrent", "rms_current", "current"]:
+                try:
+                    c_val = float(value)
+                    telemetry["current"] = round(c_val / 1000.0 if c_val > 50 else c_val, 3)
+                except Exception:
+                    pass
 
         # 8. Metering (0x0702 / 1794)
-        elif cluster_id == CLUSTER_METERING:
-            if attribute_id in [0, "0", "currentSummationDelivered"]:
-                telemetry["energy"] = round(float(value) / 1000.0 if float(value) > 10000 else float(value), 3)
+        elif cluster_id in [CLUSTER_METERING, 1794, "1794", 0x0702]:
+            if attribute_id in [0, "0", "currentSummationDelivered", "summationDelivered", "energy", "add_ele"]:
+                try:
+                    e_val = float(value)
+                    telemetry["energy"] = round(e_val / 1000.0 if e_val > 10000 else e_val, 3)
+                except Exception:
+                    pass
+            elif attribute_id in [1024, "1024", 0x0400, "instantaneousDemand", "demand", "power"]:
+                try:
+                    p_val = float(value)
+                    telemetry["power"] = round(p_val / 10.0 if p_val > 5000 else p_val, 2)
+                except Exception:
+                    pass
 
         # 9. Electrical Power Measurement (0x0090 / 144 - Matter 1.3)
-        elif cluster_id == CLUSTER_POWER_MEASUREMENT:
-            if attribute_id in [4, "4", "activePower"]:
-                # in mW or W
-                p_val = float(value)
-                telemetry["power"] = round(p_val / 1000.0, 2) if p_val > 1000 else round(p_val, 2)
-            elif attribute_id in [0, "0", "voltage"]:
-                v_val = float(value)
-                telemetry["voltage"] = round(v_val / 1000.0, 2) if v_val > 1000 else round(v_val, 2)
-            elif attribute_id in [1, "1", "activeCurrent"]:
-                c_val = float(value)
-                telemetry["current"] = round(c_val / 1000.0, 3) if c_val > 1000 else round(c_val, 3)
+        elif cluster_id in [CLUSTER_POWER_MEASUREMENT, 144, "144", 0x0090]:
+            if attribute_id in [4, 5, "4", "5", "activePower", "active_power", "power"]:
+                try:
+                    p_val = float(value)
+                    telemetry["power"] = round(p_val / 1000.0 if p_val > 1000 else p_val, 2)
+                except Exception:
+                    pass
+            elif attribute_id in [0, 1, "0", "1", "voltage", "rmsVoltage"]:
+                try:
+                    v_val = float(value)
+                    telemetry["voltage"] = round(v_val / 1000.0 if v_val > 1000 else v_val, 2)
+                except Exception:
+                    pass
+            elif attribute_id in [1, 2, "1", "2", "activeCurrent", "current", "rmsCurrent"]:
+                try:
+                    c_val = float(value)
+                    telemetry["current"] = round(c_val / 1000.0 if c_val > 1000 else c_val, 3)
+                except Exception:
+                    pass
 
         # 10. Electrical Energy Measurement (0x0091 / 145 - Matter 1.3)
-        elif cluster_id == CLUSTER_ENERGY_MEASUREMENT:
-            if attribute_id in [0, "0", "cumulativeEnergyImported"]:
+        elif cluster_id in [CLUSTER_ENERGY_MEASUREMENT, 145, "145", 0x0091]:
+            if attribute_id in [0, 2, "0", "2", "cumulativeEnergyImported", "periodicEnergyImported", "energy"]:
                 try:
                     if isinstance(value, dict):
                         e_val = float(value.get("energy", 0))
@@ -739,7 +766,23 @@ class MatterDeviceMapper:
                 except Exception:
                     pass
 
-        # 11. Occupancy (0x0406 / 1030)
+        # 11. Vendor-Specific & Custom Clusters (Tuya, Huayu Lian, Gosund 0xE000, 0xE001, 0xFC01, 0xFC80, 0xEF00)
+        elif cluster_id in [0xE000, 0xE001, 0xFC01, 0xFC02, 0xFC80, 0xEF00, 57344, 57345, 64513, 64640, 61184]:
+            attr_name = str(attribute_id).lower()
+            try:
+                num_val = float(value.get("energy", 0) if isinstance(value, dict) else value)
+                if any(k in attr_name for k in ["power", "watt", "cur_power", "19"]):
+                    telemetry["power"] = round(num_val / 10.0 if num_val > 5000 else num_val, 2)
+                elif any(k in attr_name for k in ["volt", "cur_voltage", "20"]):
+                    telemetry["voltage"] = round(num_val / 10.0 if num_val > 500 else num_val, 2)
+                elif any(k in attr_name for k in ["curr", "amp", "cur_current", "18"]):
+                    telemetry["current"] = round(num_val / 1000.0 if num_val > 50 else num_val, 3)
+                elif any(k in attr_name for k in ["energy", "kwh", "add_ele", "17"]):
+                    telemetry["energy"] = round(num_val / 1000.0 if num_val > 10000 else num_val, 3)
+            except Exception:
+                pass
+
+        # 12. Occupancy (0x0406 / 1030)
         elif cluster_id == CLUSTER_OCCUPANCY_SENSING:
             if attribute_id in [0, "0", "occupancy"]:
                 telemetry["occupancy"] = bool(int(value) & 1)

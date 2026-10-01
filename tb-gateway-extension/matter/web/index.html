@@ -808,8 +808,16 @@
                 <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
                 <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'lighting', 'Smart Light')">💡 إنارة</button>
               </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>
+                <button 
+                  class="btn btn-outline" 
+                  style="padding: 3px 8px; font-size: 10px; color: #94A3B8; border-color: rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer;"
+                  title="عرض جميع الـ Clusters والـ Datapoints الخام القادمة من الجهاز"
+                  onclick="inspectNodeDatapoints(${nodeId})"
+                >
+                  🔍 فحص الـ Datapoints
+                </button>
                 <button 
                   class="btn btn-danger-soft" 
                   id="btn-delete-${nodeId}"
@@ -952,6 +960,43 @@
           btn.innerHTML = `🗑️ حذف الجهاز`;
           btn.style.opacity = '1';
         }
+      }
+    }
+
+    // Inspect Node Datapoints & Raw Clusters
+    async function inspectNodeDatapoints(nodeId) {
+      try {
+        const res = await fetch(`/api/devices/raw?node_id=${nodeId}`, {
+          headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        const data = await res.json();
+        const jsonStr = JSON.stringify(data, null, 2);
+        
+        const win = window.open("", "_blank", "width=750,height=650,scrollbars=yes");
+        if (win) {
+          win.document.write(`
+            <!DOCTYPE html>
+            <html dir="ltr">
+            <head>
+              <meta charset="UTF-8">
+              <title>Node #${nodeId} Raw Matter Datapoints</title>
+              <style>
+                body { background: #0b1120; color: #38bdf8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; padding: 24px; font-size: 13px; line-height: 1.5; margin: 0; }
+                h2 { color: #f8fafc; margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; font-size: 16px; }
+                pre { background: #030712; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; overflow: auto; max-height: calc(100vh - 100px); color: #a5f3fc; }
+              </style>
+            </head>
+            <body>
+              <h2>🔍 Node #${nodeId} Raw Matter Clusters, Attributes & Datapoints</h2>
+              <pre>${jsonStr}</pre>
+            </body>
+            </html>
+          `);
+        } else {
+          alert(`Node #${nodeId} Raw Datapoints:\n\n` + jsonStr.substring(0, 1500));
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء جلب الـ Datapoints: ' + err.message);
       }
     }
 
