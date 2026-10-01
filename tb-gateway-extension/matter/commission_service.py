@@ -264,6 +264,7 @@ class MatterCommissionService:
             return
         self._is_running = True
         try:
+            HTTPServer.allow_reuse_address = True
             self._server = HTTPServer((self.host, self.port), CommissionRequestHandler)
             self._server.service = self  # type: ignore
             self._thread = threading.Thread(
