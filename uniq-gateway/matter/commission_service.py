@@ -272,16 +272,20 @@ class MatterCommissionService:
         if not self.connector:
             return {"success": False, "error": "Connector not initialized"}
 
-        rpc_request = {
-            "device": device_name,
-            "data": {
-                "id": 1,
-                "method": method,
-                "params": params
+        if hasattr(self.connector, "handle_rpc"):
+            return self.connector.handle_rpc(device_name, method, params)
+        elif hasattr(self.connector, "server_side_rpc_handler"):
+            rpc_request = {
+                "device": device_name,
+                "data": {
+                    "id": 1,
+                    "method": method,
+                    "params": params
+                }
             }
-        }
-        res = self.connector.server_side_rpc_handler(rpc_request)
-        return res
+            return self.connector.server_side_rpc_handler(rpc_request)
+        return {"success": False, "error": "No RPC handler available on connector"}
+
 
     def commission_device(
         self,
