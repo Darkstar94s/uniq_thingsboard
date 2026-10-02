@@ -181,16 +181,14 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
         req_path = urlparse(self.path).path
 
         content_length = int(self.headers.get("Content-Length", 0))
-        if content_length <= 0:
-            self._send_json_response(400, {"status": "error", "error": "Empty request body"})
-            return
-
-        try:
-            post_body = self.rfile.read(content_length)
-            req_data = json.loads(post_body.decode("utf-8"))
-        except Exception as e:
-            self._send_json_response(400, {"status": "error", "error": f"Invalid JSON body: {e}"})
-            return
+        req_data = {}
+        if content_length > 0:
+            try:
+                post_body = self.rfile.read(content_length)
+                req_data = json.loads(post_body.decode("utf-8"))
+            except Exception as e:
+                self._send_json_response(400, {"status": "error", "error": f"Invalid JSON body: {e}"})
+                return
 
         # 1. Admin PIN Login
         if req_path == "/api/login":
@@ -629,12 +627,31 @@ class MatterCommissionService:
         if not self.connector:
             return {"success": False, "error": "Connector not initialized"}
 
-        # Direct cluster command execution
-        if node_id is not None and endpoint_id is not None and self.connector.client and self.connector.client.is_connected:
-            is_on = params in [True, 1, "ON", "true", "True", "on"]
-            cmd_name = "on" if is_on else "off"
+        # Resolve device_name if missing
+        if not device_name and node_id is not None and endpoint_id is not None:
+            if hasattr(self.connector, "mapper") and self.connector.mapper:
+                key = f"{node_id}_{endpoint_id}"
+                reg_entry = self.connector.mapper._registry.get(key)
+                if reg_entry:
+                    device_name = reg_entry.get("device_name")
+            if not device_name:
+                device_name = f"Matter - Node {node_id}"
+
+        # 1. Preferred route: handle_rpc via connector
+        if hasattr(self.connector, "handle_rpc") and device_name:
+            try:
+                res = self.connector.handle_rpc(device_name, method, params)
+                is_on = (params is True or params == 1 or str(params).upper() == "ON")
+                return {"success": True, "result": res, "state": "ON" if is_on else "OFF"}
+            except Exception as e:
+                log.warning(f"handle_rpc failed, trying direct client: {e}")
+
+        # 2. Direct client fallback
+        if node_id is not None and endpoint_id is not None and hasattr(self.connector, "client") and self.connector.client and self.connector.client.is_connected:
+            is_on = (params is True or params == 1 or str(params).upper() == "ON")
+            cmd_name = "On" if is_on else "Off"
             if method in ["toggle", "toggleState"]:
-                cmd_name = "toggle"
+                cmd_name = "Toggle"
 
             resp = self.connector.client.device_command(
                 node_id=int(node_id),
@@ -645,35 +662,15 @@ class MatterCommissionService:
                 timeout=8.0
             )
 
-            # Update live state in mapper cache immediately
-            if method in ["toggle", "toggleState"]:
-                cur = self.connector.mapper.get_device_state(int(node_id), int(endpoint_id))
-                is_on = (cur.get("state") != "ON")
-
             state_update = {"state": "ON" if is_on else "OFF", "onOff": is_on}
-            self.connector.mapper.update_device_state(int(node_id), int(endpoint_id), state_update)
+            if hasattr(self.connector, "mapper") and self.connector.mapper:
+                self.connector.mapper.update_device_state(int(node_id), int(endpoint_id), state_update)
+            if hasattr(self.connector, "_on_matter_attribute_event"):
+                self.connector._on_matter_attribute_event(int(node_id), int(endpoint_id), 6, 0, 1 if is_on else 0)
+
             return {"success": True, "result": resp.get("result"), "state": state_update["state"]}
 
-        # If node_id and endpoint_id are given, resolve device_name if needed
-        if not device_name and node_id is not None and endpoint_id is not None:
-            key = f"{node_id}_{endpoint_id}"
-            reg_entry = self.connector.mapper._registry.get(key)
-            if reg_entry:
-                device_name = reg_entry.get("device_name")
-
-        if not device_name:
-            return {"success": False, "error": "device_name or (node_id, endpoint_id) is required"}
-
-        rpc_request = {
-            "device": device_name,
-            "data": {
-                "id": 1,
-                "method": method,
-                "params": params
-            }
-        }
-        res = self.connector.server_side_rpc_handler(rpc_request)
-        return res
+        return {"success": False, "error": "Unable to execute device control command"}
 
     def remove_device(self, node_id: int) -> dict:
         """
@@ -819,18 +816,27 @@ class MatterCommissionService:
         filepath = self._get_storage_file("floorplan.json")
         default_fp = {
             "image": "",
-            "pins": {}
+            "pins": []
         }
         if os.path.exists(filepath):
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if isinstance(data.get("pins"), dict):
+                        data["pins"] = list(data["pins"].values())
+                    elif not isinstance(data.get("pins"), list):
+                        data["pins"] = []
+                    return data
             except Exception:
                 pass
         return default_fp
 
     def save_floorplan_data(self, data: dict) -> bool:
         filepath = self._get_storage_file("floorplan.json")
+        if isinstance(data.get("pins"), dict):
+            data["pins"] = list(data["pins"].values())
+        elif not isinstance(data.get("pins"), list):
+            data["pins"] = []
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)

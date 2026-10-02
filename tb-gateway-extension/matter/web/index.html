@@ -1144,7 +1144,7 @@
         rawDevices = data.devices || [];
         updateCategoryCounts();
         renderDevicesList();
-        renderFloorplanPins();
+        try { renderFloorplanPins(); } catch (e) { console.warn(e); }
       } catch (err) {
         if (!silent) console.error('Error fetching devices', err);
       }
@@ -1404,7 +1404,7 @@
 
       if (match) match.state = targetStateStr;
       renderDevicesList();
-      renderFloorplanPins();
+      try { renderFloorplanPins(); } catch (e) {}
 
       try {
         const res = await fetch('/api/control', {
@@ -1425,7 +1425,7 @@
         if (data.state && match) {
           match.state = data.state;
           renderDevicesList();
-          renderFloorplanPins();
+          try { renderFloorplanPins(); } catch (e) {}
         }
       } catch (err) {
         console.error('Failed to control device', err);
@@ -1743,15 +1743,22 @@
           headers: { 'Authorization': 'Bearer ' + authToken }
         });
         const data = await res.json();
-        if (data.pins) floorplanData = data;
-        if (floorplanData.image) {
+        if (data && typeof data === 'object') {
+          floorplanData = data;
+          if (!Array.isArray(floorplanData.pins)) {
+            floorplanData.pins = (floorplanData.pins && typeof floorplanData.pins === 'object') ? Object.values(floorplanData.pins) : [];
+          }
+        }
+        if (floorplanData && floorplanData.image) {
           const img = document.getElementById('floorplanBgImage');
           img.src = floorplanData.image;
           img.style.display = 'block';
           document.getElementById('floorplanDefaultSvg').style.display = 'none';
         }
         renderFloorplanPins();
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Error loading floorplan data', e);
+      }
     }
 
     function handleFloorplanUpload(e) {
@@ -1809,9 +1816,9 @@
       const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
 
       const [nId, epId] = pendingPinDevice.split('_').map(Number);
-      floorplanData.pins = floorplanData.pins || [];
+      if (!Array.isArray(floorplanData.pins)) floorplanData.pins = [];
       // Remove existing pin if already placed
-      floorplanData.pins = floorplanData.pins.filter(p => !(p.node_id === nId && p.endpoint_id === epId));
+      floorplanData.pins = floorplanData.pins.filter(p => !(p && p.node_id === nId && p.endpoint_id === epId));
 
       floorplanData.pins.push({
         node_id: nId,
@@ -1829,31 +1836,46 @@
       const container = document.getElementById('pinsOverlayContainer');
       if (!container) return;
 
-      let html = '';
-      (floorplanData.pins || []).forEach(pin => {
-        const dev = rawDevices.find(d => d.node_id === pin.node_id && d.endpoint_id === pin.endpoint_id);
-        if (!dev) return;
-
-        const isOn = (dev.state === 'ON');
-        const icon = CATEGORY_ICONS[dev.category] || '💡';
-        const name = dev.custom_name || dev.device_name || `EP${dev.endpoint_id}`;
-
-        let sensorBadge = '';
-        if (dev.temperature !== undefined && dev.temperature !== null) {
-          sensorBadge = `<div class="pin-label-pill">🌡️ ${dev.temperature}°C ${dev.humidity ? `| 💧 ${dev.humidity}%` : ''}</div>`;
-        } else {
-          sensorBadge = `<div class="pin-label-pill">${name}</div>`;
+      try {
+        if (!floorplanData || typeof floorplanData !== 'object') {
+          floorplanData = { image: null, pins: [] };
+        }
+        let pinsList = [];
+        if (Array.isArray(floorplanData.pins)) {
+          pinsList = floorplanData.pins;
+        } else if (floorplanData.pins && typeof floorplanData.pins === 'object') {
+          pinsList = Object.values(floorplanData.pins);
         }
 
-        html += `
-          <div class="device-pin ${isOn ? 'is-on' : ''}" style="top: ${pin.y}%; left: ${pin.x}%; pointer-events: auto;" onclick="onPinClick(${dev.node_id}, ${dev.endpoint_id}, '${dev.device_name}')" title="${name} (انقر للتشغيل/الإطفاء)">
-            ${sensorBadge}
-            <div class="pin-bubble">${icon}</div>
-          </div>
-        `;
-      });
+        let html = '';
+        pinsList.forEach(pin => {
+          if (!pin || pin.node_id === undefined) return;
+          const dev = rawDevices.find(d => d.node_id === pin.node_id && d.endpoint_id === pin.endpoint_id);
+          if (!dev) return;
 
-      container.innerHTML = html;
+          const isOn = (dev.state === 'ON');
+          const icon = CATEGORY_ICONS[dev.category] || '💡';
+          const name = dev.custom_name || dev.device_name || `EP${dev.endpoint_id}`;
+
+          let sensorBadge = '';
+          if (dev.temperature !== undefined && dev.temperature !== null) {
+            sensorBadge = `<div class="pin-label-pill">🌡️ ${dev.temperature}°C ${dev.humidity ? `| 💧 ${dev.humidity}%` : ''}</div>`;
+          } else {
+            sensorBadge = `<div class="pin-label-pill">${name}</div>`;
+          }
+
+          html += `
+            <div class="device-pin ${isOn ? 'is-on' : ''}" style="top: ${pin.y}%; left: ${pin.x}%; pointer-events: auto;" onclick="onPinClick(${dev.node_id}, ${dev.endpoint_id}, '${(dev.device_name || '').replace(/'/g, "\\'")}')" title="${name} (انقر للتشغيل/الإطفاء)">
+              ${sensorBadge}
+              <div class="pin-bubble">${icon}</div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      } catch (err) {
+        console.warn('Error rendering floorplan pins:', err);
+      }
     }
 
     function onPinClick(nodeId, endpointId, deviceName) {
@@ -1976,7 +1998,8 @@
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + authToken
-          }
+          },
+          body: JSON.stringify({})
         });
         const data = await res.json();
         msg.style.display = 'block';
