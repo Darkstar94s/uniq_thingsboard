@@ -596,15 +596,18 @@ class MatterCommissionService:
                 self.connector.mapper.update_device_state(node_id, endpoint_id, state_data)
 
             current_state = state_data.get("state", "OFF")
+            c_name = dev.get("custom_name") or dev.get("display_name")
 
             dev_info = {
                 "device_name": device_name,
+                "custom_name": c_name,
+                "display_name": c_name or dev.get("product_name", ""),
                 "device_type": dev_type,
                 "category": category,
                 "node_id": node_id,
                 "endpoint_id": endpoint_id,
                 "vendor": dev.get("vendor_name", "Matter"),
-                "model": dev.get("product_name", ""),
+                "model": c_name or dev.get("product_name", ""),
                 "serial_number": dev.get("serial_number", ""),
                 "is_bridged": is_bridged,
                 "bridge_name": dev.get("bridge_name"),

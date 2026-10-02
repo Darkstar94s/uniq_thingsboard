@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UNIQ Hub | منصة المنزل الذكي المتكاملة</title>
+  <title>UNIQ Hub | Smart Home Platform</title>
   <link rel="icon" type="image/png" href="/uniq-logo-dark.png" id="faviconLink">
   <style>
     :root {
@@ -12,7 +12,7 @@
       --primary-glow: rgba(10, 87, 252, 0.25);
       --bg: #0B132B;
       --bg-gradient: radial-gradient(circle at 10% 20%, #1c2541 0%, #0b132b 90%);
-      --header-bg: rgba(11, 19, 43, 0.92);
+      --header-bg: rgba(11, 19, 43, 0.94);
       --card-bg: rgba(28, 37, 65, 0.78);
       --card-border: rgba(255, 255, 255, 0.08);
       --text: #F8FAFC;
@@ -26,7 +26,7 @@
       --accent-cyan: #38BDF8;
       --accent-purple: #A855F7;
       --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
-      --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
       --pill-bg: rgba(255, 255, 255, 0.06);
     }
 
@@ -36,7 +36,7 @@
       --primary-glow: rgba(2, 132, 199, 0.2);
       --bg: #F1F5F9;
       --bg-gradient: radial-gradient(circle at 10% 20%, #E2E8F0 0%, #F8FAFC 90%);
-      --header-bg: rgba(255, 255, 255, 0.95);
+      --header-bg: rgba(255, 255, 255, 0.96);
       --card-bg: #FFFFFF;
       --card-border: rgba(15, 23, 42, 0.08);
       --text: #0F172A;
@@ -44,13 +44,13 @@
       --input-bg: #F8FAFC;
       --input-border: #CBD5E1;
       --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
-      --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 10px 28px rgba(15, 23, 42, 0.09);
       --pill-bg: #F1F5F9;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Tajawal", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Tajawal", "Inter", sans-serif;
       background: var(--bg-gradient);
       color: var(--text);
       min-height: 100vh;
@@ -95,7 +95,7 @@
     .brand-text h1 { font-size: 16px; font-weight: 700; line-height: 1.2; }
     .brand-text span { font-size: 11px; color: var(--text-muted); }
 
-    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .badge {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600;
@@ -106,7 +106,7 @@
     .badge-dot.warn { background: var(--warning); }
 
     .btn {
-      padding: 8px 14px; border-radius: 8px; font-size: 12px;
+      padding: 7px 14px; border-radius: 8px; font-size: 12px;
       font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
       display: inline-flex; align-items: center; gap: 6px; justify-content: center;
     }
@@ -118,14 +118,14 @@
     .btn-theme-toggle {
       width: 36px; height: 36px; border-radius: 50%; padding: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 17px; cursor: pointer; background: var(--pill-bg);
+      font-size: 16px; cursor: pointer; background: var(--pill-bg);
       border: 1px solid var(--card-border); color: var(--text);
       transition: all 0.2s;
     }
     .btn-theme-toggle:hover { transform: rotate(15deg); }
 
     main {
-      flex: 1; max-width: 1160px; width: 100%; margin: 0 auto;
+      flex: 1; max-width: 1180px; width: 100%; margin: 0 auto;
       padding: 18px 20px; display: flex; flex-direction: column; gap: 18px;
     }
 
@@ -137,7 +137,7 @@
     }
     .nav-tabs-bar::-webkit-scrollbar { display: none; }
     .nav-tab-btn {
-      padding: 9px 18px; border-radius: 12px; font-size: 13px; font-weight: 600;
+      padding: 9px 16px; border-radius: 12px; font-size: 13px; font-weight: 600;
       background: var(--pill-bg); border: 1px solid var(--card-border);
       color: var(--text-muted); cursor: pointer; transition: all 0.2s;
       white-space: nowrap; display: inline-flex; align-items: center; gap: 8px;
@@ -147,6 +147,7 @@
       background: var(--primary); border-color: var(--primary);
       color: white; box-shadow: 0 4px 14px var(--primary-glow);
     }
+    .nav-tab-btn svg { width: 17px; height: 17px; fill: currentColor; }
 
     /* Stats Banner */
     .stats-row {
@@ -156,12 +157,14 @@
     }
     .stat-card {
       background: var(--card-bg); backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border); border-radius: 12px;
+      border: 1px solid var(--card-border); border-radius: 14px;
       padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
       box-shadow: var(--shadow-sm);
     }
     .stat-val { font-size: 22px; font-weight: 700; margin-top: 2px; }
     .stat-title { font-size: 11px; color: var(--text-muted); }
+    .stat-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--pill-bg); }
+    .stat-icon svg { width: 20px; height: 20px; fill: var(--primary); }
 
     /* Category Filter */
     .categories-bar {
@@ -180,6 +183,7 @@
       background: var(--primary); border-color: var(--primary);
       color: white;
     }
+    .cat-tab svg { width: 14px; height: 14px; fill: currentColor; }
     .cat-count {
       font-size: 10px; padding: 1px 6px; border-radius: 10px;
       background: rgba(0, 0, 0, 0.2);
@@ -231,12 +235,19 @@
       background: var(--pill-bg);
       border: 1px solid var(--card-border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px; flex-shrink: 0;
+      flex-shrink: 0;
     }
+    .device-icon-box svg { width: 22px; height: 22px; }
     .device-icon-box.socket { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35); }
+    .device-icon-box.socket svg { fill: #0284C7; }
     .device-icon-box.switch { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.35); }
+    .device-icon-box.switch svg { fill: #A855F7; }
     .device-icon-box.lighting { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.35); }
+    .device-icon-box.lighting svg { fill: #F59E0B; }
     .device-icon-box.sensor { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); }
+    .device-icon-box.sensor svg { fill: #10B981; }
+    .device-icon-box.climate { background: rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.35); }
+    .device-icon-box.climate svg { fill: #0EA5E9; }
 
     .device-title-box { min-width: 0; flex: 1; }
     .device-main-title {
@@ -287,10 +298,12 @@
     .sensor-tile.temp { border-color: rgba(239, 68, 68, 0.25); }
     .sensor-tile.hum { border-color: rgba(56, 189, 248, 0.25); }
     .sensor-tile-val {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--text);
+      display: flex; align-items: center; justify-content: center; gap: 4px;
     }
+    .sensor-tile-val svg { width: 14px; height: 14px; fill: currentColor; }
     .sensor-tile.temp .sensor-tile-val { color: #EF4444; }
     .sensor-tile.hum .sensor-tile-val { color: #0284C7; }
     .sensor-tile-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
@@ -323,7 +336,16 @@
       background: rgba(16, 185, 129, 0.08);
     }
     .channel-info { display: flex; align-items: center; gap: 10px; }
-    .channel-name { font-size: 12.5px; font-weight: 600; }
+    .channel-indicator-icon {
+      width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      background: var(--pill-bg); border: 1px solid var(--card-border);
+    }
+    .channel-indicator-icon.is-on {
+      background: var(--success); border-color: var(--success); color: white;
+      box-shadow: 0 0 10px var(--success-glow);
+    }
+    .channel-indicator-icon svg { width: 12px; height: 12px; fill: currentColor; }
+    .channel-name { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .channel-state-text { font-size: 10.5px; color: var(--text-muted); }
     .channel-state-text.on { color: var(--success); font-weight: 700; }
 
@@ -342,17 +364,18 @@
     /* Modal */
     .modal-backdrop {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
       z-index: 1000; display: none; align-items: center; justify-content: center;
       padding: 20px;
     }
     .modal-card {
       background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 16px; max-width: 500px; width: 100%;
-      padding: 24px; box-shadow: var(--shadow-lg);
+      border-radius: 16px; max-width: 520px; width: 100%;
+      padding: 24px; box-shadow: var(--shadow-lg); position: relative;
     }
     .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-title svg { width: 20px; height: 20px; fill: var(--primary); }
     .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); }
 
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
@@ -371,7 +394,7 @@
       border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm);
     }
     .floorplan-canvas-container {
-      position: relative; width: 100%; height: 520px;
+      position: relative; width: 100%; height: 530px;
       background: #0f172a;
       display: flex; align-items: center; justify-content: center;
       cursor: crosshair; user-select: none;
@@ -388,26 +411,42 @@
     }
     .device-pin:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 30; }
     .pin-bubble {
-      width: 38px; height: 38px; border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       background: var(--card-bg); border: 2px solid var(--text-muted);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
       transition: all 0.2s ease;
     }
+    .pin-bubble svg { width: 20px; height: 20px; fill: var(--text); }
     .device-pin.is-on .pin-bubble {
       border-color: #10B981;
-      background: #10B981; color: white;
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.7);
+      background: #10B981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.75);
     }
+    .device-pin.is-on .pin-bubble svg { fill: #FFFFFF; }
     .pin-label-pill {
       position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
-      background: rgba(11, 19, 43, 0.9); border: 1px solid var(--card-border);
-      color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px;
+      background: rgba(11, 19, 43, 0.92); border: 1px solid var(--card-border);
+      color: white; padding: 3px 9px; border-radius: 12px; font-size: 10.5px;
       font-weight: 600; white-space: nowrap; pointer-events: none;
+      display: flex; align-items: center; gap: 4px;
     }
     [data-theme="light"] .pin-label-pill {
       background: rgba(255, 255, 255, 0.95); color: #0F172A;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Popover for Multi-Gang or Pin details */
+    .pin-popover {
+      position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 14px; width: 260px;
+      box-shadow: var(--shadow-lg); z-index: 50; display: none;
+      flex-direction: column; gap: 10px; cursor: default;
+    }
+    .pin-popover-title {
+      font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--card-border); padding-bottom: 6px;
     }
 
     /* Rooms Cards */
@@ -421,7 +460,11 @@
     }
     .room-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
     .room-header { display: flex; align-items: center; justify-content: space-between; }
-    .room-icon-box { font-size: 26px; }
+    .room-icon-box {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      background: var(--pill-bg); border: 1px solid var(--card-border);
+    }
+    .room-icon-box svg { width: 22px; height: 22px; fill: var(--primary); }
     .room-title { font-size: 15px; font-weight: 700; }
     .room-device-count { font-size: 11px; color: var(--text-muted); }
 
@@ -436,9 +479,13 @@
       transition: all 0.2s;
     }
     .scenario-card:hover { transform: translateY(-2px); border-color: var(--primary); }
-    .scenario-icon { font-size: 32px; margin-bottom: 4px; }
+    .scenario-icon-box {
+      width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      background: var(--pill-bg); border: 1px solid var(--card-border); margin-bottom: 8px;
+    }
+    .scenario-icon-box svg { width: 24px; height: 24px; fill: var(--primary); }
     .scenario-name { font-size: 15px; font-weight: 700; }
-    .scenario-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+    .scenario-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-top: 4px; }
 
     /* Cloud View Box */
     .cloud-card {
@@ -448,10 +495,10 @@
 
     /* Auth Box */
     .auth-container {
-      max-width: 400px; width: 100%; margin: 60px auto;
+      max-width: 420px; width: 100%; margin: 60px auto;
       background: var(--card-bg); backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border); border-radius: 16px;
-      padding: 32px 24px; text-align: center; box-shadow: var(--shadow-lg);
+      border: 1px solid var(--card-border); border-radius: 20px;
+      padding: 34px 26px; text-align: center; box-shadow: var(--shadow-lg);
     }
     .pin-input {
       width: 100%; padding: 12px; border-radius: 10px;
@@ -477,12 +524,18 @@
         <img id="brandLogoImg" src="/uniq-logo-dark.png" alt="UNIQ Logo" class="brand-logo-img">
       </div>
       <div class="brand-text">
-        <h1>UNIQ Smart Home</h1>
-        <span>الموزع الذكي المحلي والتحكم المركزي</span>
+        <h1 id="i18n-brand-title">UNIQ Smart Home</h1>
+        <span id="i18n-brand-subtitle">وحدة التحكم المركزية والموزع الذكي</span>
       </div>
     </div>
 
     <div class="header-actions" id="headerActions" style="display: none;">
+      <!-- Language Switcher -->
+      <button class="btn btn-outline" id="langToggleBtn" onclick="toggleLanguage()" title="Switch Language / تبديل اللغة">
+        🌐 English
+      </button>
+
+      <!-- Theme Switcher -->
       <button class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="تبديل النمط النهاري / الليلي">
         🌓
       </button>
@@ -497,7 +550,7 @@
         <span id="cloudStatus">☁️ السحابة: فحص...</span>
       </span>
 
-      <button class="btn btn-outline" onclick="logout()">
+      <button class="btn btn-outline" onclick="logout()" id="i18n-logout-btn">
         🚪 خروج
       </button>
     </div>
@@ -506,24 +559,24 @@
   <!-- Login Form View -->
   <div id="loginView" style="display: none;">
     <div class="auth-container">
-      <div style="margin-bottom: 16px; display: flex; justify-content: center;">
-        <div style="width: 76px; height: 76px; border-radius: 20px; background: var(--pill-bg); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; padding: 10px; box-shadow: 0 8px 24px rgba(10, 87, 252, 0.2);">
+      <div style="margin-bottom: 18px; display: flex; justify-content: center;">
+        <div style="width: 78px; height: 78px; border-radius: 20px; background: var(--pill-bg); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; padding: 10px; box-shadow: 0 8px 24px rgba(10, 87, 252, 0.2);">
           <img id="loginLogoImg" src="/uniq-logo-dark.png" alt="UNIQ Logo" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
       </div>
-      <h2>دخول لوحة تحكم UNIQ</h2>
-      <p>أدخل رمز PIN السري للموزع للوصول إلى لوحة التحكم والتحكم بالأجهزة والسيناريوهات.</p>
+      <h2 id="i18n-login-title" style="margin-bottom: 6px;">دخول لوحة تحكم UNIQ</h2>
+      <p id="i18n-login-desc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">أدخل رمز PIN السري للموزع للوصول إلى لوحة التحكم والتحكم بالأجهزة والسيناريوهات.</p>
 
       <form onsubmit="handleLogin(event)">
         <input type="password" id="pinInput" class="pin-input" maxlength="10" placeholder="••••••" autofocus required>
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;" id="i18n-login-submit">
           🔓 تسجيل الدخول
         </button>
         <div id="loginError" style="display: none; color: var(--danger); font-size: 12px; margin-top: 12px;">
           رمز الـ PIN غير صحيح، يرجى المحاولة مجدداً.
         </div>
       </form>
-      <div class="pin-hint">رمز الـ PIN الافتراضي للبوابة هو <b>849201</b></div>
+      <div class="pin-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 14px;">رمز الـ PIN الافتراضي للبوابة هو <b>849201</b></div>
     </div>
   </div>
 
@@ -533,22 +586,28 @@
     <!-- Top Navigation Tabs Bar -->
     <div class="nav-tabs-bar">
       <button class="nav-tab-btn active" id="tab-btn-devices" onclick="switchNavTab('devices')">
-        📱 الأجهزة المتصلة
+        <span id="tab-icon-devices"></span>
+        <span id="i18n-tab-devices">الأجهزة المتصلة</span>
       </button>
       <button class="nav-tab-btn" id="tab-btn-rooms" onclick="switchNavTab('rooms')">
-        🏠 الغرف والتوزيع
+        <span id="tab-icon-rooms"></span>
+        <span id="i18n-tab-rooms">الغرف والتوزيع</span>
       </button>
       <button class="nav-tab-btn" id="tab-btn-floorplan" onclick="switchNavTab('floorplan')">
-        🗺️ المخطط التفاعلي
+        <span id="tab-icon-floorplan"></span>
+        <span id="i18n-tab-floorplan">المخطط التفاعلي</span>
       </button>
       <button class="nav-tab-btn" id="tab-btn-scenarios" onclick="switchNavTab('scenarios')">
-        ⚡ السيناريوهات الذكية
+        <span id="tab-icon-scenarios"></span>
+        <span id="i18n-tab-scenarios">السيناريوهات الذكية</span>
       </button>
       <button class="nav-tab-btn" id="tab-btn-cloud" onclick="switchNavTab('cloud')">
-        ☁️ مزامنة السحابة
+        <span id="tab-icon-cloud"></span>
+        <span id="i18n-tab-cloud">مزامنة السحابة</span>
       </button>
       <button class="nav-tab-btn" id="tab-btn-commission" onclick="switchNavTab('commission')">
-        ➕ إقران جهاز Matter
+        <span id="tab-icon-commission"></span>
+        <span id="i18n-tab-commission">إقران جهاز Matter</span>
       </button>
     </div>
 
@@ -556,31 +615,31 @@
     <div class="stats-row">
       <div class="stat-card">
         <div>
-          <div class="stat-title">إجمالي الأجهزة الذكية</div>
+          <div class="stat-title" id="i18n-stat-devices">إجمالي الأجهزة الذكية</div>
           <div class="stat-val" id="statDevicesCount">0</div>
         </div>
-        <div style="font-size: 26px;">📟</div>
+        <div class="stat-icon" id="stat-icon-dev"></div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">المفاتيح والإنارات المشغلة</div>
+          <div class="stat-title" id="i18n-stat-switches">المفاتيح المشغلة</div>
           <div class="stat-val" id="statActiveSwitches" style="color: var(--success);">0</div>
         </div>
-        <div style="font-size: 26px;">💡</div>
+        <div class="stat-icon" id="stat-icon-active"></div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">استهلاك القدرة الفوري</div>
+          <div class="stat-title" id="i18n-stat-power">استهلاك القدرة الفوري</div>
           <div class="stat-val" id="statTotalPower">0.0 W</div>
         </div>
-        <div style="font-size: 26px;">⚡</div>
+        <div class="stat-icon" id="stat-icon-power"></div>
       </div>
       <div class="stat-card">
         <div>
-          <div class="stat-title">مزامنة سحابة ThingsBoard</div>
+          <div class="stat-title" id="i18n-stat-cloud">سحابة ThingsBoard</div>
           <div class="stat-val" id="statCloudStatus" style="font-size: 15px; margin-top: 6px;">جاهز للمزامنة</div>
         </div>
-        <div style="font-size: 26px;">☁️</div>
+        <div class="stat-icon" id="stat-icon-cloud"></div>
       </div>
     </div>
 
@@ -590,30 +649,13 @@
     <div id="tab-content-devices" class="tab-content">
       <!-- Search & Filters -->
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-        <div class="categories-bar">
-          <div class="cat-tab active" data-cat="all" onclick="setCategoryFilter('all')">
-            🌐 الكل <span class="cat-count" id="count-all">0</span>
-          </div>
-          <div class="cat-tab" data-cat="lighting" onclick="setCategoryFilter('lighting')">
-            💡 إنارة <span class="cat-count" id="count-lighting">0</span>
-          </div>
-          <div class="cat-tab" data-cat="switch" onclick="setCategoryFilter('switch')">
-            🎛️ مفاتيح <span class="cat-count" id="count-switch">0</span>
-          </div>
-          <div class="cat-tab" data-cat="socket" onclick="setCategoryFilter('socket')">
-            🔌 مقابس <span class="cat-count" id="count-socket">0</span>
-          </div>
-          <div class="cat-tab" data-cat="sensor" onclick="setCategoryFilter('sensor')">
-            📡 حسّاسات <span class="cat-count" id="count-sensor">0</span>
-          </div>
-          <div class="cat-tab" data-cat="climate" onclick="setCategoryFilter('climate')">
-            ❄️ تكييف <span class="cat-count" id="count-climate">0</span>
-          </div>
+        <div class="categories-bar" id="categoriesBar">
+          <!-- Injected dynamically with vector icons -->
         </div>
 
         <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="text" id="deviceSearchInput" class="form-input" placeholder="🔍 بحث عن جهاز أو قناة..." style="padding: 6px 12px; font-size: 12px; width: 180px;" oninput="renderDevicesList()">
-          <button class="btn btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="loadDevices()">
+          <input type="text" id="deviceSearchInput" class="form-input" placeholder="🔍 بحث عن جهاز أو قناة..." style="padding: 6px 12px; font-size: 12px; width: 190px;" oninput="renderDevicesList()">
+          <button class="btn btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="loadDevices()" id="i18n-refresh-btn">
             🔄 تحديث الحالات
           </button>
         </div>
@@ -633,10 +675,10 @@
     <div id="tab-content-rooms" class="tab-content" style="display: none;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
         <div>
-          <h2 style="font-size: 16px;">🏠 توزيع الغرف والمناطق</h2>
-          <p style="font-size: 11px; color: var(--text-muted);">تحكم جماعي لكل غرفة على حدة وراقب بيئتها وحساساتها</p>
+          <h2 style="font-size: 16px;" id="i18n-rooms-title">🏠 توزيع الغرف والمناطق</h2>
+          <p style="font-size: 11px; color: var(--text-muted);" id="i18n-rooms-desc">تحكم جماعي لكل غرفة على حدة وراقب بيئتها وحساساتها</p>
         </div>
-        <button class="btn btn-primary" onclick="openAddRoomModal()">
+        <button class="btn btn-primary" onclick="openAddRoomModal()" id="i18n-add-room-btn">
           ➕ إضافة غرفة جديدة
         </button>
       </div>
@@ -652,15 +694,15 @@
     <div id="tab-content-floorplan" class="tab-content" style="display: none;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
         <div>
-          <h2 style="font-size: 16px;">🗺️ المخطط التفاعلي للمنزل</h2>
-          <p style="font-size: 11px; color: var(--text-muted);">ضع مفاتيحك وحساساتك على خارطة المنزل وانقر للتحكم المباشر والمراقبة الفورية</p>
+          <h2 style="font-size: 16px;" id="i18n-floorplan-title">🗺️ المخطط التفاعلي للمنزل</h2>
+          <p style="font-size: 11px; color: var(--text-muted);" id="i18n-floorplan-desc">ضع مفاتيحك وحساساتك على خارطة المنزل وانقر للتحكم المباشر والمراقبة الفورية</p>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <input type="file" id="floorplanUploadInput" accept="image/*" style="display: none;" onchange="handleFloorplanUpload(event)">
-          <button class="btn btn-outline" onclick="document.getElementById('floorplanUploadInput').click()">
+          <button class="btn btn-outline" onclick="document.getElementById('floorplanUploadInput').click()" id="i18n-upload-map-btn">
             📷 رفع مخطط مخصص (صورة)
           </button>
-          <button class="btn btn-primary" onclick="startPlacingPin()">
+          <button class="btn btn-primary" onclick="startPlacingPin()" id="i18n-place-pin-btn">
             📍 وضع جهاز على المخطط
           </button>
         </div>
@@ -668,10 +710,8 @@
 
       <div class="floorplan-wrapper">
         <div class="floorplan-canvas-container" id="floorplanCanvas" onclick="onFloorplanCanvasClick(event)">
-          <!-- Floorplan Background Image or SVG -->
-          <img id="floorplanBgImage" class="floorplan-bg-img" src="" alt="Floorplan Plan" style="display: none;">
+          <img id="floorplanBgImage" class="floorplan-bg-img" src="" alt="Floorplan Blueprint" style="display: none;">
           <svg id="floorplanDefaultSvg" viewBox="0 0 1000 600" width="100%" height="100%" style="position: absolute; top:0; left:0;">
-            <!-- Modern Floorplan Architectural Plan Blueprint -->
             <rect width="1000" height="600" fill="none" stroke="#334155" stroke-width="4"/>
             <!-- Living Room -->
             <rect x="50" y="50" width="450" height="300" fill="rgba(56, 189, 248, 0.04)" stroke="#475569" stroke-width="2"/>
@@ -681,18 +721,19 @@
             <text x="735" y="150" fill="#64748B" font-size="16" font-family="sans-serif" text-anchor="middle" font-weight="bold">🍳 المطبخ (Kitchen)</text>
             <!-- Master Bedroom -->
             <rect x="50" y="370" width="450" height="180" fill="rgba(168, 85, 247, 0.04)" stroke="#475569" stroke-width="2"/>
-            <text x="275" y="460" fill="#64748B" font-size="16" font-family="sans-serif" text-anchor="middle" font-weight="bold">🛏️ غرفة النوم الماستر (Master Bedroom)</text>
-            <!-- Council / Majlis -->
+            <text x="275" y="460" fill="#64748B" font-size="16" font-family="sans-serif" text-anchor="middle" font-weight="bold">🛏️ غرفة النوم (Master Bedroom)</text>
+            <!-- Majlis -->
             <rect x="520" y="270" width="430" height="280" fill="rgba(16, 185, 129, 0.04)" stroke="#475569" stroke-width="2"/>
-            <text x="735" y="410" fill="#64748B" font-size="16" font-family="sans-serif" text-anchor="middle" font-weight="bold">☕ المجلس والضيوف (Majlis)</text>
+            <text x="735" y="410" fill="#64748B" font-size="16" font-family="sans-serif" text-anchor="middle" font-weight="bold">☕ المجلس (Majlis)</text>
           </svg>
-          <!-- Dynamic Pins Rendered Here -->
+
+          <!-- Dynamic Pins Container -->
           <div id="pinsOverlayContainer" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none;"></div>
         </div>
       </div>
       <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
-        <span>💡 اضغط على أيقونة أي جهاز في المخطط لتشغيله أو إطفائه فورياً، أو شاهده يعرض درجة الحرارة والرطوبة الحية.</span>
-        <button class="btn btn-outline" style="font-size: 10px; padding: 3px 8px;" onclick="resetFloorplanToDefault()">
+        <span id="i18n-floorplan-tip">💡 اضغط على أيقونة أي جهاز في المخطط لتشغيله أو إطفائه فورياً، أو شاهده يعرض درجة الحرارة والرطوبة الحية.</span>
+        <button class="btn btn-outline" style="font-size: 10px; padding: 3px 8px;" onclick="resetFloorplanToDefault()" id="i18n-reset-map-btn">
           ↺ إعادة ضبط المخطط الافتراضي
         </button>
       </div>
@@ -703,70 +744,12 @@
     <!-- ================================================================= -->
     <div id="tab-content-scenarios" class="tab-content" style="display: none;">
       <div style="margin-bottom: 14px;">
-        <h2 style="font-size: 16px;">⚡ السيناريوهات والأنماط الذكية</h2>
-        <p style="font-size: 11px; color: var(--text-muted);">تحكم ببيئة منزلك كاملة بنقرة واحدة لأوضاع النوم، المغادرة، والراحة</p>
+        <h2 style="font-size: 16px;" id="i18n-scenarios-title">⚡ السيناريوهات والأنماط الذكية</h2>
+        <p style="font-size: 11px; color: var(--text-muted);" id="i18n-scenarios-desc">تحكم ببيئة منزلك كاملة بنقرة واحدة لأوضاع النوم، المغادرة، والراحة</p>
       </div>
 
-      <div class="scenarios-grid">
-        <!-- 1. All OFF -->
-        <div class="scenario-card">
-          <div>
-            <div class="scenario-icon">🌙</div>
-            <div class="scenario-name">وضع النوم (Good Night)</div>
-            <div class="scenario-desc">إطفاء جميع الإنارات والمفاتيح في أرجاء المنزل لضمان نوم هادئ وتوفير للطاقة.</div>
-          </div>
-          <button class="btn btn-primary" onclick="triggerScenario('all_off', 'وضع النوم')">
-            ▶️ تفعيل الآن
-          </button>
-        </div>
-
-        <!-- 2. Good Morning -->
-        <div class="scenario-card">
-          <div>
-            <div class="scenario-icon">☀️</div>
-            <div class="scenario-name">صباح الخير (Good Morning)</div>
-            <div class="scenario-desc">تشغيل إنارات الصالة والمطبخ وبدء أجهزة الصباح المجدولة.</div>
-          </div>
-          <button class="btn btn-outline" onclick="triggerScenario('morning', 'صباح الخير')">
-            ▶️ تفعيل الآن
-          </button>
-        </div>
-
-        <!-- 3. Leave Home -->
-        <div class="scenario-card">
-          <div>
-            <div class="scenario-icon">🚪</div>
-            <div class="scenario-name">مغادرة المنزل (Away Home)</div>
-            <div class="scenario-desc">إطفاء كافة المقابس والأجهزة الكهربائية غير الضرورية لضمان الأمان التام.</div>
-          </div>
-          <button class="btn btn-primary" onclick="triggerScenario('all_off', 'مغادرة المنزل')">
-            ▶️ تفعيل الآن
-          </button>
-        </div>
-
-        <!-- 4. Cinema Night -->
-        <div class="scenario-card">
-          <div>
-            <div class="scenario-icon">🎬</div>
-            <div class="scenario-name">سينما واسترخاء (Cinema Mode)</div>
-            <div class="scenario-desc">إطفاء الأنوار الساطعة وضبط الإضاءة الهادئة للاستمتاع بالمشاهدة.</div>
-          </div>
-          <button class="btn btn-outline" onclick="triggerScenario('cinema', 'سينما واسترخاء')">
-            ▶️ تفعيل الآن
-          </button>
-        </div>
-
-        <!-- 5. All ON -->
-        <div class="scenario-card">
-          <div>
-            <div class="scenario-icon">💡</div>
-            <div class="scenario-name">تشغيل كامل (Master ON)</div>
-            <div class="scenario-desc">تشغيل فوري لجميع مفاتيح وإنارات المنزل بنقرة واحدة للتجربة والفحص.</div>
-          </div>
-          <button class="btn btn-outline" onclick="triggerScenario('all_on', 'تشغيل الكل')">
-            ▶️ تفعيل الآن
-          </button>
-        </div>
+      <div class="scenarios-grid" id="scenariosGridContainer">
+        <!-- Rendered dynamically -->
       </div>
     </div>
 
@@ -777,38 +760,38 @@
       <div class="cloud-card">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
           <div>
-            <h2 style="font-size: 16px;">☁️ مزامنة سحابة ThingsBoard Cloud</h2>
-            <p style="font-size: 11px; color: var(--text-muted);">ربط الأجهزة المحلية مع خادم ThingsBoard السحابي لعرضها في داشبوردات الموبايل والويب والتحكم عن بعد</p>
+            <h2 style="font-size: 16px;" id="i18n-cloud-title">☁️ مزامنة سحابة ThingsBoard Cloud</h2>
+            <p style="font-size: 11px; color: var(--text-muted);" id="i18n-cloud-desc">ربط الأجهزة المحلية مع خادم ThingsBoard السحابي لعرضها في داشبوردات الموبايل والويب والتحكم عن بعد</p>
           </div>
           <span class="badge" id="cloudDetailBadge">
             <span class="badge-dot warn" id="cloudDetailDot"></span>
-            <span id="cloudDetailText">فحص حالة الاتصال...</span>
+            <span id="cloudDetailText">Checking connection...</span>
           </span>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
           <div class="form-group">
-            <label>🌐 عنوان خادم السحابة (ThingsBoard Cloud Host)</label>
-            <input type="text" id="cloudHostInput" class="form-input" value="18.134.221.206" placeholder="18.134.221.206">
+            <label id="i18n-cloud-host-label">🌐 عنوان خادم السحابة (Cloud Host)</label>
+            <input type="text" id="cloudHostInput" class="form-input" value="18.134.221.206">
           </div>
           <div class="form-group">
-            <label>🔌 منفذ MQTT (Port)</label>
-            <input type="number" id="cloudPortInput" class="form-input" value="1883" placeholder="1883">
+            <label id="i18n-cloud-port-label">🔌 منفذ MQTT (Port)</label>
+            <input type="number" id="cloudPortInput" class="form-input" value="1883">
           </div>
           <div class="form-group" style="grid-column: 1 / -1;">
-            <label>🔑 رمز الوصول للبوابة (Gateway Device Access Token)</label>
-            <input type="text" id="cloudTokenInput" class="form-input" placeholder="ألصق الـ Access Token الخاص ببوابة UNIQ في ThingsBoard">
-            <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px;">
+            <label id="i18n-cloud-token-label">🔑 رمز الوصول للبوابة (Gateway Device Access Token)</label>
+            <input type="text" id="cloudTokenInput" class="form-input" placeholder="Paste ThingsBoard Gateway Token">
+            <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px;" id="i18n-cloud-token-hint">
               💡 للحصول على الرمز: من منصة ThingsBoard السحابية -> Devices -> اختر جهاز البوابة (Gateway) -> Copy Access Token.
             </span>
           </div>
         </div>
 
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-          <button class="btn btn-primary" onclick="saveCloudConfig()">
+          <button class="btn btn-primary" onclick="saveCloudConfig()" id="i18n-save-cloud-btn">
             💾 حفظ إعدادات الاتصال بالسحابة
           </button>
-          <button class="btn btn-outline" onclick="triggerManualCloudSync()">
+          <button class="btn btn-outline" onclick="triggerManualCloudSync()" id="i18n-sync-cloud-btn">
             🔄 مزامنة جميع الأجهزة مع السحابة فوراً
           </button>
         </div>
@@ -822,29 +805,29 @@
     <!-- ================================================================= -->
     <div id="tab-content-commission" class="tab-content" style="display: none;">
       <div class="cloud-card">
-        <h2 style="font-size: 16px; margin-bottom: 4px;">➕ إعداد وإقران جهاز Matter جديد</h2>
-        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px;">
-          أدخل كود الإقران المطبوع على الجهاز أو امسح رمز QR. سيتم إقران الجهاز ومشاركته مفاتيح Matter وتوصيله بشبكة الواي فاي تلقائياً.
+        <h2 style="font-size: 16px; margin-bottom: 4px;" id="i18n-comm-title">➕ إعداد وإقران جهاز Matter جديد</h2>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px;" id="i18n-comm-desc">
+          أدخل كود الإقران المطبوع على الجهاز أو امسح رمز QR. سيتم إقران الجهاز وتوصيله بشبكة الواي فاي تلقائياً.
         </p>
 
         <form onsubmit="handleCommission(event)">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 16px;">
             <div class="form-group" style="grid-column: 1 / -1;">
-              <label>🔢 كود الإقران (Setup PIN أو Manual Code أو MT:... QR String)</label>
-              <input type="text" id="commCode" class="form-input" placeholder="مثال: 3549-103-9009 أو MT:Y.K90..." required>
+              <label id="i18n-comm-code-label">🔢 كود الإقران (Setup PIN أو Manual Code أو MT:... QR String)</label>
+              <input type="text" id="commCode" class="form-input" placeholder="e.g. 3549-103-9009 or MT:Y.K90..." required>
             </div>
             <div class="form-group">
-              <label>📶 اسم شبكة الواي فاي (SSID)</label>
-              <input type="text" id="commSsid" class="form-input" placeholder="اسم شبكة Wi-Fi 2.4GHz">
+              <label id="i18n-comm-ssid-label">📶 اسم شبكة الواي فاي (SSID)</label>
+              <input type="text" id="commSsid" class="form-input" placeholder="Wi-Fi 2.4GHz SSID">
             </div>
             <div class="form-group">
-              <label>🔑 كلمة مرور الواي فاي (Password)</label>
-              <input type="password" id="commPassword" class="form-input" placeholder="كلمة المرور">
+              <label id="i18n-comm-pwd-label">🔑 كلمة مرور الواي فاي (Password)</label>
+              <input type="password" id="commPassword" class="form-input" placeholder="Password">
             </div>
           </div>
 
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div style="font-size: 11px; color: var(--warning);">
+            <div style="font-size: 11px; color: var(--warning);" id="i18n-comm-hint">
               💡 تأكد أن الجهاز في وضع الإقران (Pairing Mode) بالضغط المطول على زره 5 ثوانٍ حتى يومض مؤشره.
             </div>
             <button type="submit" id="commSubmitBtn" class="btn btn-primary" style="padding: 10px 24px;">
@@ -867,18 +850,18 @@
   <div class="modal-backdrop" id="renameModal">
     <div class="modal-card">
       <div class="modal-header">
-        <div class="modal-title">✏️ تعديل اسم الجهاز / الحساس</div>
+        <div class="modal-title" id="i18n-rename-title">✏️ تعديل اسم الجهاز / القناة</div>
         <button class="modal-close" onclick="closeRenameModal()">✕</button>
       </div>
       <input type="hidden" id="renameNodeId">
       <input type="hidden" id="renameEndpointId">
       <div class="form-group">
-        <label>الاسم الجديد المفضل:</label>
-        <input type="text" id="renameInput" class="form-input" placeholder="مثال: إنارة الصالة، حساس حرارة المطبخ..." required>
+        <label id="i18n-rename-label">الاسم الجديد المفضل:</label>
+        <input type="text" id="renameInput" class="form-input" placeholder="e.g. Living Room Chandelier" required>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-        <button class="btn btn-outline" onclick="closeRenameModal()">إلغاء</button>
-        <button class="btn btn-primary" onclick="submitRenameDevice()">حفظ الاسم الجديد</button>
+        <button class="btn btn-outline" onclick="closeRenameModal()" id="i18n-cancel-btn">إلغاء</button>
+        <button class="btn btn-primary" onclick="submitRenameDevice()" id="i18n-save-btn">حفظ الاسم</button>
       </div>
     </div>
   </div>
@@ -887,29 +870,29 @@
   <div class="modal-backdrop" id="addRoomModal">
     <div class="modal-card">
       <div class="modal-header">
-        <div class="modal-title">🏠 إضافة غرفة جديدة</div>
+        <div class="modal-title" id="i18n-addroom-title">🏠 إضافة غرفة جديدة</div>
         <button class="modal-close" onclick="closeAddRoomModal()">✕</button>
       </div>
       <div class="form-group">
-        <label>اسم الغرفة / المنطقة:</label>
-        <input type="text" id="newRoomNameInput" class="form-input" placeholder="مثال: غرفة المعيشة، الموزع، السطح..." required>
+        <label id="i18n-addroom-name">اسم الغرفة / المنطقة:</label>
+        <input type="text" id="newRoomNameInput" class="form-input" placeholder="e.g. Master Bedroom" required>
       </div>
       <div class="form-group">
-        <label>أيقونة الغرفة:</label>
+        <label id="i18n-addroom-type">نوع الغرفة:</label>
         <select id="newRoomIconSelect" class="form-input">
-          <option value="🛋️">🛋️ الصالة / المعيشة</option>
-          <option value="🛏️">🛏️ غرفة نوم</option>
-          <option value="🍳">🍳 المطبخ</option>
-          <option value="☕">☕ المجلس / الضيوف</option>
-          <option value="🛁">🛁 الحمام</option>
-          <option value="🚪">🚪 المدخل / الممر</option>
-          <option value="🌳">🌳 الحديقة / الفناء</option>
-          <option value="🏢">🏢 المكتب</option>
+          <option value="living">🛋️ الصالة / Living Room</option>
+          <option value="bedroom">🛏️ غرفة نوم / Bedroom</option>
+          <option value="kitchen">🍳 المطبخ / Kitchen</option>
+          <option value="majlis">☕ المجلس / Majlis</option>
+          <option value="bathroom">🛁 الحمام / Bathroom</option>
+          <option value="corridor">🚪 المدخل والممر / Corridor</option>
+          <option value="garden">🌳 الحديقة والسطح / Garden</option>
+          <option value="office">🏢 المكتب / Office</option>
         </select>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
         <button class="btn btn-outline" onclick="closeAddRoomModal()">إلغاء</button>
-        <button class="btn btn-primary" onclick="submitAddRoom()">إضافة الغرفة</button>
+        <button class="btn btn-primary" onclick="submitAddRoom()">حفظ الغرفة</button>
       </div>
     </div>
   </div>
@@ -923,7 +906,6 @@
       </div>
       <input type="hidden" id="currentAssignRoomId">
       <div style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;" id="assignDevicesCheckboxList">
-        <!-- Rendered dynamically -->
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
         <button class="btn btn-outline" onclick="closeAssignRoomModal()">إلغاء</button>
@@ -936,17 +918,16 @@
   <div class="modal-backdrop" id="pickPinDeviceModal">
     <div class="modal-card">
       <div class="modal-header">
-        <div class="modal-title">📍 اختر الجهاز لتثبيته على المخطط</div>
+        <div class="modal-title" id="i18n-pickpin-title">📍 اختر الجهاز لتثبيته على المخطط</div>
         <button class="modal-close" onclick="closePickPinModal()">✕</button>
       </div>
       <div class="form-group">
-        <label>اختر الجهاز أو القناة المراد وضعها:</label>
+        <label id="i18n-pickpin-label">اختر الجهاز الفيزيائي المراد وضعه:</label>
         <select id="pinDeviceSelect" class="form-input">
-          <!-- Rendered dynamically -->
         </select>
       </div>
-      <p style="font-size: 11px; color: var(--text-muted);">
-        بعد الضغط على "تثبيت"، انقر في أي مكان داخل المخطط لتحديد موقع الجهاز.
+      <p style="font-size: 11px; color: var(--text-muted);" id="i18n-pickpin-desc">
+        سيتم تثبيت الجهاز كدبوس كامل (بما فيه القنوات المتعددة) للتحكم به مباشرة من الخارطة.
       </p>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
         <button class="btn btn-outline" onclick="closePickPinModal()">إلغاء</button>
@@ -957,58 +938,275 @@
 
   <!-- Footer -->
   <footer>
-    UNIQ Smart Home Platform &copy; 2026 — وحدة الموزع الذكي المحلي المركزية
+    UNIQ Smart Home Platform &copy; 2026 — Central Intelligent Gateway
   </footer>
 
   <script>
+    // =========================================================================
+    // I18N BILINGUAL SYSTEM (ARABIC & ENGLISH)
+    // =========================================================================
+    let currentLang = localStorage.getItem('uniq_lang') || 'ar';
+
+    const I18N = {
+      ar: {
+        brandTitle: 'UNIQ Smart Home',
+        brandSubtitle: 'وحدة التحكم المركزية والموزع الذكي',
+        langBtn: '🌐 English',
+        logout: '🚪 خروج',
+        loginTitle: 'دخول لوحة تحكم UNIQ',
+        loginDesc: 'أدخل رمز PIN السري للموزع للوصول إلى لوحة التحكم والتحكم بالأجهزة والسيناريوهات.',
+        loginSubmit: '🔓 تسجيل الدخول',
+        loginErr: 'رمز الـ PIN غير صحيح، يرجى المحاولة مجدداً.',
+        tabDevices: 'الأجهزة المتصلة',
+        tabRooms: 'الغرف والتوزيع',
+        tabFloorplan: 'المخطط التفاعلي',
+        tabScenarios: 'السيناريوهات الذكية',
+        tabCloud: 'مزامنة السحابة',
+        tabCommission: 'إقران جهاز Matter',
+        statDevices: 'إجمالي الأجهزة',
+        statSwitches: 'المفاتيح المشغلة',
+        statPower: 'استهلاك القدرة',
+        statCloud: 'سحابة ThingsBoard',
+        searchPlaceholder: '🔍 بحث عن جهاز أو قناة...',
+        refresh: '🔄 تحديث الحالات',
+        roomsTitle: '🏠 توزيع الغرف والمناطق',
+        roomsDesc: 'تحكم جماعي لكل غرفة على حدة وراقب بيئتها وحساساتها',
+        addRoomBtn: '➕ إضافة غرفة جديدة',
+        floorplanTitle: '🗺️ المخطط التفاعلي للمنزل',
+        floorplanDesc: 'ضع مفاتيحك وحساساتك على خارطة المنزل وانقر للتحكم المباشر والمراقبة الفورية',
+        uploadMap: '📷 رفع مخطط مخصص (صورة)',
+        placePin: '📍 وضع جهاز على المخطط',
+        floorplanTip: '💡 اضغط على أيقونة أي جهاز في المخطط لتشغيله أو إطفائه فورياً، أو شاهده يعرض درجة الحرارة والرطوبة الحية.',
+        resetMap: '↺ استعادة المخطط الافتراضي',
+        scenariosTitle: '⚡ السيناريوهات والأنماط الذكية',
+        scenariosDesc: 'تحكم ببيئة منزلك كاملة بنقرة واحدة لأوضاع النوم، المغادرة، والراحة',
+        cloudTitle: '☁️ مزامنة سحابة ThingsBoard Cloud',
+        cloudDesc: 'ربط الأجهزة المحلية مع خادم ThingsBoard السحابي لعرضها في داشبوردات الموبايل والويب والتحكم عن بعد',
+        cloudHostLabel: '🌐 عنوان خادم السحابة (Cloud Host)',
+        cloudPortLabel: '🔌 منفذ MQTT (Port)',
+        cloudTokenLabel: '🔑 رمز الوصول للبوابة (Gateway Device Access Token)',
+        cloudTokenHint: '💡 للحصول على الرمز: من منصة ThingsBoard السحابية -> Devices -> اختر جهاز البوابة (Gateway) -> Copy Access Token.',
+        saveCloudBtn: '💾 حفظ إعدادات الاتصال بالسحابة',
+        syncCloudBtn: '🔄 مزامنة جميع الأجهزة مع السحابة فوراً',
+        commTitle: '➕ إعداد وإقران جهاز Matter جديد',
+        commDesc: 'أدخل كود الإقران المطبوع على الجهاز أو امسح رمز QR. سيتم إقران الجهاز وتوصيله بشبكة الواي فاي تلقائياً.',
+        commCodeLabel: '🔢 كود الإقران (Setup PIN أو Manual Code أو MT:... QR String)',
+        commSsidLabel: '📶 اسم شبكة الواي فاي (SSID)',
+        commPwdLabel: '🔑 كلمة مرور الواي فاي (Password)',
+        commHint: '💡 تأكد أن الجهاز في وضع الإقران (Pairing Mode) بالضغط المطول على زره 5 ثوانٍ حتى يومض مؤشره.',
+        renameTitle: '✏️ تعديل اسم الجهاز / القناة',
+        renameLabel: 'الاسم الجديد المفضل:',
+        cancel: 'إلغاء',
+        save: 'حفظ',
+        catAll: 'الكل',
+        catLighting: 'إنارة',
+        catSwitch: 'مفاتيح',
+        catSocket: 'مقابس',
+        catSensor: 'حسّاسات',
+        catClimate: 'تكييف',
+        catSecurity: 'أمان',
+        catBridge: 'جسور',
+        on: 'تشغيل',
+        off: 'إيقاف',
+        allOn: 'تشغيل الكل',
+        allOff: 'إطفاء الكل',
+        channel: 'قناة',
+        removePin: '🗑️ إزالة من المخطط'
+      },
+      en: {
+        brandTitle: 'UNIQ Smart Home',
+        brandSubtitle: 'Central Intelligent Hub & Gateway',
+        langBtn: '🌐 العربية',
+        logout: '🚪 Logout',
+        loginTitle: 'UNIQ Hub Login',
+        loginDesc: 'Enter your Hub master PIN to access the dashboard and control devices & scenarios.',
+        loginSubmit: '🔓 Sign In',
+        loginErr: 'Incorrect PIN, please try again.',
+        tabDevices: 'Connected Devices',
+        tabRooms: 'Rooms & Layout',
+        tabFloorplan: 'Interactive Floorplan',
+        tabScenarios: 'Smart Scenarios',
+        tabCloud: 'Cloud Sync',
+        tabCommission: 'Pair Matter Device',
+        statDevices: 'Total Devices',
+        statSwitches: 'Active Switches',
+        statPower: 'Instant Power',
+        statCloud: 'ThingsBoard Cloud',
+        searchPlaceholder: '🔍 Search device or channel...',
+        refresh: '🔄 Refresh States',
+        roomsTitle: '🏠 Rooms & Floor Layout',
+        roomsDesc: 'Group control per room and monitor ambient sensor climate',
+        addRoomBtn: '➕ Add New Room',
+        floorplanTitle: '🗺️ Interactive Floorplan',
+        floorplanDesc: 'Place switches and sensors on your home blueprint for instant live control',
+        uploadMap: '📷 Upload Custom Blueprint',
+        placePin: '📍 Place Device on Map',
+        floorplanTip: '💡 Click any device pin on the blueprint to toggle it live or view real-time temperature & humidity.',
+        resetMap: '↺ Reset Blueprint',
+        scenariosTitle: '⚡ Smart Scenarios & Automations',
+        scenariosDesc: 'One-touch whole-home controls for Good Night, Away, Morning, and Cinema',
+        cloudTitle: '☁️ ThingsBoard Cloud Synchronization',
+        cloudDesc: 'Bridge local devices directly to ThingsBoard Cloud dashboards and mobile app',
+        cloudHostLabel: '🌐 Cloud Server Host',
+        cloudPortLabel: '🔌 MQTT Port',
+        cloudTokenLabel: '🔑 Gateway Device Access Token',
+        cloudTokenHint: '💡 To get token: From ThingsBoard Cloud -> Devices -> select Gateway device -> Copy Access Token.',
+        saveCloudBtn: '💾 Save Cloud Settings',
+        syncCloudBtn: '🔄 Sync All Devices with Cloud Now',
+        commTitle: '➕ Commission New Matter Device',
+        commDesc: 'Enter the pairing code or scan QR code. The device will be commissioned via BLE and connected to Wi-Fi.',
+        commCodeLabel: '🔢 Setup Code (PIN, Manual Code, or MT:... QR String)',
+        commSsidLabel: '📶 Home Wi-Fi Network (SSID)',
+        commPwdLabel: '🔑 Wi-Fi Password',
+        commHint: '💡 Ensure the device is in Pairing Mode by pressing its button for 5 seconds until its LED blinks.',
+        renameTitle: '✏️ Rename Device or Channel',
+        renameLabel: 'New Preferred Name:',
+        cancel: 'Cancel',
+        save: 'Save',
+        catAll: 'All',
+        catLighting: 'Lighting',
+        catSwitch: 'Switches',
+        catSocket: 'Sockets',
+        catSensor: 'Sensors',
+        catClimate: 'Climate',
+        catSecurity: 'Security',
+        catBridge: 'Bridges',
+        on: 'ON',
+        off: 'OFF',
+        allOn: 'All ON',
+        allOff: 'All OFF',
+        channel: 'Gang',
+        removePin: '🗑️ Remove from Map'
+      }
+    };
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || (I18N['en'][key]) || key;
+    }
+
+    function toggleLanguage() {
+      currentLang = (currentLang === 'ar' ? 'en' : 'ar');
+      localStorage.setItem('uniq_lang', currentLang);
+      applyTranslations();
+      renderCategoriesBar();
+      renderDevicesList();
+      renderRoomsView();
+      renderFloorplanPins();
+      renderScenarios();
+    }
+
+    function applyTranslations() {
+      document.documentElement.setAttribute('lang', currentLang);
+      document.documentElement.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+
+      document.getElementById('langToggleBtn').textContent = t('langBtn');
+      document.getElementById('i18n-brand-title').textContent = t('brandTitle');
+      document.getElementById('i18n-brand-subtitle').textContent = t('brandSubtitle');
+      document.getElementById('i18n-logout-btn').textContent = t('logout');
+      document.getElementById('i18n-login-title').textContent = t('loginTitle');
+      document.getElementById('i18n-login-desc').textContent = t('loginDesc');
+      document.getElementById('i18n-login-submit').textContent = t('loginSubmit');
+
+      document.getElementById('i18n-tab-devices').textContent = t('tabDevices');
+      document.getElementById('i18n-tab-rooms').textContent = t('tabRooms');
+      document.getElementById('i18n-tab-floorplan').textContent = t('tabFloorplan');
+      document.getElementById('i18n-tab-scenarios').textContent = t('tabScenarios');
+      document.getElementById('i18n-tab-cloud').textContent = t('tabCloud');
+      document.getElementById('i18n-tab-commission').textContent = t('tabCommission');
+
+      document.getElementById('i18n-stat-devices').textContent = t('statDevices');
+      document.getElementById('i18n-stat-switches').textContent = t('statSwitches');
+      document.getElementById('i18n-stat-power').textContent = t('statPower');
+      document.getElementById('i18n-stat-cloud').textContent = t('statCloud');
+
+      document.getElementById('deviceSearchInput').placeholder = t('searchPlaceholder');
+      document.getElementById('i18n-refresh-btn').textContent = t('refresh');
+
+      document.getElementById('i18n-rooms-title').textContent = t('roomsTitle');
+      document.getElementById('i18n-rooms-desc').textContent = t('roomsDesc');
+      document.getElementById('i18n-add-room-btn').textContent = t('addRoomBtn');
+
+      document.getElementById('i18n-floorplan-title').textContent = t('floorplanTitle');
+      document.getElementById('i18n-floorplan-desc').textContent = t('floorplanDesc');
+      document.getElementById('i18n-upload-map-btn').textContent = t('uploadMap');
+      document.getElementById('i18n-place-pin-btn').textContent = t('placePin');
+      document.getElementById('i18n-floorplan-tip').textContent = t('floorplanTip');
+      document.getElementById('i18n-reset-map-btn').textContent = t('resetMap');
+
+      document.getElementById('i18n-scenarios-title').textContent = t('scenariosTitle');
+      document.getElementById('i18n-scenarios-desc').textContent = t('scenariosDesc');
+
+      document.getElementById('i18n-cloud-title').textContent = t('cloudTitle');
+      document.getElementById('i18n-cloud-desc').textContent = t('cloudDesc');
+      document.getElementById('i18n-cloud-host-label').textContent = t('cloudHostLabel');
+      document.getElementById('i18n-cloud-port-label').textContent = t('cloudPortLabel');
+      document.getElementById('i18n-cloud-token-label').textContent = t('cloudTokenLabel');
+      document.getElementById('i18n-cloud-token-hint').textContent = t('cloudTokenHint');
+      document.getElementById('i18n-save-cloud-btn').textContent = t('saveCloudBtn');
+      document.getElementById('i18n-sync-cloud-btn').textContent = t('syncCloudBtn');
+
+      document.getElementById('i18n-comm-title').textContent = t('commTitle');
+      document.getElementById('i18n-comm-desc').textContent = t('commDesc');
+      document.getElementById('i18n-comm-code-label').textContent = t('commCodeLabel');
+      document.getElementById('i18n-comm-ssid-label').textContent = t('commSsidLabel');
+      document.getElementById('i18n-comm-pwd-label').textContent = t('commPwdLabel');
+      document.getElementById('i18n-comm-hint').textContent = t('commHint');
+
+      document.getElementById('i18n-rename-title').textContent = t('renameTitle');
+      document.getElementById('i18n-rename-label').textContent = t('renameLabel');
+    }
+
+    // =========================================================================
+    // PROFESSIONAL MODERN VECTOR SVG ICONS
+    // =========================================================================
+    const SVG_ICONS = {
+      bulb: `<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7zm-2 18a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h-4v1z"/></svg>`,
+      switch: `<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9" r="2.5"/><path d="M12 14v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+      socket: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>`,
+      sensor: `<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9 1 1 0 0 0 2 0 7 7 0 0 1 7-7 1 1 0 0 0 0-2zm0 4a5 5 0 0 0-5 5 1 1 0 0 0 2 0 3 3 0 0 1 3-3 1 1 0 0 0 0-2zm0 4a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 12 11zm0 5a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1z"/></svg>`,
+      climate: `<svg viewBox="0 0 24 24"><path d="M12 2v20m-5-17l10 14m-10 0l10-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+      security: `<svg viewBox="0 0 24 24"><path d="M12 2l8 3.5v6.5c0 5-3.5 9.5-8 10-4.5-.5-8-5-8-10V5.5L12 2zm0 7a2 2 0 0 0-2 2v1h-1v4h6v-4h-1v-1a2 2 0 0 0-2-2z"/></svg>`,
+      bridge: `<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 7.5l7 7M15.5 7.5l-7 7" stroke="currentColor" stroke-width="1.5"/></svg>`,
+      floorplan: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 11h18M11 3v18" stroke="currentColor" stroke-width="2"/></svg>`,
+      rooms: `<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9zm7 13v-6h4v6h5V9.7L12 4.2 5 9.7V22h5z"/></svg>`,
+      scenarios: `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg>`,
+      cloud: `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>`,
+      temp: `<svg viewBox="0 0 24 24"><path d="M14 14.76V5a2 2 0 0 0-4 0v9.76a4 4 0 1 0 4 0zM12 19a2 2 0 1 1 2-2 2 2 0 0 1-2 2z"/></svg>`,
+      hum: `<svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
+      power: `<svg viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .78.36.7.53l-6.2 10.47z"/></svg>`,
+      pencil: `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,
+      trash: `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`
+    };
+
+    function getSvg(name) {
+      return SVG_ICONS[name] || SVG_ICONS['bulb'];
+    }
+
+    // =========================================================================
+    // STATE & CORE LOGIC
+    // =========================================================================
     let authToken = localStorage.getItem('uniq_hub_token') || '';
     let currentCategoryFilter = 'all';
     let rawDevices = [];
     let roomsData = [];
     let floorplanData = { image: null, pins: [] };
     let pollInterval = null;
-    let pendingPinDevice = null;
-
-    const CATEGORY_ICONS = {
-      lighting: '💡',
-      socket: '🔌',
-      switch: '🎛️',
-      sensor: '📡',
-      climate: '❄️',
-      security: '🔒',
-      bridge: '🌉',
-      other: '⚙️'
-    };
-
-    const CATEGORY_LABELS = {
-      lighting: 'إنارة ذكية',
-      socket: 'مقبس ذكي',
-      switch: 'مفتاح جداري',
-      sensor: 'حساس بيئة',
-      climate: 'تكييف ومناخ',
-      security: 'أمان وأقفال',
-      bridge: 'جسر وسيط',
-      other: 'جهاز ذكي'
-    };
-
-    // Theme & Dynamic Logo Switching
-    function updateLogosForTheme(theme) {
-      const isLight = (theme === 'light');
-      const logoSrc = isLight ? '/uniq-logo-light.png' : '/uniq-logo-dark.png';
-
-      const brandLogo = document.getElementById('brandLogoImg');
-      if (brandLogo) brandLogo.src = logoSrc;
-
-      const loginLogo = document.getElementById('loginLogoImg');
-      if (loginLogo) loginLogo.src = logoSrc;
-
-      const fav = document.getElementById('faviconLink');
-      if (fav) fav.href = logoSrc;
-    }
+    let pendingPinKey = null;
 
     // Initialize Theme
     const savedTheme = localStorage.getItem('uniq_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    function updateLogosForTheme(theme) {
+      const isLight = (theme === 'light');
+      const logoSrc = isLight ? '/uniq-logo-light.png' : '/uniq-logo-dark.png';
+      const bLogo = document.getElementById('brandLogoImg');
+      if (bLogo) bLogo.src = logoSrc;
+      const lLogo = document.getElementById('loginLogoImg');
+      if (lLogo) lLogo.src = logoSrc;
+      const fav = document.getElementById('faviconLink');
+      if (fav) fav.href = logoSrc;
+    }
     updateLogosForTheme(savedTheme);
 
     function toggleTheme() {
@@ -1019,7 +1217,18 @@
       updateLogosForTheme(target);
     }
 
-    // Tab Switcher
+    // Populate Tab Icons
+    document.getElementById('tab-icon-devices').innerHTML = getSvg('bulb');
+    document.getElementById('tab-icon-rooms').innerHTML = getSvg('rooms');
+    document.getElementById('tab-icon-floorplan').innerHTML = getSvg('floorplan');
+    document.getElementById('tab-icon-scenarios').innerHTML = getSvg('scenarios');
+    document.getElementById('tab-icon-cloud').innerHTML = getSvg('cloud');
+    document.getElementById('tab-icon-commission').innerHTML = getSvg('bridge');
+    document.getElementById('stat-icon-dev').innerHTML = getSvg('bulb');
+    document.getElementById('stat-icon-active').innerHTML = getSvg('switch');
+    document.getElementById('stat-icon-power').innerHTML = getSvg('power');
+    document.getElementById('stat-icon-cloud').innerHTML = getSvg('cloud');
+
     function switchNavTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
       document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1031,17 +1240,23 @@
 
       if (tabName === 'rooms') renderRoomsView();
       if (tabName === 'floorplan') renderFloorplanPins();
+      if (tabName === 'scenarios') renderScenarios();
       if (tabName === 'cloud') loadCloudConfig();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      applyTranslations();
+      renderCategoriesBar();
+
       const savedSsid = localStorage.getItem('uniq_wifi_ssid');
       if (savedSsid) document.getElementById('commSsid').value = savedSsid;
 
-      // Load saved floorplan from localStorage if exists
       const savedFp = localStorage.getItem('uniq_floorplan_cache');
       if (savedFp) {
-        try { floorplanData = JSON.parse(savedFp); } catch (e) {}
+        try {
+          const parsed = JSON.parse(savedFp);
+          if (parsed && typeof parsed === 'object') floorplanData = parsed;
+        } catch (e) {}
       }
 
       if (authToken) {
@@ -1092,10 +1307,11 @@
           localStorage.setItem('uniq_hub_token', authToken);
           showDashboard();
         } else {
+          errBox.textContent = t('loginErr');
           errBox.style.display = 'block';
         }
       } catch (err) {
-        errBox.textContent = 'تعذر الاتصال بالموزع المحلي.';
+        errBox.textContent = 'Server connection error.';
         errBox.style.display = 'block';
       }
     }
@@ -1115,12 +1331,65 @@
 
         if (data.matterjs_connected) {
           matterDot.className = 'badge-dot';
-          matterStatus.textContent = '⚡ Matter: متصل';
+          matterStatus.textContent = '⚡ Matter: Online';
         } else {
           matterDot.className = 'badge-dot off';
-          matterStatus.textContent = '⚡ Matter: غير متصل';
+          matterStatus.textContent = '⚡ Matter: Offline';
         }
       } catch (e) {}
+    }
+
+    // Helper: Physical Device Group Key
+    function getDeviceGroupKey(d) {
+      if (!d.is_bridged) {
+        return `node_${d.node_id}`;
+      }
+      let sn = (d.serial_number || '').trim();
+      let snBase = sn.replace(/[-_/\.](0?[1-9]|ep\d+|ch\d+|gang\d+)$/i, '').trim();
+      let rawTitle = (d.model || d.device_name || '').trim();
+      let titleBase = rawTitle.replace(/\s*[-_/(]\s*(ch|channel|gang|ep|قناة)?\s*\d+\s*[)]?$/i, '').trim();
+
+      if (snBase && snBase.length >= 4 && snBase !== `NODE-${d.node_id}`) {
+        return `bridge_${d.node_id}_sn_${snBase}`;
+      }
+      if (titleBase) {
+        return `bridge_${d.node_id}_title_${titleBase}`;
+      }
+      return `bridge_${d.node_id}_ep_${d.endpoint_id}`;
+    }
+
+    function getDeviceDisplayTitle(group) {
+      const primary = group.primary;
+      if (primary.custom_name) return primary.custom_name;
+      if (primary.display_name) return primary.display_name;
+
+      let title = primary.model || primary.device_type || 'Smart Device';
+      if (!primary.is_bridged) {
+        title = `${primary.vendor || 'Matter'} ${title}`;
+      } else {
+        title = title.replace(/\s*[-_/(]\s*(ch|channel|gang|ep|قناة)?\s*\d+\s*[)]?$/i, '').trim();
+      }
+      return title;
+    }
+
+    function renderCategoriesBar() {
+      const bar = document.getElementById('categoriesBar');
+      const cats = [
+        { id: 'all', label: t('catAll'), icon: 'bulb' },
+        { id: 'lighting', label: t('catLighting'), icon: 'bulb' },
+        { id: 'switch', label: t('catSwitch'), icon: 'switch' },
+        { id: 'socket', label: t('catSocket'), icon: 'socket' },
+        { id: 'sensor', label: t('catSensor'), icon: 'sensor' },
+        { id: 'climate', label: t('catClimate'), icon: 'climate' }
+      ];
+
+      bar.innerHTML = cats.map(c => `
+        <div class="cat-tab ${currentCategoryFilter === c.id ? 'active' : ''}" data-cat="${c.id}" onclick="setCategoryFilter('${c.id}')">
+          ${getSvg(c.icon)}
+          <span>${c.label}</span>
+          <span class="cat-count" id="count-${c.id}">0</span>
+        </div>
+      `).join('');
     }
 
     function setCategoryFilter(cat) {
@@ -1150,25 +1419,6 @@
       }
     }
 
-    // Helper: Device Grouping
-    function getDeviceGroupKey(d) {
-      if (!d.is_bridged) {
-        return `node_${d.node_id}`;
-      }
-      let sn = (d.serial_number || '').trim();
-      let snBase = sn.replace(/[-_/\.](0?[1-9]|ep\d+|ch\d+|gang\d+)$/i, '').trim();
-      let rawTitle = (d.model || d.device_name || '').trim();
-      let titleBase = rawTitle.replace(/\s*[-_/(]\s*(ch|channel|gang|ep|قناة)?\s*\d+\s*[)]?$/i, '').trim();
-
-      if (snBase && snBase.length >= 4 && snBase !== `NODE-${d.node_id}`) {
-        return `bridge_${d.node_id}_sn_${snBase}`;
-      }
-      if (titleBase) {
-        return `bridge_${d.node_id}_title_${titleBase}`;
-      }
-      return `bridge_${d.node_id}_ep_${d.endpoint_id}`;
-    }
-
     function updateCategoryCounts() {
       const counts = { all: 0, socket: 0, switch: 0, lighting: 0, sensor: 0, climate: 0, security: 0, bridge: 0, other: 0 };
       let totalPower = 0;
@@ -1177,9 +1427,7 @@
       const itemMap = new Map();
       rawDevices.forEach(d => {
         const groupKey = getDeviceGroupKey(d);
-        if (!itemMap.has(groupKey)) {
-          itemMap.set(groupKey, []);
-        }
+        if (!itemMap.has(groupKey)) itemMap.set(groupKey, []);
         itemMap.get(groupKey).push(d);
 
         if (d.power) totalPower += parseFloat(d.power) || 0;
@@ -1190,7 +1438,7 @@
       document.getElementById('statTotalPower').textContent = (totalPower > 0 ? totalPower.toFixed(1) : '0.0') + ' W';
       document.getElementById('statActiveSwitches').textContent = activeSwitches;
 
-      itemMap.forEach((eps, key) => {
+      itemMap.forEach((eps) => {
         const primary = eps[0];
         const cat = primary.category || 'other';
         counts.all++;
@@ -1210,9 +1458,7 @@
       const groupsMap = new Map();
       rawDevices.forEach(d => {
         const groupKey = getDeviceGroupKey(d);
-        if (!groupsMap.has(groupKey)) {
-          groupsMap.set(groupKey, []);
-        }
+        if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
         groupsMap.get(groupKey).push(d);
       });
 
@@ -1221,15 +1467,11 @@
         const primary = eps[0];
         const cat = primary.category || 'other';
 
-        // Check category filter
-        if (currentCategoryFilter !== 'all' && currentCategoryFilter !== cat) {
-          return;
-        }
+        if (currentCategoryFilter !== 'all' && currentCategoryFilter !== cat) return;
 
-        // Check search filter
         if (searchQuery) {
-          const matchTitle = (primary.custom_name || primary.device_name || primary.model || '').toLowerCase().includes(searchQuery);
-          const matchEp = eps.some(e => (e.custom_name || e.device_name || '').toLowerCase().includes(searchQuery));
+          const matchTitle = (primary.custom_name || primary.display_name || primary.model || primary.device_name || '').toLowerCase().includes(searchQuery);
+          const matchEp = eps.some(e => (e.custom_name || e.display_name || e.device_name || '').toLowerCase().includes(searchQuery));
           if (!matchTitle && !matchEp) return;
         }
 
@@ -1237,7 +1479,7 @@
       });
 
       if (filteredGroups.length === 0) {
-        container.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--text-muted);">لا توجد أجهزة متطابقة حالياً.</div>`;
+        container.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--text-muted);">No devices found matching filter.</div>`;
         return;
       }
 
@@ -1246,10 +1488,7 @@
         const { groupKey, nodeId, endpoints, primary } = group;
         const isBridged = primary.is_bridged;
         const cat = primary.category || 'other';
-        const icon = CATEGORY_ICONS[cat] || '⚙️';
-        const catLabel = CATEGORY_LABELS[cat] || 'جهاز ذكي';
-        const vendor = primary.vendor || 'Matter';
-        const model = primary.model || primary.device_type || 'Smart Device';
+        const displayTitle = getDeviceDisplayTitle(group);
         const hasAnyOn = endpoints.some(e => e.state === 'ON');
 
         // Extract sensor readings
@@ -1269,27 +1508,24 @@
         const isEnergyDevice = (cat === 'socket' || (cat === 'switch' && powerVal !== null && powerVal > 0));
         const isSensor = (cat === 'sensor' || tempVal !== null || humVal !== null);
 
-        let displayTitle = primary.custom_name || model;
-        if (!isBridged && !primary.custom_name) {
-          displayTitle = `${vendor} ${model}`;
-        }
-
         html += `
           <div class="device-group-card ${hasAnyOn ? 'has-on' : ''}" id="card-${groupKey}">
             <div class="device-card-header">
               <div class="device-meta-left">
-                <div class="device-icon-box ${cat}">${icon}</div>
+                <div class="device-icon-box ${cat}">
+                  ${getSvg(cat === 'lighting' ? 'bulb' : cat)}
+                </div>
                 <div class="device-title-box">
                   <div class="device-main-title">
                     <span title="${displayTitle}">${displayTitle}</span>
-                    <button class="btn btn-outline" style="padding: 2px 6px; font-size: 10px;" onclick="openRenameModal(${nodeId}, ${primary.endpoint_id}, '${displayTitle.replace(/'/g, "\\'")}')" title="تعديل اسم الجهاز">
-                      ✏️
+                    <button class="btn btn-outline" style="padding: 2px 6px; font-size: 10px;" onclick="openRenameModal(${nodeId}, 0, '${displayTitle.replace(/'/g, "\\'")}')" title="${t('renameTitle')}">
+                      ${getSvg('pencil')}
                     </button>
                   </div>
                   <div class="device-sub-meta">
-                    <span class="tag tag-category">${catLabel}</span>
-                    ${isBridged ? `<span class="tag tag-bridge">🌉 جسر</span>` : `<span class="tag tag-wifi">📶 Wi-Fi</span>`}
-                    <span>Node #${nodeId}${endpoints.length > 1 ? ` • ${endpoints.length} قنوات` : ''}</span>
+                    <span class="tag tag-category">${t('cat' + cat.charAt(0).toUpperCase() + cat.slice(1)) || cat}</span>
+                    ${isBridged ? `<span class="tag tag-bridge">🌉 Bridge</span>` : `<span class="tag tag-wifi">📶 Wi-Fi</span>`}
+                    <span>Node #${nodeId}${endpoints.length > 1 ? ` • ${endpoints.length} ${t('channel')}s` : ''}</span>
                   </div>
                 </div>
               </div>
@@ -1300,20 +1536,20 @@
               <div class="sensor-readings-grid">
                 ${tempVal !== null ? `
                   <div class="sensor-tile temp">
-                    <div class="sensor-tile-val">${tempVal}°C</div>
-                    <div class="sensor-tile-label">🌡️ درجة الحرارة</div>
+                    <div class="sensor-tile-val">${getSvg('temp')} ${tempVal}°C</div>
+                    <div class="sensor-tile-label">Temperature</div>
                   </div>
                 ` : ''}
                 ${humVal !== null ? `
                   <div class="sensor-tile hum">
-                    <div class="sensor-tile-val">${humVal}%</div>
-                    <div class="sensor-tile-label">💧 الرطوبة</div>
+                    <div class="sensor-tile-val">${getSvg('hum')} ${humVal}%</div>
+                    <div class="sensor-tile-label">Humidity</div>
                   </div>
                 ` : ''}
                 ${battVal !== null ? `
                   <div class="sensor-tile">
                     <div class="sensor-tile-val">${battVal}%</div>
-                    <div class="sensor-tile-label">🔋 البطارية</div>
+                    <div class="sensor-tile-label">Battery</div>
                   </div>
                 ` : ''}
               </div>
@@ -1324,16 +1560,16 @@
               <div class="power-metrics-strip">
                 <div class="metric-item">
                   <span class="metric-item-val ${powerVal > 0 ? 'active' : ''}">${powerVal !== null ? powerVal + ' W' : '0.0 W'}</span>
-                  <span class="metric-item-label">⚡ القدرة</span>
+                  <span class="metric-item-label">⚡ Power</span>
                 </div>
                 <div class="metric-item">
                   <span class="metric-item-val">${voltVal !== null ? voltVal + ' V' : '230 V'}</span>
-                  <span class="metric-item-label">🔌 الجهد</span>
+                  <span class="metric-item-label">🔌 Voltage</span>
                 </div>
                 ${energyVal !== null ? `
                   <div class="metric-item">
                     <span class="metric-item-val">${energyVal} kWh</span>
-                    <span class="metric-item-label">📊 الاستهلاك</span>
+                    <span class="metric-item-label">📊 Energy</span>
                   </div>
                 ` : ''}
               </div>
@@ -1345,26 +1581,30 @@
                 ${endpoints.map((ep, idx) => {
                   const epId = ep.endpoint_id;
                   const isOn = (ep.state === 'ON');
-                  const chTitle = ep.custom_name || (endpoints.length > 1 ? `قناة ${idx + 1} (CH${epId})` : (ep.model || 'التحكم'));
+                  const chTitle = ep.custom_name || ep.display_name || (endpoints.length > 1 ? `${t('channel')} ${idx + 1}` : displayTitle);
 
                   return `
                     <div class="channel-pill ${isOn ? 'is-on' : ''}">
                       <div class="channel-info">
-                        <div style="font-size: 16px;">${isOn ? '💡' : '🌑'}</div>
+                        <div class="channel-indicator-icon ${isOn ? 'is-on' : ''}">
+                          ${getSvg('power')}
+                        </div>
                         <div>
                           <div class="channel-name">
                             ${chTitle}
                             ${endpoints.length > 1 ? `
-                              <button class="btn btn-outline" style="padding: 1px 4px; font-size: 9px; margin-right: 4px;" onclick="openRenameModal(${nodeId}, ${epId}, '${chTitle.replace(/'/g, "\\'")}')">✏️</button>
+                              <button class="btn btn-outline" style="padding: 1px 4px; font-size: 9px; margin-inline-start: 4px;" onclick="openRenameModal(${nodeId}, ${epId}, '${chTitle.replace(/'/g, "\\'")}')">
+                                ${getSvg('pencil')}
+                              </button>
                             ` : ''}
                           </div>
-                          <div class="channel-state-text ${isOn ? 'on' : ''}">${isOn ? '● قيد التشغيل' : '○ متوقف'}</div>
+                          <div class="channel-state-text ${isOn ? 'on' : ''}">${isOn ? '● ' + t('on') : '○ ' + t('off')}</div>
                         </div>
                       </div>
 
                       <button class="icon-toggle-btn ${isOn ? 'is-on' : ''}" onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}')">
                         <span>⏻</span>
-                        <span>${isOn ? 'إيقاف' : 'تشغيل'}</span>
+                        <span>${isOn ? t('off') : t('on')}</span>
                       </button>
                     </div>
                   `;
@@ -1375,16 +1615,17 @@
             <!-- Action Bar -->
             <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--card-border); padding-top: 8px; font-size: 10.5px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
               <div style="display: flex; align-items: center; gap: 4px;">
-                <span>⚙️</span>
-                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'lighting' ? 'border-color:#F59E0B; color:#F59E0B;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'lighting', 'Smart Light')">💡 إنارة</button>
-                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'switch' ? 'border-color:#A855F7; color:#A855F7;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
-                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'socket' ? 'border-color:#0284C7; color:#0284C7;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'socket', 'Smart Socket')">🔌 مقبس</button>
-                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'sensor' ? 'border-color:#10B981; color:#10B981;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'sensor', 'Sensor')">📡 حسّاس</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'lighting' ? 'border-color:#F59E0B; color:#F59E0B;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'lighting', 'Smart Light')">💡 ${t('catLighting')}</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'switch' ? 'border-color:#A855F7; color:#A855F7;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'switch', 'Smart Switch')">🎛️ ${t('catSwitch')}</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'socket' ? 'border-color:#0284C7; color:#0284C7;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'socket', 'Smart Socket')">🔌 ${t('catSocket')}</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'sensor' ? 'border-color:#10B981; color:#10B981;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'sensor', 'Sensor')">📡 ${t('catSensor')}</button>
               </div>
 
               <div style="display: flex; align-items: center; gap: 4px;">
-                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px;" onclick="inspectNodeDatapoints(${nodeId})">🔍 Datapoints</button>
-                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; color: #EF4444;" onclick="deleteDeviceHandler(${nodeId}, '${(primary.device_name || primary.model || 'Device').replace(/'/g, "\\'")}')">🗑️</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px;" onclick="inspectNodeDatapoints(${nodeId})">Datapoints</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; color: #EF4444;" onclick="deleteDeviceHandler(${nodeId}, '${displayTitle.replace(/'/g, "\\'")}')">
+                  ${getSvg('trash')}
+                </button>
               </div>
             </div>
 
@@ -1436,7 +1677,7 @@
     // Rename Device Modal & API
     function openRenameModal(nodeId, endpointId, currentName) {
       document.getElementById('renameNodeId').value = nodeId;
-      document.getElementById('renameEndpointId').value = endpointId;
+      document.getElementById('renameEndpointId').value = endpointId || 0;
       document.getElementById('renameInput').value = currentName;
       document.getElementById('renameModal').style.display = 'flex';
       document.getElementById('renameInput').focus();
@@ -1448,7 +1689,7 @@
 
     async function submitRenameDevice() {
       const nodeId = parseInt(document.getElementById('renameNodeId').value);
-      const endpointId = parseInt(document.getElementById('renameEndpointId').value);
+      const endpointId = parseInt(document.getElementById('renameEndpointId').value) || 0;
       const newName = document.getElementById('renameInput').value.trim();
 
       if (!newName) return;
@@ -1469,18 +1710,23 @@
         const data = await res.json();
         if (data.success) {
           rawDevices.forEach(d => {
-            if (d.node_id === nodeId && d.endpoint_id === endpointId) {
-              d.custom_name = newName;
+            if (d.node_id === nodeId) {
+              if (endpointId === 0 || d.endpoint_id === endpointId) {
+                d.custom_name = newName;
+                d.display_name = newName;
+                d.model = newName;
+              }
             }
           });
           closeRenameModal();
           renderDevicesList();
-          renderFloorplanPins();
+          try { renderFloorplanPins(); } catch (e) {}
+          renderRoomsView();
         } else {
-          alert('فشل حفظ الاسم: ' + (data.error || 'خطأ غير معروف'));
+          alert('Failed to rename: ' + (data.error || 'Unknown error'));
         }
       } catch (e) {
-        alert('حدث خطأ أثناء تعديل الاسم: ' + e.message);
+        alert('Error renaming device: ' + e.message);
       }
     }
 
@@ -1517,7 +1763,7 @@
 
     // Delete Device
     async function deleteDeviceHandler(nodeId, deviceName) {
-      if (!confirm(`هل أنت متأكد من حذف وإلغاء إقران الجهاز (${deviceName}) من شبكة Matter ومسحه من البوابة؟`)) {
+      if (!confirm(`Are you sure you want to decommission and remove (${deviceName}) from UNIQ Hub?`)) {
         return;
       }
       try {
@@ -1534,16 +1780,16 @@
           rawDevices = rawDevices.filter(d => d.node_id !== nodeId);
           updateCategoryCounts();
           renderDevicesList();
-          alert(`✅ تم حذف الجهاز بنجاح.`);
+          try { renderFloorplanPins(); } catch (e) {}
         } else {
-          alert('❌ فشل حذف الجهاز: ' + (data.error || 'خطأ'));
+          alert('Failed to delete: ' + (data.error || 'Error'));
         }
       } catch (err) {
-        alert('❌ خطأ: ' + err.message);
+        alert('Error: ' + err.message);
       }
     }
 
-    // Datapoints Raw Inspect
+    // Inspect Datapoints
     async function inspectNodeDatapoints(nodeId) {
       try {
         const res = await fetch(`/api/devices/raw?node_id=${nodeId}`, {
@@ -1559,34 +1805,31 @@
           `);
         }
       } catch (err) {
-        alert('حدث خطأ: ' + err.message);
+        alert('Error: ' + err.message);
       }
     }
 
-    // =================================================================
+    // =========================================================================
     // ROOMS MANAGEMENT LOGIC
-    // =================================================================
+    // =========================================================================
     async function loadRooms() {
       try {
         const res = await fetch('/api/rooms', {
           headers: { 'Authorization': 'Bearer ' + authToken }
         });
         const data = await res.json();
-        if (data.rooms) {
+        if (data.rooms && Array.isArray(data.rooms)) {
           roomsData = data.rooms;
         } else {
-          // Default rooms
           roomsData = [
-            { id: 'living', name: 'الصالة الرئيسية', icon: '🛋️', devices: [] },
-            { id: 'majlis', name: 'المجلس والضيوف', icon: '☕', devices: [] },
-            { id: 'master_bed', name: 'غرفة النوم الماستر', icon: '🛏️', devices: [] },
-            { id: 'kitchen', name: 'المطبخ', icon: '🍳', devices: [] }
+            { id: 'living', name: 'Living Room (الصالة)', icon: 'living', devices: [] },
+            { id: 'majlis', name: 'Majlis (المجلس)', icon: 'majlis', devices: [] },
+            { id: 'master_bed', name: 'Master Bedroom (غرفة النوم)', icon: 'bedroom', devices: [] },
+            { id: 'kitchen', name: 'Kitchen (المطبخ)', icon: 'kitchen', devices: [] }
           ];
         }
         renderRoomsView();
-      } catch (e) {
-        console.error('Failed to load rooms', e);
-      }
+      } catch (e) {}
     }
 
     function renderRoomsView() {
@@ -1595,11 +1838,9 @@
 
       let html = '';
       roomsData.forEach(r => {
-        // Calculate devices inside room
         const roomDevs = rawDevices.filter(d => (r.devices || []).includes(`${d.node_id}_${d.endpoint_id}`));
         const onCount = roomDevs.filter(d => d.state === 'ON').length;
 
-        // Check environment sensors in room
         let temp = null, hum = null;
         roomDevs.forEach(d => {
           if (d.temperature !== undefined && d.temperature !== null) temp = d.temperature;
@@ -1610,10 +1851,12 @@
           <div class="room-card">
             <div class="room-header">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="room-icon-box">${r.icon || '🏠'}</div>
+                <div class="room-icon-box">
+                  ${getSvg('rooms')}
+                </div>
                 <div>
                   <div class="room-title">${r.name}</div>
-                  <div class="room-device-count">${roomDevs.length} أجهزة مُسندة ${onCount > 0 ? `• <b style="color:var(--success);">${onCount} قيد التشغيل</b>` : ''}</div>
+                  <div class="room-device-count">${roomDevs.length} devices ${onCount > 0 ? `• <b style="color:var(--success);">${onCount} ${t('on')}</b>` : ''}</div>
                 </div>
               </div>
             </div>
@@ -1627,10 +1870,10 @@
 
             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--card-border);">
               <div style="display: flex; gap: 6px;">
-                <button class="btn btn-outline" style="font-size: 10px; padding: 4px 8px;" onclick="toggleRoomAll('${r.id}', true)">💡 تشغيل الكل</button>
-                <button class="btn btn-outline" style="font-size: 10px; padding: 4px 8px;" onclick="toggleRoomAll('${r.id}', false)">🌑 إطفاء الكل</button>
+                <button class="btn btn-outline" style="font-size: 10px; padding: 4px 8px;" onclick="toggleRoomAll('${r.id}', true)">${t('allOn')}</button>
+                <button class="btn btn-outline" style="font-size: 10px; padding: 4px 8px;" onclick="toggleRoomAll('${r.id}', false)">${t('allOff')}</button>
               </div>
-              <button class="btn btn-outline" style="font-size: 10px; padding: 4px 8px;" onclick="openAssignRoomModal('${r.id}')">⚙️ الأجهزة</button>
+              <button class="btn btn-outline" style="font-size: 10px; padding: 4px 8px;" onclick="openAssignRoomModal('${r.id}')">⚙️ Devices</button>
             </div>
           </div>
         `;
@@ -1677,7 +1920,7 @@
       if (!room) return;
 
       document.getElementById('currentAssignRoomId').value = roomId;
-      document.getElementById('assignRoomModalTitle').textContent = `⚙️ تخصيص أجهزة (${room.name})`;
+      document.getElementById('assignRoomModalTitle').textContent = `⚙️ Assign Devices (${room.name})`;
 
       const listContainer = document.getElementById('assignDevicesCheckboxList');
       let html = '';
@@ -1685,7 +1928,7 @@
       rawDevices.forEach(d => {
         const devKey = `${d.node_id}_${d.endpoint_id}`;
         const isChecked = (room.devices || []).includes(devKey);
-        const name = d.custom_name || d.device_name || `Node #${d.node_id} (EP${d.endpoint_id})`;
+        const name = d.custom_name || d.display_name || d.device_name || `Node #${d.node_id} (EP${d.endpoint_id})`;
 
         html += `
           <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--pill-bg); border-radius: 8px; cursor: pointer;">
@@ -1695,7 +1938,7 @@
         `;
       });
 
-      listContainer.innerHTML = html || '<div style="font-size:12px; color:var(--text-muted);">لا توجد أجهزة متوفرة للإسناد.</div>';
+      listContainer.innerHTML = html || '<div style="font-size:12px; color:var(--text-muted);">No devices available.</div>';
       document.getElementById('assignRoomModal').style.display = 'flex';
     }
 
@@ -1729,14 +1972,12 @@
           },
           body: JSON.stringify({ rooms: roomsData })
         });
-      } catch (e) {
-        console.error('Failed to save rooms', e);
-      }
+      } catch (e) {}
     }
 
-    // =================================================================
-    // INTERACTIVE FLOORPLAN LOGIC
-    // =================================================================
+    // =========================================================================
+    // INTERACTIVE FLOORPLAN LOGIC (GROUPED BY PHYSICAL DEVICE)
+    // =========================================================================
     async function loadFloorplanData() {
       try {
         const res = await fetch('/api/floorplan', {
@@ -1787,11 +2028,20 @@
 
     function startPlacingPin() {
       const select = document.getElementById('pinDeviceSelect');
-      let html = '';
+      const groupsMap = new Map();
       rawDevices.forEach(d => {
-        const name = d.custom_name || d.device_name || `Node #${d.node_id} (EP${d.endpoint_id})`;
-        html += `<option value="${d.node_id}_${d.endpoint_id}">${name}</option>`;
+        const groupKey = getDeviceGroupKey(d);
+        if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
+        groupsMap.get(groupKey).push(d);
       });
+
+      let html = '';
+      groupsMap.forEach((eps, gKey) => {
+        const title = getDeviceDisplayTitle({ primary: eps[0] });
+        const gangsInfo = eps.length > 1 ? ` (${eps.length} ${t('channel')}s)` : '';
+        html += `<option value="${gKey}">${title}${gangsInfo}</option>`;
+      });
+
       select.innerHTML = html;
       document.getElementById('pickPinDeviceModal').style.display = 'flex';
     }
@@ -1803,31 +2053,29 @@
     function confirmPinSelection() {
       const val = document.getElementById('pinDeviceSelect').value;
       if (!val) return;
-      pendingPinDevice = val;
+      pendingPinKey = val;
       closePickPinModal();
-      alert('📍 انقر الآن في أي مكان على المخطط لوضع هذا الجهاز.');
+      alert(currentLang === 'ar' ? '📍 انقر الآن في أي مكان داخل المخطط لتثبيت موقع الجهاز.' : '📍 Click anywhere on the blueprint to place this device.');
     }
 
     function onFloorplanCanvasClick(e) {
-      if (!pendingPinDevice) return;
+      if (!pendingPinKey) return;
 
       const rect = document.getElementById('floorplanCanvas').getBoundingClientRect();
       const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
       const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
 
-      const [nId, epId] = pendingPinDevice.split('_').map(Number);
       if (!Array.isArray(floorplanData.pins)) floorplanData.pins = [];
-      // Remove existing pin if already placed
-      floorplanData.pins = floorplanData.pins.filter(p => !(p && p.node_id === nId && p.endpoint_id === epId));
+      // Remove existing pin for this physical device if already on map
+      floorplanData.pins = floorplanData.pins.filter(p => !(p && p.group_key === pendingPinKey));
 
       floorplanData.pins.push({
-        node_id: nId,
-        endpoint_id: epId,
+        group_key: pendingPinKey,
         x: Math.round(xPercent),
         y: Math.round(yPercent)
       });
 
-      pendingPinDevice = null;
+      pendingPinKey = null;
       saveFloorplanToBackend();
       renderFloorplanPins();
     }
@@ -1840,34 +2088,89 @@
         if (!floorplanData || typeof floorplanData !== 'object') {
           floorplanData = { image: null, pins: [] };
         }
-        let pinsList = [];
-        if (Array.isArray(floorplanData.pins)) {
-          pinsList = floorplanData.pins;
-        } else if (floorplanData.pins && typeof floorplanData.pins === 'object') {
-          pinsList = Object.values(floorplanData.pins);
-        }
+        let pinsList = Array.isArray(floorplanData.pins) ? floorplanData.pins : Object.values(floorplanData.pins || {});
+
+        const groupsMap = new Map();
+        rawDevices.forEach(d => {
+          const groupKey = getDeviceGroupKey(d);
+          if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
+          groupsMap.get(groupKey).push(d);
+        });
 
         let html = '';
-        pinsList.forEach(pin => {
-          if (!pin || pin.node_id === undefined) return;
-          const dev = rawDevices.find(d => d.node_id === pin.node_id && d.endpoint_id === pin.endpoint_id);
-          if (!dev) return;
+        pinsList.forEach((pin, pIdx) => {
+          if (!pin) return;
+          let gKey = pin.group_key;
+          // Compatibility with older node_id pin format
+          if (!gKey && pin.node_id !== undefined) {
+            const matchDev = rawDevices.find(d => d.node_id === pin.node_id);
+            if (matchDev) gKey = getDeviceGroupKey(matchDev);
+          }
+          if (!gKey || !groupsMap.has(gKey)) return;
 
-          const isOn = (dev.state === 'ON');
-          const icon = CATEGORY_ICONS[dev.category] || '💡';
-          const name = dev.custom_name || dev.device_name || `EP${dev.endpoint_id}`;
+          const eps = groupsMap.get(gKey);
+          const primary = eps[0];
+          const displayTitle = getDeviceDisplayTitle({ primary });
+          const cat = primary.category || 'other';
 
-          let sensorBadge = '';
-          if (dev.temperature !== undefined && dev.temperature !== null) {
-            sensorBadge = `<div class="pin-label-pill">🌡️ ${dev.temperature}°C ${dev.humidity ? `| 💧 ${dev.humidity}%` : ''}</div>`;
+          // Multi-gang switch status
+          const totalOnOff = eps.filter(e => e.has_onoff).length;
+          const onCount = eps.filter(e => e.state === 'ON').length;
+          const isAnyOn = onCount > 0;
+
+          // Sensor status
+          let temp = null, hum = null;
+          eps.forEach(e => {
+            if (e.temperature !== undefined && e.temperature !== null) temp = e.temperature;
+            if (e.humidity !== undefined && e.humidity !== null) hum = e.humidity;
+          });
+
+          let statusBadge = '';
+          if (temp !== null || hum !== null) {
+            statusBadge = `🌡️ ${temp !== null ? temp + '°C' : ''} ${hum !== null ? '| 💧 ' + hum + '%' : ''}`;
+          } else if (totalOnOff > 1) {
+            statusBadge = `${displayTitle} (${onCount}/${totalOnOff} ${t('on')})`;
           } else {
-            sensorBadge = `<div class="pin-label-pill">${name}</div>`;
+            statusBadge = `${displayTitle} (${isAnyOn ? t('on') : t('off')})`;
           }
 
           html += `
-            <div class="device-pin ${isOn ? 'is-on' : ''}" style="top: ${pin.y}%; left: ${pin.x}%; pointer-events: auto;" onclick="onPinClick(${dev.node_id}, ${dev.endpoint_id}, '${(dev.device_name || '').replace(/'/g, "\\'")}')" title="${name} (انقر للتشغيل/الإطفاء)">
-              ${sensorBadge}
-              <div class="pin-bubble">${icon}</div>
+            <div class="device-pin ${isAnyOn ? 'is-on' : ''}" style="top: ${pin.y}%; left: ${pin.x}%; pointer-events: auto;" id="pin-${pIdx}">
+              <div class="pin-label-pill">${statusBadge}</div>
+              <div class="pin-bubble" onclick="handlePinInteraction(event, '${gKey}', ${pIdx})">
+                ${getSvg(cat === 'lighting' ? 'bulb' : cat)}
+              </div>
+
+              <!-- Multi-gang popover -->
+              <div class="pin-popover" id="popover-${pIdx}" onclick="event.stopPropagation()">
+                <div class="pin-popover-title">
+                  <span>${displayTitle}</span>
+                  <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9px;" onclick="removeFloorplanPin(${pIdx})">${t('removePin')}</button>
+                </div>
+
+                ${totalOnOff > 1 ? `
+                  <div style="display: flex; gap: 6px; margin: 4px 0;">
+                    <button class="btn btn-primary" style="flex:1; font-size: 10px; padding: 4px;" onclick="toggleDeviceGroupAll('${gKey}', true)">${t('allOn')}</button>
+                    <button class="btn btn-outline" style="flex:1; font-size: 10px; padding: 4px;" onclick="toggleDeviceGroupAll('${gKey}', false)">${t('allOff')}</button>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;">
+                    ${eps.map((e, idx) => `
+                      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 4px 6px; background: var(--pill-bg); border-radius: 6px;">
+                        <span>${e.custom_name || e.display_name || `${t('channel')} ${idx + 1}`}</span>
+                        <button class="icon-toggle-btn ${e.state === 'ON' ? 'is-on' : ''}" style="padding: 2px 8px; font-size: 10px;" onclick="toggleChannelState(${e.node_id}, ${e.endpoint_id}, '${e.device_name}')">
+                          ${e.state === 'ON' ? t('off') : t('on')}
+                        </button>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <div style="display: flex; justify-content: center; padding: 8px 0;">
+                    <button class="btn btn-primary" style="width: 100%;" onclick="toggleChannelState(${primary.node_id}, ${primary.endpoint_id}, '${primary.device_name}')">
+                      ${isAnyOn ? t('off') : t('on')}
+                    </button>
+                  </div>
+                `}
+              </div>
             </div>
           `;
         });
@@ -1878,10 +2181,36 @@
       }
     }
 
-    function onPinClick(nodeId, endpointId, deviceName) {
-      const dev = rawDevices.find(d => d.node_id === nodeId && d.endpoint_id === endpointId);
-      if (dev && dev.has_onoff) {
-        toggleChannelState(nodeId, endpointId, deviceName);
+    function handlePinInteraction(e, groupKey, pIdx) {
+      e.stopPropagation();
+      // Hide other popovers
+      document.querySelectorAll('.pin-popover').forEach(p => p.style.display = 'none');
+
+      const pop = document.getElementById(`popover-${pIdx}`);
+      if (pop) {
+        pop.style.display = (pop.style.display === 'flex' ? 'none' : 'flex');
+      }
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.pin-popover').forEach(p => p.style.display = 'none');
+    });
+
+    function toggleDeviceGroupAll(groupKey, turnOn) {
+      rawDevices.forEach(d => {
+        if (getDeviceGroupKey(d) === groupKey && d.has_onoff) {
+          if ((turnOn && d.state !== 'ON') || (!turnOn && d.state === 'ON')) {
+            toggleChannelState(d.node_id, d.endpoint_id, d.device_name);
+          }
+        }
+      });
+    }
+
+    function removeFloorplanPin(pIdx) {
+      if (Array.isArray(floorplanData.pins)) {
+        floorplanData.pins.splice(pIdx, 1);
+        saveFloorplanToBackend();
+        renderFloorplanPins();
       }
     }
 
@@ -1899,9 +2228,36 @@
       } catch (e) {}
     }
 
-    // =================================================================
-    // SMART SCENARIOS LOGIC
-    // =================================================================
+    // =========================================================================
+    // SMART SCENARIOS
+    // =========================================================================
+    function renderScenarios() {
+      const container = document.getElementById('scenariosGridContainer');
+      if (!container) return;
+
+      const scenariosList = [
+        { id: 'all_off', name: currentLang === 'ar' ? 'وضع النوم (Good Night)' : 'Good Night', desc: currentLang === 'ar' ? 'إطفاء جميع المفاتيح والإنارات في المنزل لضمان نوم هادئ وتوفير الطاقة.' : 'Turn off all home lights and smart sockets for sleep & energy saving.', icon: 'bulb' },
+        { id: 'morning', name: currentLang === 'ar' ? 'صباح الخير (Good Morning)' : 'Good Morning', desc: currentLang === 'ar' ? 'تشغيل إنارات الصالة والمطبخ وتنشيط الأجهزة اليومية.' : 'Turn on living room and kitchen lights to start your day.', icon: 'switch' },
+        { id: 'all_off', name: currentLang === 'ar' ? 'مغادرة المنزل (Away Home)' : 'Away Home', desc: currentLang === 'ar' ? 'إطفاء المقابس والإنارات غير الأساسية لضمان الأمان التام.' : 'Turn off non-essential devices when leaving home for full safety.', icon: 'security' },
+        { id: 'all_on', name: currentLang === 'ar' ? 'تشغيل شامل (All ON)' : 'Master All ON', desc: currentLang === 'ar' ? 'تشغيل فوري لجميع مفاتيح وإنارات المنزل بنقرة واحدة.' : 'Instant activation of all switches and lights across the house.', icon: 'power' }
+      ];
+
+      container.innerHTML = scenariosList.map(s => `
+        <div class="scenario-card">
+          <div>
+            <div class="scenario-icon-box">
+              ${getSvg(s.icon)}
+            </div>
+            <div class="scenario-name">${s.name}</div>
+            <div class="scenario-desc">${s.desc}</div>
+          </div>
+          <button class="btn btn-primary" style="margin-top: 10px;" onclick="triggerScenario('${s.id}', '${s.name}')">
+            ▶️ ${currentLang === 'ar' ? 'تفعيل الآن' : 'Trigger Now'}
+          </button>
+        </div>
+      `).join('');
+    }
+
     async function triggerScenario(scenarioId, name) {
       try {
         const res = await fetch('/api/scenarios/run', {
@@ -1913,16 +2269,16 @@
           body: JSON.stringify({ scenario_id: scenarioId })
         });
         const data = await res.json();
-        alert(`✅ تم تفعيل سيناريو "${name}" بنجاح.`);
+        alert(currentLang === 'ar' ? `✅ تم تفعيل سيناريو "${name}" بنجاح.` : `✅ Scenario "${name}" executed successfully.`);
         loadDevices();
       } catch (e) {
-        alert('حدث خطأ أثناء تشغيل السيناريو: ' + e.message);
+        alert('Error executing scenario: ' + e.message);
       }
     }
 
-    // =================================================================
+    // =========================================================================
     // THINGSBOARD CLOUD CONFIG & MANUAL SYNC
-    // =================================================================
+    // =========================================================================
     async function loadCloudConfig() {
       try {
         const res = await fetch('/api/cloud/config', {
@@ -1942,17 +2298,17 @@
 
         if (isConnected) {
           dot.className = 'badge-dot';
-          stText.textContent = '☁️ السحابة: متصل';
+          stText.textContent = '☁️ Cloud: Connected';
           dDot.className = 'badge-dot';
-          dText.textContent = 'متصل بالسحابة';
-          bannerStat.textContent = 'متصل (Online)';
+          dText.textContent = currentLang === 'ar' ? 'متصل بالسحابة' : 'Connected to Cloud';
+          bannerStat.textContent = 'Online';
           bannerStat.style.color = 'var(--success)';
         } else {
           dot.className = 'badge-dot warn';
-          stText.textContent = '☁️ السحابة: بانتظار التوكن';
+          stText.textContent = '☁️ Cloud: Token Required';
           dDot.className = 'badge-dot warn';
-          dText.textContent = 'غير متصل (تحقق من رمز التوكن)';
-          bannerStat.textContent = 'بانتظار التوكن';
+          dText.textContent = currentLang === 'ar' ? 'غير متصل (بانتظار التوكن)' : 'Disconnected (Token Required)';
+          bannerStat.textContent = 'Pending Token';
           bannerStat.style.color = 'var(--warning)';
         }
       } catch (e) {}
@@ -1983,10 +2339,10 @@
         } else {
           msg.style.background = 'rgba(239, 68, 68, 0.15)';
           msg.style.color = '#EF4444';
-          msg.innerHTML = `❌ ${data.error || 'فشل حفظ الإعدادات'}`;
+          msg.innerHTML = `❌ ${data.error || 'Failed to save'}`;
         }
       } catch (e) {
-        alert('خطأ: ' + e.message);
+        alert('Error: ' + e.message);
       }
     }
 
@@ -2002,24 +2358,31 @@
           body: JSON.stringify({})
         });
         const data = await res.json();
-        msg.style.display = 'block';
-        if (data.success) {
-          msg.style.background = 'rgba(16, 185, 129, 0.15)';
-          msg.style.color = '#10B981';
-          msg.innerHTML = `✅ ${data.message}`;
-        } else {
-          msg.style.background = 'rgba(245, 158, 11, 0.15)';
-          msg.style.color = '#F59E0B';
-          msg.innerHTML = `⚠️ ${data.error || 'تعذر إتمام المزامنة'}`;
+        if (msg) {
+          msg.style.display = 'block';
+          if (data.success) {
+            msg.style.background = 'rgba(16, 185, 129, 0.15)';
+            msg.style.color = '#10B981';
+            msg.innerHTML = `✅ ${data.message}`;
+          } else {
+            msg.style.background = 'rgba(245, 158, 11, 0.15)';
+            msg.style.color = '#F59E0B';
+            msg.innerHTML = `⚠️ ${data.error || 'Sync could not complete'}`;
+          }
         }
       } catch (e) {
-        alert('خطأ أثناء المزامنة: ' + e.message);
+        if (msg) {
+          msg.style.display = 'block';
+          msg.style.background = 'rgba(239, 68, 68, 0.15)';
+          msg.style.color = '#EF4444';
+          msg.innerHTML = '❌ Sync error: ' + e.message;
+        }
       }
     }
 
-    // =================================================================
+    // =========================================================================
     // COMMISSIONING LOGIC
-    // =================================================================
+    // =========================================================================
     async function handleCommission(e) {
       e.preventDefault();
       const code = document.getElementById('commCode').value.trim();
@@ -2032,11 +2395,11 @@
       if (ssid) localStorage.setItem('uniq_wifi_ssid', ssid);
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>⏳ جاري الإقران عبر البلوتوث والواي فاي...</span>';
+      submitBtn.innerHTML = '<span>⏳ Commissioning over BLE & Wi-Fi...</span>';
       statusMsg.style.display = 'block';
       statusMsg.style.background = 'rgba(56, 189, 248, 0.15)';
       statusMsg.style.color = '#0284C7';
-      statusMsg.innerHTML = '🔄 جاري الاتصال بالجهاز ومشاركته بيانات الشبكة عبر BLE... يرجى الانتظار.';
+      statusMsg.innerHTML = '🔄 Connecting via BLE, sharing credentials and commissioning node... Please wait.';
 
       try {
         const res = await fetch('/api/commission', {
@@ -2055,25 +2418,25 @@
 
         const data = await res.json();
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>➕ بدء الإقران والإضافة</span>';
+        submitBtn.innerHTML = '<span>➕ Start Commissioning</span>';
 
         if (res.ok && data.status === 'success') {
           statusMsg.style.background = 'rgba(16, 185, 129, 0.15)';
           statusMsg.style.color = '#10B981';
-          statusMsg.innerHTML = `✅ <b>تم الإقران بنجاح!</b> تم ربط الجهاز (Node ID: ${data.node_id}) ومزامنته فورياً.`;
+          statusMsg.innerHTML = `✅ <b>Commissioned successfully!</b> Node #${data.node_id} is linked and synced.`;
           document.getElementById('commCode').value = '';
           loadDevices();
         } else {
           statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
           statusMsg.style.color = '#EF4444';
-          statusMsg.innerHTML = `❌ <b>فشل الإقران:</b> ${data.error || 'تأكد أن الجهاز في وضع الاقتران.'}`;
+          statusMsg.innerHTML = `❌ <b>Pairing failed:</b> ${data.error || 'Ensure device is in pairing mode.'}`;
         }
       } catch (err) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>➕ بدء الإقران والإضافة</span>';
+        submitBtn.innerHTML = '<span>➕ Start Commissioning</span>';
         statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
         statusMsg.style.color = '#EF4444';
-        statusMsg.innerHTML = `❌ تعذر إتمام الطلب: ${err.message}`;
+        statusMsg.innerHTML = `❌ Request error: ${err.message}`;
       }
     }
   </script>

@@ -601,11 +601,16 @@ class MatterDeviceMapper:
             if existing:
                 # Keep existing consistent name
                 assigned_name = existing.get("device_name", device_name)
+                custom_name = existing.get("custom_name")
+                if custom_name:
+                    existing["product_name"] = custom_name
+                    existing["display_name"] = custom_name
                 # Auto-correct category and device type if re-inferred
                 existing["device_type"] = device_type
                 existing["category"] = category
             else:
                 assigned_name = device_name
+                custom_name = None
                 self._registry[key] = {
                     "node_id": node_id,
                     "endpoint_id": endpoint_id,
@@ -628,9 +633,12 @@ class MatterDeviceMapper:
                 "device_name": assigned_name,
                 "device_type": device_type,
                 "category": category,
+                "custom_name": custom_name,
                 "attributes": {
                     "vendor": vendor_name,
-                    "model": product_name,
+                    "model": custom_name or product_name,
+                    "displayName": custom_name or product_name,
+                    "customName": custom_name or "",
                     "category": category,
                     "serialNumber": serial_number,
                     "nodeId": node_id,
@@ -842,22 +850,47 @@ class MatterDeviceMapper:
 
     def rename_device(self, node_id: int, endpoint_id: int, new_name: str) -> bool:
         """Manually rename a device or channel and persist."""
-        key = f"{node_id}_{endpoint_id}"
         with self._lock:
+            # If endpoint_id is 0, rename all channels/endpoints belonging to this node
+            if not endpoint_id or endpoint_id == 0:
+                renamed_any = False
+                for k, d in self._registry.items():
+                    if int(d.get("node_id", -1)) == int(node_id):
+                        d["custom_name"] = new_name
+                        d["display_name"] = new_name
+                        d["product_name"] = new_name
+                        if "attributes" in d and isinstance(d["attributes"], dict):
+                            d["attributes"]["model"] = new_name
+                            d["attributes"]["displayName"] = new_name
+                            d["attributes"]["customName"] = new_name
+                        renamed_any = True
+                if renamed_any:
+                    self._save_registry()
+                    return True
+
+            key = f"{node_id}_{endpoint_id}"
             entry = self._registry.get(key)
             if entry:
+                entry["custom_name"] = new_name
                 entry["product_name"] = new_name
                 entry["display_name"] = new_name
                 if "attributes" in entry and isinstance(entry["attributes"], dict):
                     entry["attributes"]["model"] = new_name
                     entry["attributes"]["displayName"] = new_name
+                    entry["attributes"]["customName"] = new_name
                 self._save_registry()
                 return True
+
             # Also try matching base node entry
             for k, d in self._registry.items():
                 if int(d.get("node_id", -1)) == int(node_id):
+                    d["custom_name"] = new_name
                     d["product_name"] = new_name
                     d["display_name"] = new_name
+                    if "attributes" in d and isinstance(d["attributes"], dict):
+                        d["attributes"]["model"] = new_name
+                        d["attributes"]["displayName"] = new_name
+                        d["attributes"]["customName"] = new_name
                     self._save_registry()
                     return True
         return False
