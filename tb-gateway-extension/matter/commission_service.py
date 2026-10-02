@@ -119,6 +119,42 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 self._send_json_response(500, {"error": str(e)})
             return
 
+        # 5. Rooms API (Protected)
+        elif parsed_path.path == "/api/rooms":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            self._send_json_response(200, service.get_rooms_data())
+            return
+
+        # 6. Floorplan API (Protected)
+        elif parsed_path.path == "/api/floorplan":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            self._send_json_response(200, service.get_floorplan_data())
+            return
+
+        # 7. Scenarios API (Protected)
+        elif parsed_path.path == "/api/scenarios":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            self._send_json_response(200, service.get_scenarios_data())
+            return
+
+        # 8. Cloud Config & Sync API (Protected)
+        elif parsed_path.path == "/api/cloud/config":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            self._send_json_response(200, service.get_cloud_config())
+            return
+
         else:
             self._send_json_response(404, {"error": "Not Found", "path": self.path})
 
@@ -172,7 +208,24 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             self._send_json_response(200, result)
             return
 
-        # 3. Change Device Category API
+        # 3. Rename Device API
+        elif req_path == "/api/devices/rename":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+
+            nid = req_data.get("node_id")
+            epid = req_data.get("endpoint_id", 1)
+            new_name = req_data.get("name", "").strip()
+            if nid is not None and new_name and service.connector and service.connector.mapper:
+                ok = service.connector.mapper.rename_device(int(nid), int(epid), new_name)
+                self._send_json_response(200, {"success": ok, "name": new_name})
+            else:
+                self._send_json_response(400, {"success": False, "error": "Missing parameters"})
+            return
+
+        # 4. Change Device Category API
         elif req_path == "/api/devices/set_category":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
@@ -190,7 +243,7 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 self._send_json_response(400, {"success": False, "error": "Missing node_id"})
             return
 
-        # 4. Delete / Decommission Device API
+        # 5. Delete / Decommission Device API
         elif req_path in ["/api/devices/delete", "/api/devices/remove"]:
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
@@ -206,7 +259,66 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
             self._send_json_response(200, res)
             return
 
-        # 5. Change PIN API
+        # 6. Rooms Save API
+        elif req_path == "/api/rooms":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            ok = service.save_rooms_data(req_data)
+            self._send_json_response(200, {"success": ok})
+            return
+
+        # 7. Floorplan Save API
+        elif req_path == "/api/floorplan":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            ok = service.save_floorplan_data(req_data)
+            self._send_json_response(200, {"success": ok})
+            return
+
+        # 8. Scenarios Save & Run API
+        elif req_path == "/api/scenarios":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            ok = service.save_scenarios_data(req_data)
+            self._send_json_response(200, {"success": ok})
+            return
+
+        elif req_path == "/api/scenarios/run":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            scen_id = req_data.get("scenario_id")
+            res = service.run_scenario(scen_id)
+            self._send_json_response(200, res)
+            return
+
+        # 9. Cloud Config Save & Manual Sync API
+        elif req_path == "/api/cloud/config":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            res = service.save_cloud_config(req_data)
+            self._send_json_response(200, res)
+            return
+
+        elif req_path == "/api/cloud/sync":
+            token = self._get_auth_token()
+            if not service.auth_manager.validate_token(token):
+                self._send_json_response(401, {"error": "Unauthorized"})
+                return
+            res = service.sync_all_to_cloud()
+            self._send_json_response(200, res)
+            return
+
+        # 10. Change PIN API
         elif req_path == "/api/settings/pin":
             token = self._get_auth_token()
             if not service.auth_manager.validate_token(token):
@@ -391,78 +503,80 @@ class MatterCommissionService:
                             break
 
                 # 1. Temperature (Cluster 1026 / 0x0402)
-                if state_data.get("temperature") is None:
-                    for t_key in [f"{endpoint_id}/1026/0", f"{endpoint_id}/1026/measuredValue", f"{endpoint_id}/0x0402/0", "0/1026/0"]:
-                        if t_key in flat_attrs:
-                            try:
-                                raw_t = float(flat_attrs[t_key])
-                                if raw_t not in [-32768, 0x8000]:
-                                    state_data["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
-                                    break
-                            except Exception:
-                                pass
-                    if state_data.get("temperature") is None and ep_clusters:
-                        c1026 = ep_clusters.get("1026") or ep_clusters.get(1026) or ep_clusters.get("0x0402") or {}
-                        t_val = c1026.get("measuredValue") if "measuredValue" in c1026 else c1026.get("0")
-                        if t_val is not None:
-                            try:
-                                raw_t = float(t_val)
-                                if raw_t not in [-32768, 0x8000]:
-                                    state_data["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
-                            except Exception:
-                                pass
+                for t_key in [f"{endpoint_id}/1026/0", f"{endpoint_id}/1026/measuredValue", f"{endpoint_id}/0x0402/0", f"{endpoint_id}/0x0402/measuredValue", "0/1026/0"]:
+                    if t_key in flat_attrs:
+                        try:
+                            raw_t = float(flat_attrs[t_key])
+                            if raw_t not in [-32768, 0x8000]:
+                                state_data["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
+                                break
+                        except Exception:
+                            pass
+                if ep_clusters:
+                    c1026 = ep_clusters.get("1026") or ep_clusters.get(1026) or ep_clusters.get("0x0402") or {}
+                    t_val = c1026.get("measuredValue") if "measuredValue" in c1026 else c1026.get("0")
+                    if t_val is not None:
+                        try:
+                            raw_t = float(t_val)
+                            if raw_t not in [-32768, 0x8000]:
+                                state_data["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
+                        except Exception:
+                            pass
 
                 # 2. Humidity (Cluster 1029 / 0x0405)
-                if state_data.get("humidity") is None:
-                    for h_key in [f"{endpoint_id}/1029/0", f"{endpoint_id}/1029/measuredValue", f"{endpoint_id}/0x0405/0", "0/1029/0"]:
-                        if h_key in flat_attrs:
-                            try:
-                                raw_h = float(flat_attrs[h_key])
-                                if raw_h not in [0xFFFF, 65535]:
-                                    state_data["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
-                                    break
-                            except Exception:
-                                pass
-                    if state_data.get("humidity") is None and ep_clusters:
-                        c1029 = ep_clusters.get("1029") or ep_clusters.get(1029) or ep_clusters.get("0x0405") or {}
-                        h_val = c1029.get("measuredValue") if "measuredValue" in c1029 else c1029.get("0")
-                        if h_val is not None:
-                            try:
-                                raw_h = float(h_val)
-                                if raw_h not in [0xFFFF, 65535]:
-                                    state_data["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
-                            except Exception:
-                                pass
+                for h_key in [f"{endpoint_id}/1029/0", f"{endpoint_id}/1029/measuredValue", f"{endpoint_id}/0x0405/0", f"{endpoint_id}/0x0405/measuredValue", "0/1029/0"]:
+                    if h_key in flat_attrs:
+                        try:
+                            raw_h = float(flat_attrs[h_key])
+                            if raw_h not in [0xFFFF, 65535]:
+                                state_data["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
+                                break
+                        except Exception:
+                            pass
+                if ep_clusters:
+                    c1029 = ep_clusters.get("1029") or ep_clusters.get(1029) or ep_clusters.get("0x0405") or {}
+                    h_val = c1029.get("measuredValue") if "measuredValue" in c1029 else c1029.get("0")
+                    if h_val is not None:
+                        try:
+                            raw_h = float(h_val)
+                            if raw_h not in [0xFFFF, 65535]:
+                                state_data["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
+                        except Exception:
+                            pass
 
                 # 3. Battery (Cluster 1 / 0x0001)
-                if state_data.get("battery") is None:
-                    for b_key in [f"{endpoint_id}/1/12", f"{endpoint_id}/1/batteryPercentRemaining", "0/1/12", "0/1/batteryPercentRemaining"]:
-                        if b_key in flat_attrs:
-                            try:
-                                raw_b = float(flat_attrs[b_key])
-                                state_data["battery"] = round(raw_b / 2.0 if raw_b <= 200 else raw_b, 1)
-                                break
-                            except Exception:
-                                pass
-
-                # 4. State / OnOff (Cluster 6 / 0x0006)
-                if not state_data.get("state") or state_data.get("state") == "OFF":
-                    for s_key in [f"{endpoint_id}/6/0", f"{endpoint_id}/6/onOff"]:
-                        if s_key in flat_attrs:
-                            val = flat_attrs[s_key]
-                            state_data["state"] = "ON" if val in [True, 1, "true", "True", "on", "ON"] else "OFF"
+                for b_key in [f"{endpoint_id}/1/12", f"{endpoint_id}/1/batteryPercentRemaining", f"{endpoint_id}/0x0001/12", "0/1/12", "0/1/batteryPercentRemaining"]:
+                    if b_key in flat_attrs:
+                        try:
+                            raw_b = float(flat_attrs[b_key])
+                            state_data["battery"] = round(raw_b / 2.0 if raw_b <= 200 else raw_b, 1)
                             break
+                        except Exception:
+                            pass
+
+                # 4. State / OnOff (Cluster 6 / 0x0006) - Real-time Sync for ON and OFF
+                matched_onoff = False
+                for s_key in [f"{endpoint_id}/6/0", f"{endpoint_id}/6/onOff", f"{endpoint_id}/0x0006/0"]:
+                    if s_key in flat_attrs:
+                        val = flat_attrs[s_key]
+                        state_data["state"] = "ON" if val in [True, 1, "true", "True", "on", "ON"] else "OFF"
+                        matched_onoff = True
+                        break
+                if not matched_onoff and ep_clusters:
+                    c6 = ep_clusters.get("6") or ep_clusters.get(6) or ep_clusters.get("0x0006") or {}
+                    if "onOff" in c6 or "0" in c6:
+                        val = c6.get("onOff") if "onOff" in c6 else c6.get("0")
+                        state_data["state"] = "ON" if val in [True, 1, "true", "True", "on", "ON"] else "OFF"
 
                 # 5. Electrical Measurement (Cluster 2820 / 1794 / 144)
-                if state_data.get("power") is None:
-                    for p_key in [f"{endpoint_id}/2820/1291", f"{endpoint_id}/2820/0x050B", f"{endpoint_id}/1794/1024", f"{endpoint_id}/144/4"]:
-                        if p_key in flat_attrs:
-                            try:
-                                p_raw = float(flat_attrs[p_key])
-                                state_data["power"] = round(p_raw / 1000.0 if p_raw > 50000 else (p_raw / 10.0 if p_raw > 5000 else p_raw), 2)
-                                break
-                            except Exception:
-                                pass
+                for p_key in [f"{endpoint_id}/2820/1291", f"{endpoint_id}/2820/0x050B", f"{endpoint_id}/1794/1024", f"{endpoint_id}/144/4"]:
+                    if p_key in flat_attrs:
+                        try:
+                            p_raw = float(flat_attrs[p_key])
+                            state_data["power"] = round(p_raw / 1000.0 if p_raw > 50000 else (p_raw / 10.0 if p_raw > 5000 else p_raw), 2)
+                            break
+                        except Exception:
+                            pass
 
                 self.connector.mapper.update_device_state(node_id, endpoint_id, state_data)
 
@@ -638,3 +752,293 @@ class MatterCommissionService:
             "result": result_data,
             "message": f"Device successfully commissioned on Matter Fabric with Node ID {node_id}."
         }
+
+    # =========================================================================
+    # Rooms Management
+    # =========================================================================
+
+    def _get_storage_file(self, filename: str) -> str:
+        base_dir = "/var/lib/uniq-gateway"
+        if not os.path.exists(base_dir):
+            base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+        os.makedirs(base_dir, exist_ok=True)
+        return os.path.join(base_dir, filename)
+
+    def get_rooms_data(self) -> dict:
+        filepath = self._get_storage_file("rooms.json")
+        default_rooms = {
+            "rooms": [
+                {"id": "living_room", "name": "غرفة المعيشة", "icon": "🛋️"},
+                {"id": "majlis", "name": "المجلس", "icon": "☕"},
+                {"id": "master_bed", "name": "غرفة النوم الرئيسية", "icon": "🛏️"},
+                {"id": "kitchen", "name": "المطبخ", "icon": "🍳"},
+                {"id": "entrance", "name": "المدخل الرئيسي", "icon": "🚪"}
+            ],
+            "device_rooms": {}
+        }
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return default_rooms
+
+    def save_rooms_data(self, data: dict) -> bool:
+        filepath = self._get_storage_file("rooms.json")
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            return True
+        except Exception as e:
+            log.error(f"Failed to save rooms data: {e}")
+            return False
+
+    # =========================================================================
+    # Interactive Floorplan Management
+    # =========================================================================
+
+    def get_floorplan_data(self) -> dict:
+        filepath = self._get_storage_file("floorplan.json")
+        default_fp = {
+            "image": "",
+            "pins": {}
+        }
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return default_fp
+
+    def save_floorplan_data(self, data: dict) -> bool:
+        filepath = self._get_storage_file("floorplan.json")
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            return True
+        except Exception as e:
+            log.error(f"Failed to save floorplan data: {e}")
+            return False
+
+    # =========================================================================
+    # Scenarios & Automations
+    # =========================================================================
+
+    def get_scenarios_data(self) -> dict:
+        filepath = self._get_storage_file("scenarios.json")
+        default_scenarios = {
+            "scenarios": [
+                {
+                    "id": "all_off",
+                    "name": "إطفاء الكل (وضع الخروج)",
+                    "icon": "🚪",
+                    "desc": "إيقاف تشغيل جميع المفاتيح والمقابس والإنارة دفعة واحدة عند مغادرة المنزل.",
+                    "actions": [{"action": "turn_all_off"}]
+                },
+                {
+                    "id": "sleep_mode",
+                    "name": "وضع النوم الهادئ",
+                    "icon": "🌙",
+                    "desc": "إطفاء جميع الأجهزة الرئيسية والإبقاء على أجهزة الأمان والتكييف.",
+                    "actions": [{"action": "turn_all_off"}]
+                },
+                {
+                    "id": "all_on",
+                    "name": "تشغيل الكل",
+                    "icon": "⚡",
+                    "desc": "تشغيل كافة أجهزة المنزل في الحالات الطارئة أو الاستقبال.",
+                    "actions": [{"action": "turn_all_on"}]
+                }
+            ]
+        }
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return default_scenarios
+
+    def save_scenarios_data(self, data: dict) -> bool:
+        filepath = self._get_storage_file("scenarios.json")
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            return True
+        except Exception as e:
+            log.error(f"Failed to save scenarios data: {e}")
+            return False
+
+    def run_scenario(self, scenario_id: str) -> dict:
+        log.info(f"Executing Smart Home Scenario: [{scenario_id}]")
+        scenarios = self.get_scenarios_data().get("scenarios", [])
+        matched = next((s for s in scenarios if s.get("id") == scenario_id), None)
+        if not matched:
+            return {"success": False, "error": f"Scenario '{scenario_id}' not found"}
+
+        executed_actions = 0
+        devices = self.get_live_devices()
+
+        for act in matched.get("actions", []):
+            action_type = act.get("action")
+            if action_type in ["turn_all_off", "turn_all_on"]:
+                target_state = (action_type == "turn_all_on")
+                for d in devices:
+                    if d.get("has_onoff") and d.get("node_id") is not None:
+                        try:
+                            self.control_device(
+                                node_id=int(d["node_id"]),
+                                endpoint_id=int(d.get("endpoint_id", 1)),
+                                method="setState",
+                                params=target_state
+                            )
+                            executed_actions += 1
+                        except Exception as e:
+                            log.warning(f"Error executing scenario on device #{d['node_id']}: {e}")
+            elif action_type == "device_command":
+                nid = act.get("node_id")
+                epid = act.get("endpoint_id", 1)
+                st = act.get("state", True)
+                if nid is not None:
+                    self.control_device(node_id=int(nid), endpoint_id=int(epid), method="setState", params=st)
+                    executed_actions += 1
+
+        return {
+            "success": True,
+            "scenario": matched.get("name"),
+            "executed_actions": executed_actions,
+            "message": f"تم تفعيل سيناريو '{matched.get('name')}' بنجاح."
+        }
+
+    # =========================================================================
+    # Cloud Config & Connectivity Management
+    # =========================================================================
+
+    def get_cloud_config(self) -> dict:
+        config_file = "/opt/uniq-gateway/config/gateway.yaml"
+        if not os.path.exists(config_file):
+            config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "gateway.yaml")
+
+        cloud_info = {
+            "host": "18.134.221.206",
+            "port": 1883,
+            "access_token": "",
+            "cloud_connected": False,
+            "mqtt_topic_status": "v1/gateway/telemetry",
+            "server_type": "ThingsBoard Professional / Community"
+        }
+
+        # Check connector live cloud connectivity
+        if self.connector:
+            gw = getattr(self.connector, "_gateway", None)
+            if gw:
+                client = getattr(gw, "tb_client", None) or getattr(gw, "mqtt_client", None)
+                if client and hasattr(client, "is_connected"):
+                    cloud_info["cloud_connected"] = bool(client.is_connected())
+
+        # Read config file values if exists
+        if os.path.exists(config_file):
+            try:
+                import yaml
+                with open(config_file, "r", encoding="utf-8") as f:
+                    cfg = yaml.safe_load(f)
+                    c_cfg = cfg.get("cloud", {})
+                    cloud_info["host"] = c_cfg.get("host", cloud_info["host"])
+                    cloud_info["port"] = c_cfg.get("port", cloud_info["port"])
+                    tok = c_cfg.get("access_token", "")
+                    cloud_info["access_token"] = tok
+            except Exception:
+                pass
+
+        return cloud_info
+
+    def save_cloud_config(self, req_data: dict) -> dict:
+        config_file = "/opt/uniq-gateway/config/gateway.yaml"
+        if not os.path.exists(config_file):
+            config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "gateway.yaml")
+
+        new_host = req_data.get("host", "").strip()
+        new_port = int(req_data.get("port", 1883))
+        new_token = req_data.get("access_token", "").strip()
+
+        if not os.path.exists(config_file):
+            return {"success": False, "error": f"Config file not found at {config_file}"}
+
+        try:
+            import yaml
+            with open(config_file, "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f) or {}
+
+            if "cloud" not in cfg:
+                cfg["cloud"] = {}
+            if new_host:
+                cfg["cloud"]["host"] = new_host
+            if new_port:
+                cfg["cloud"]["port"] = new_port
+            if new_token:
+                cfg["cloud"]["access_token"] = new_token
+
+            with open(config_file, "w", encoding="utf-8") as f:
+                yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True)
+
+            return {
+                "success": True,
+                "message": "تم حفظ إعدادات السحابة بنجاح. سيتم تطبيق الاتصال فور إعادة تشغيل البوابة.",
+                "reboot_required": True
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def sync_all_to_cloud(self) -> dict:
+        """
+        Manually announces all registered sub-devices and their latest attributes/telemetry to ThingsBoard Gateway.
+        """
+        synced_count = 0
+        if not self.connector:
+            return {"success": False, "error": "Matter connector is not initialized"}
+
+        mapper = getattr(self.connector, "mapper", None)
+        if not mapper:
+            return {"success": False, "error": "Device mapper not available"}
+
+        try:
+            for key, dev in list(mapper._registry.items()):
+                device_name = dev.get("device_name")
+                device_type = dev.get("device_type", "Matter Device")
+                if not device_name:
+                    continue
+
+                # 1. Connect
+                self.connector.send_to_gateway("connect", {
+                    "device": device_name,
+                    "type": device_type
+                })
+
+                # 2. Attributes
+                attrs = dev.get("attributes", {})
+                self.connector.send_to_gateway("attributes", {
+                    "device": device_name,
+                    "data": attrs
+                })
+
+                # 3. Telemetry (current state)
+                state = dev.get("state", {})
+                if state:
+                    self.connector.send_to_gateway("telemetry", {
+                        "device": device_name,
+                        "data": state
+                    })
+
+                synced_count += 1
+
+            return {
+                "success": True,
+                "synced_count": synced_count,
+                "message": f"تمت مزامنة {synced_count} جهاز بنجاح مع بوابة السحابة (ThingsBoard)."
+            }
+        except Exception as e:
+            log.error(f"Error during manual cloud sync: {e}")
+            return {"success": False, "error": str(e)}
+

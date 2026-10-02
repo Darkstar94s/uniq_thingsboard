@@ -840,6 +840,28 @@ class MatterDeviceMapper:
                 return True
         return False
 
+    def rename_device(self, node_id: int, endpoint_id: int, new_name: str) -> bool:
+        """Manually rename a device or channel and persist."""
+        key = f"{node_id}_{endpoint_id}"
+        with self._lock:
+            entry = self._registry.get(key)
+            if entry:
+                entry["product_name"] = new_name
+                entry["display_name"] = new_name
+                if "attributes" in entry and isinstance(entry["attributes"], dict):
+                    entry["attributes"]["model"] = new_name
+                    entry["attributes"]["displayName"] = new_name
+                self._save_registry()
+                return True
+            # Also try matching base node entry
+            for k, d in self._registry.items():
+                if int(d.get("node_id", -1)) == int(node_id):
+                    d["product_name"] = new_name
+                    d["display_name"] = new_name
+                    self._save_registry()
+                    return True
+        return False
+
     # =========================================================================
     # RPC to Matter Command Mapping
     # =========================================================================

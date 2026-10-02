@@ -202,23 +202,29 @@ class MatterConnector(BaseConnector):
         telemetry = {}
 
         if cluster_id == CLUSTER_ON_OFF:
-            on = bool(value)
+            on = value in [True, 1, "true", "True", "on", "ON"]
             telemetry["state"] = "ON" if on else "OFF"
             telemetry["onOff"] = on
-            # Update live state in mapper
-            if self.mapper and target_device:
-                for k, d in self.mapper._registry.items():
-                    if d.get("device_name") == target_device:
-                        d["state"] = "ON" if on else "OFF"
 
         elif cluster_id == CLUSTER_LEVEL_CONTROL:
-            brightness_pct = int(round((value / 254.0) * 100)) if value else 0
-            telemetry["brightness"] = value
-            telemetry["brightness_pct"] = brightness_pct
+            try:
+                brightness_pct = int(round((float(value) / 254.0) * 100)) if value else 0
+                telemetry["brightness"] = value
+                telemetry["brightness_pct"] = brightness_pct
+            except Exception:
+                pass
         elif cluster_id == CLUSTER_TEMP_MEASUREMENT:
-            telemetry["temperature"] = round(value / 100.0, 1)
+            try:
+                raw_t = float(value)
+                telemetry["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
+            except Exception:
+                pass
         elif cluster_id == CLUSTER_HUMIDITY_MEASUREMENT:
-            telemetry["humidity"] = round(value / 100.0, 1)
+            try:
+                raw_h = float(value)
+                telemetry["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
+            except Exception:
+                pass
         elif cluster_id == CLUSTER_DOOR_LOCK:
             telemetry["locked"] = (value == 1)
             telemetry["lockState"] = "LOCKED" if value == 1 else "UNLOCKED"
@@ -228,6 +234,8 @@ class MatterConnector(BaseConnector):
             telemetry[f"cluster_{cluster_id}_attr_{attribute_id}"] = value
 
         if telemetry:
+            if self.mapper:
+                self.mapper.update_device_state(node_id, endpoint_id, telemetry)
             self.send_to_gateway("telemetry", {
                 "device": target_device,
                 "data": telemetry

@@ -274,10 +274,18 @@ class UniqGateway:
         log.info(f"Cloud RPC -> Device: [{device_name}], Method: [{method}], Params: [{params}]")
 
         target_connector = None
-        if device_name.startswith("Zigbee") and "zigbee" in self.connectors:
-            target_connector = self.connectors["zigbee"]
-        elif device_name.startswith("Matter") and "matter" in self.connectors:
-            target_connector = self.connectors["matter"]
+        if "matter" in self.connectors and hasattr(self.connectors["matter"], "mapper") and self.connectors["matter"].mapper:
+            if self.connectors["matter"].mapper.get_node_endpoint_by_device_name(device_name):
+                target_connector = self.connectors["matter"]
+
+        if not target_connector:
+            if device_name.startswith("Zigbee") and "zigbee" in self.connectors:
+                target_connector = self.connectors["zigbee"]
+            elif (device_name.startswith("Matter") or device_name.startswith("Bridged")) and "matter" in self.connectors:
+                target_connector = self.connectors["matter"]
+            elif "matter" in self.connectors:
+                # Default fallback for mapped devices
+                target_connector = self.connectors["matter"]
 
         if target_connector:
             try:
