@@ -145,77 +145,210 @@
     .section-title span { background: var(--primary); width: 4px; height: 16px; border-radius: 2px; }
 
     /* ─── Device Cards ─── */
+    /* ─── Device Cards Responsive Grid (Square / Box Layout) ─── */
     .devices-list {
-      display: flex; flex-direction: column; gap: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 16px;
     }
     .device-group-card {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 14px; padding: 16px 20px;
-      display: flex; flex-direction: column; gap: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
     }
     .device-group-card:hover {
-      border-color: rgba(255, 255, 255, 0.18);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     }
     .device-group-card.has-on {
-      border-right: 4px solid var(--success);
+      border-top: 3px solid var(--success);
     }
 
     .device-card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 14px; flex-wrap: wrap;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
     }
     .device-meta-left {
-      display: flex; align-items: center; gap: 14px; min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
     }
     .device-icon-box {
-      width: 44px; height: 44px; border-radius: 12px;
-      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--card-border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
     }
-    .device-icon-box.socket { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); }
-    .device-icon-box.switch { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); }
-    .device-icon-box.lighting { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
-    .device-icon-box.sensor { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+    .device-icon-box.socket { background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.35); }
+    .device-icon-box.switch { background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.35); }
+    .device-icon-box.lighting { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); }
+    .device-icon-box.sensor { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); }
 
-    .device-title-box { min-width: 0; }
+    .device-title-box { min-width: 0; flex: 1; }
     .device-main-title {
-      font-size: 15px; font-weight: 700;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      display: flex; align-items: center; gap: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .device-sub-meta {
-      font-size: 11px; color: var(--text-muted); margin-top: 3px;
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     /* Tags */
     .tag {
-      font-size: 10px; font-weight: 600; padding: 2px 8px;
-      border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
     }
     .tag-category { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
     .tag-wifi { background: rgba(16, 185, 129, 0.15); color: #10B981; }
     .tag-bridge { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
 
-    /* ─── Fixed Power / Energy Measurement Bar ─── */
-    .power-metrics-strip {
+    /* ─── Sensor Display Tiles ─── */
+    .sensor-readings-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
       gap: 8px;
-      background: rgba(11, 19, 43, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin: 4px 0;
+    }
+    .sensor-tile {
+      background: rgba(11, 19, 43, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 10px;
-      padding: 10px 14px;
+      padding: 10px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 3px;
     }
-    .metric-item {
-      display: flex; align-items: center; gap: 8px;
+    .sensor-tile.temp { border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.07); }
+    .sensor-tile.hum { border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.07); }
+    .sensor-tile.batt { border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.07); }
+    .sensor-tile-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
     }
-    .metric-item-icon {
+    .sensor-tile.temp .sensor-tile-val { color: #FBBF24; }
+    .sensor-tile.hum .sensor-tile-val { color: #38BDF8; }
+    .sensor-tile.batt .sensor-tile-val { color: #34D399; }
+    .sensor-tile-unit { font-size: 11px; font-weight: 600; opacity: 0.85; }
+    .sensor-tile-label { font-size: 9.5px; color: var(--text-muted); font-weight: 600; }
+    .sensor-waiting-note {
+      grid-column: 1 / -1;
+      padding: 12px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    /* ─── Compact Channels Grid ─── */
+    .channels-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .channel-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s;
+    }
+    .channel-pill.is-on {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .channel-info { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .channel-status-icon {
       width: 28px; height: 28px; border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
+      font-size: 14px; background: rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+    }
+    .channel-status-icon.on {
+      background: rgba(16, 185, 129, 0.2); color: var(--success);
+      box-shadow: 0 0 10px var(--success-glow);
+    }
+    .channel-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .channel-state-text { font-size: 9.5px; color: var(--text-muted); }
+    .channel-state-text.on { color: var(--success); font-weight: 700; }
+
+    /* Modern Iconic Toggle Button */
+    .icon-toggle-btn {
+      padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #1E293B; color: #94A3B8; flex-shrink: 0;
+    }
+    .icon-toggle-btn:hover { background: #334155; color: white; transform: scale(1.03); }
+    .icon-toggle-btn.is-on {
+      background: var(--success); color: white; border-color: var(--success);
+      box-shadow: 0 0 12px var(--success-glow);
+    }
+    .power-symbol { font-size: 12px; font-weight: 900; }
+
+    /* Compact Power Strip */
+    .power-metrics-strip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      background: rgba(11, 19, 43, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 2px 0;
+    }
+    .metric-item {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .metric-item-icon {
+      width: 24px; height: 24px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
     }
     .metric-item-icon.power { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
     .metric-item-icon.voltage { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
@@ -223,54 +356,10 @@
     .metric-item-icon.energy { background: rgba(16, 185, 129, 0.15); color: #10B981; }
 
     .metric-item-data { display: flex; flex-direction: column; }
-    .metric-item-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
-    .metric-item-val { font-size: 13px; font-weight: 700; color: var(--text); }
+    .metric-item-label { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+    .metric-item-val { font-size: 11.5px; font-weight: 700; color: var(--text); }
     .metric-item-val.active { color: #F59E0B; }
     .metric-item-val.active-green { color: #10B981; }
-
-    /* ─── Channels Row & Iconic Switch Buttons ─── */
-    .channels-grid {
-      display: flex; gap: 10px; flex-wrap: wrap;
-    }
-    .channel-pill {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 14px; padding: 10px 14px; border-radius: 10px;
-      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);
-      flex: 1; min-width: 200px;
-      transition: all 0.2s;
-    }
-    .channel-pill.is-on {
-      background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.2);
-    }
-    .channel-info { display: flex; align-items: center; gap: 10px; }
-    .channel-status-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; background: rgba(255, 255, 255, 0.05);
-    }
-    .channel-status-icon.on {
-      background: rgba(16, 185, 129, 0.15); color: var(--success);
-      box-shadow: 0 0 10px var(--success-glow);
-    }
-    .channel-name { font-size: 13px; font-weight: 600; }
-    .channel-state-text { font-size: 10px; color: var(--text-muted); }
-    .channel-state-text.on { color: var(--success); font-weight: 700; }
-
-    /* Modern Iconic Toggle Button */
-    .icon-toggle-btn {
-      padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
-      border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;
-      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      background: #1E293B; color: #94A3B8;
-    }
-    .icon-toggle-btn:hover { background: #334155; color: white; transform: scale(1.02); }
-    .icon-toggle-btn.is-on {
-      background: var(--success); color: white; border-color: var(--success);
-      box-shadow: 0 0 14px var(--success-glow);
-    }
-    .power-symbol {
-      font-size: 14px; font-weight: 900;
-    }
 
     .empty-state {
       padding: 40px 16px; text-align: center;
@@ -604,6 +693,27 @@
       }
     }
 
+    // Helper: Smart Device Grouping Identifier
+    function getDeviceGroupKey(d) {
+      if (!d.is_bridged) {
+        return `node_${d.node_id}`;
+      }
+      // For bridged sub-devices: group channels of the same physical multi-gang switch/relay.
+      let sn = (d.serial_number || '').trim();
+      let snBase = sn.replace(/[-_/\.](0?[1-9]|ep\d+|ch\d+|gang\d+)$/i, '').trim();
+
+      let rawTitle = (d.model || d.device_name || '').trim();
+      let titleBase = rawTitle.replace(/\s*[-_/(]\s*(ch|channel|gang|ep|قناة)?\s*\d+\s*[)]?$/i, '').trim();
+
+      if (snBase && snBase.length >= 4 && snBase !== `NODE-${d.node_id}`) {
+        return `bridge_${d.node_id}_sn_${snBase}`;
+      }
+      if (titleBase) {
+        return `bridge_${d.node_id}_title_${titleBase}`;
+      }
+      return `bridge_${d.node_id}_ep_${d.endpoint_id}`;
+    }
+
     // Update Category Statistics
     function updateCategoryCounts() {
       const counts = { all: 0, socket: 0, switch: 0, lighting: 0, sensor: 0, climate: 0, security: 0, bridge: 0, other: 0 };
@@ -611,9 +721,7 @@
 
       const itemMap = new Map();
       rawDevices.forEach(d => {
-        // Direct multi-gang devices are grouped by node_id.
-        // Bridged sub-devices are independent individual devices grouped by node_id + endpoint_id.
-        const groupKey = d.is_bridged ? `${d.node_id}_ep_${d.endpoint_id}` : `${d.node_id}`;
+        const groupKey = getDeviceGroupKey(d);
         if (!itemMap.has(groupKey)) {
           itemMap.set(groupKey, []);
         }
@@ -645,7 +753,7 @@
 
       const groupsMap = new Map();
       rawDevices.forEach(d => {
-        const groupKey = d.is_bridged ? `${d.node_id}_ep_${d.endpoint_id}` : `${d.node_id}`;
+        const groupKey = getDeviceGroupKey(d);
         if (!groupsMap.has(groupKey)) {
           groupsMap.set(groupKey, []);
         }
@@ -662,7 +770,7 @@
       });
 
       if (filteredGroups.length === 0) {
-        container.innerHTML = `<div class="empty-state">لا توجد أجهزة متصلة ضمن هذا التصنيف حالياً.</div>`;
+        container.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">لا توجد أجهزة متصلة ضمن هذا التصنيف حالياً.</div>`;
         return;
       }
 
@@ -678,7 +786,7 @@
 
         const hasAnyOn = endpoints.some(e => e.state === 'ON');
 
-        // Check power / energy stats
+        // Extract metrics
         let powerVal = null, voltVal = null, currVal = null, energyVal = null;
         let tempVal = null, humVal = null, battVal = null;
 
@@ -692,7 +800,17 @@
           if (e.battery !== undefined && e.battery !== null) battVal = e.battery;
         });
 
-        const isEnergyDevice = (cat === 'socket' || cat === 'switch' || powerVal !== null || voltVal !== null);
+        const isEnergyDevice = (cat === 'socket' || (cat === 'switch' && powerVal !== null && powerVal > 0));
+        const isSensor = (cat === 'sensor' || tempVal !== null || humVal !== null);
+
+        // Clean display title
+        let displayTitle = model;
+        if (!isBridged) {
+          displayTitle = `${vendor} ${model}`;
+        } else {
+          // If multi-gang bridged, strip CH1/EP1 suffix from card header title
+          displayTitle = displayTitle.replace(/\s*[-_/(]\s*(ch|channel|gang|ep|قناة)?\s*\d+\s*[)]?$/i, '').trim();
+        }
 
         html += `
           <div class="device-group-card ${hasAnyOn ? 'has-on' : ''}" id="card-${groupKey}">
@@ -704,133 +822,152 @@
                   ${icon}
                 </div>
                 <div class="device-title-box">
-                  <div class="device-main-title">
-                    ${isBridged ? model : `${vendor} ${model}`}
-                    <span class="tag tag-category">${catLabel}</span>
-                    ${isBridged 
-                      ? `<span class="tag tag-bridge">🌉 عبر الجسر (${primary.bridge_name || vendor || 'Bridge'})</span>` 
-                      : `<span class="tag tag-wifi">📶 Wi-Fi</span>`
-                    }
+                  <div class="device-main-title" title="${displayTitle}">
+                    ${displayTitle}
                   </div>
                   <div class="device-sub-meta">
-                    <span>🏷️ <b>Node #${nodeId}${isBridged ? ` • المنفذ: EP#${primary.endpoint_id}` : ''}</b></span>
-                    ${!isBridged && endpoints.length > 1 ? `<span>• 🎛️ <b>${endpoints.length} قنوات</b></span>` : ''}
-                    ${primary.serial_number ? `<span>• 🔢 S/N: ${primary.serial_number}</span>` : ''}
+                    <span class="tag tag-category">${catLabel}</span>
+                    ${isBridged 
+                      ? `<span class="tag tag-bridge">🌉 ${primary.bridge_name ? 'جسر ' + primary.bridge_name : 'جسر ماتر'}</span>` 
+                      : `<span class="tag tag-wifi">📶 Wi-Fi</span>`
+                    }
+                    <span>🏷️ Node #${nodeId}${endpoints.length > 1 ? ` • <b>${endpoints.length} قنوات</b>` : ` • EP#${primary.endpoint_id}`}</span>
                   </div>
                 </div>
               </div>
-
-              <!-- Top Quick Badges (Temp / Humidity / Battery) -->
-              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                ${tempVal !== null ? `<div class="badge">🌡️ ${tempVal} °C</div>` : ''}
-                ${humVal !== null ? `<div class="badge">💧 ${humVal} %</div>` : ''}
-                ${battVal !== null ? `<div class="badge">🔋 ${battVal} %</div>` : ''}
-              </div>
             </div>
 
-            <!-- Always-Visible Power & Energy Measurement Strip for Sockets/Switches -->
+            <!-- Sensor Readings Grid (For Sensors or Environment Readings) -->
+            ${isSensor ? `
+              <div class="sensor-readings-grid">
+                ${tempVal !== null ? `
+                  <div class="sensor-tile temp">
+                    <div class="sensor-tile-val">${tempVal} <span class="sensor-tile-unit">°C</span></div>
+                    <div class="sensor-tile-label">🌡️ درجة الحرارة</div>
+                  </div>
+                ` : ''}
+                ${humVal !== null ? `
+                  <div class="sensor-tile hum">
+                    <div class="sensor-tile-val">${humVal} <span class="sensor-tile-unit">%</span></div>
+                    <div class="sensor-tile-label">💧 الرطوبة</div>
+                  </div>
+                ` : ''}
+                ${battVal !== null ? `
+                  <div class="sensor-tile batt">
+                    <div class="sensor-tile-val">${battVal} <span class="sensor-tile-unit">%</span></div>
+                    <div class="sensor-tile-label">🔋 البطارية</div>
+                  </div>
+                ` : ''}
+                ${(tempVal === null && humVal === null && battVal === null) ? `
+                  <div class="sensor-waiting-note">
+                    📡 بانتظار بث أول تقرير للحرارة والرطوبة من الحساس...
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+
+            <!-- Compact Power & Energy Measurement Strip for Sockets/Switches -->
             ${isEnergyDevice ? `
               <div class="power-metrics-strip">
                 <div class="metric-item">
                   <div class="metric-item-icon power">⚡</div>
                   <div class="metric-item-data">
-                    <span class="metric-item-label">القدرة اللحظية (Power)</span>
+                    <span class="metric-item-label">القدرة اللحظية</span>
                     <span class="metric-item-val ${powerVal > 0 ? 'active' : ''}">${powerVal !== null ? powerVal + ' W' : '0.0 W'}</span>
                   </div>
                 </div>
                 <div class="metric-item">
                   <div class="metric-item-icon voltage">🔌</div>
                   <div class="metric-item-data">
-                    <span class="metric-item-label">الجهد الكهربائي (Voltage)</span>
+                    <span class="metric-item-label">الجهد الكهربائي</span>
                     <span class="metric-item-val">${voltVal !== null ? voltVal + ' V' : '230 V'}</span>
                   </div>
                 </div>
-                <div class="metric-item">
-                  <div class="metric-item-icon current">📈</div>
-                  <div class="metric-item-data">
-                    <span class="metric-item-label">التيار (Current)</span>
-                    <span class="metric-item-val">${currVal !== null ? currVal + ' A' : '0.00 A'}</span>
+                ${currVal !== null ? `
+                  <div class="metric-item">
+                    <div class="metric-item-icon current">📈</div>
+                    <div class="metric-item-data">
+                      <span class="metric-item-label">التيار</span>
+                      <span class="metric-item-val">${currVal} A</span>
+                    </div>
                   </div>
-                </div>
-                <div class="metric-item">
-                  <div class="metric-item-icon energy">📊</div>
-                  <div class="metric-item-data">
-                    <span class="metric-item-label">الاستهلاك التراكمي (Energy)</span>
-                    <span class="metric-item-val ${energyVal > 0 ? 'active-green' : ''}">${energyVal !== null ? energyVal + ' kWh' : '0.00 kWh'}</span>
+                ` : ''}
+                ${energyVal !== null ? `
+                  <div class="metric-item">
+                    <div class="metric-item-icon energy">📊</div>
+                    <div class="metric-item-data">
+                      <span class="metric-item-label">الاستهلاك</span>
+                      <span class="metric-item-val ${energyVal > 0 ? 'active-green' : ''}">${energyVal} kWh</span>
+                    </div>
                   </div>
-                </div>
+                ` : ''}
               </div>
             ` : ''}
 
-            <!-- Channels & Iconic Control Buttons -->
-            <div class="channels-grid">
-        `;
+            <!-- Channels & Switch/Socket Controls -->
+            ${!isSensor || endpoints.some(e => e.has_onoff) ? `
+              <div class="channels-grid">
+                ${endpoints.map((ep, idx) => {
+                  const epId = ep.endpoint_id;
+                  const epState = ep.state || 'OFF';
+                  const isOn = (epState === 'ON');
+                  const channelTitle = endpoints.length > 1 ? `قناة ${idx + 1} (CH${epId})` : (ep.model || 'التحكم الرئيسي');
 
-        endpoints.forEach((ep) => {
-          const epId = ep.endpoint_id;
-          const epState = ep.state || 'OFF';
-          const isOn = (epState === 'ON');
-          const channelTitle = endpoints.length > 1 ? `قناة ${epId} (CH${epId})` : (ep.model || 'التحكم الرئيسي');
+                  return `
+                    <div class="channel-pill ${isOn ? 'is-on' : ''}" id="ep-pill-${nodeId}-${epId}">
+                      <div class="channel-info">
+                        <div class="channel-status-icon ${isOn ? 'on' : ''}">
+                          ${isOn ? '💡' : '🌑'}
+                        </div>
+                        <div>
+                          <div class="channel-name">${channelTitle}</div>
+                          <div class="channel-state-text ${isOn ? 'on' : ''}">${isOn ? '● مشغل (ON)' : '○ متوقف (OFF)'}</div>
+                        </div>
+                      </div>
 
-          html += `
-            <div class="channel-pill ${isOn ? 'is-on' : ''}" id="ep-pill-${nodeId}-${epId}">
-              <div class="channel-info">
-                <div class="channel-status-icon ${isOn ? 'on' : ''}">
-                  ${isOn ? '💡' : '🌑'}
-                </div>
-                <div>
-                  <div class="channel-name">${channelTitle}</div>
-                  <div class="channel-state-text ${isOn ? 'on' : ''}">${isOn ? '● قيد التشغيل (ON)' : '○ متوقف (OFF)'}</div>
-                </div>
+                      ${ep.has_onoff ? `
+                        <button 
+                          class="icon-toggle-btn ${isOn ? 'is-on' : ''}" 
+                          id="btn-toggle-${nodeId}-${epId}"
+                          onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}')"
+                        >
+                          <span class="power-symbol">⏻</span>
+                          <span>${isOn ? 'تشغيل' : 'إيقاف'}</span>
+                        </button>
+                      ` : `
+                        <span class="badge" style="font-size: 10px;">📡 قراءة</span>
+                      `}
+                    </div>
+                  `;
+                }).join('')}
               </div>
+            ` : ''}
 
-              ${ep.has_onoff ? `
-                <button 
-                  class="icon-toggle-btn ${isOn ? 'is-on' : ''}" 
-                  id="btn-toggle-${nodeId}-${epId}"
-                  onclick="toggleChannelState(${nodeId}, ${epId}, '${ep.device_name}')"
-                >
-                  <span class="power-symbol">⏻</span>
-                  <span>${isOn ? 'تشغيل' : 'إيقاف'}</span>
-                </button>
-              ` : `
-                <span class="badge">📡 قراءة فقط</span>
-              `}
-            </div>
-          `;
-        });
-
-        html += `
-            </div>
-
-            <!-- Quick Category Switcher & Actions -->
-            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; margin-top: 4px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span>⚙️ التصنيف:</span>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'lighting', 'Smart Light')">💡 إنارة</button>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'socket', 'Smart Socket')">🔌 مقبس</button>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'sensor' ? 'background: rgba(16,185,129,0.25); border-color:#10B981; color:#10B981; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'sensor', 'Sensor')">📡 حسّاس</button>
+            <!-- Card Bottom Action Bar -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; margin-top: 4px; font-size: 10.5px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                <span>⚙️</span>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'lighting', 'Smart Light')">💡 إنارة</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'socket', 'Smart Socket')">🔌 مقبس</button>
+                <button class="btn btn-outline" style="padding: 2px 6px; font-size: 9.5px; ${cat === 'sensor' ? 'background: rgba(16,185,129,0.25); border-color:#10B981; color:#10B981; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'sensor', 'Sensor')">📡 حسّاس</button>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
                 <button 
                   class="btn btn-outline" 
-                  style="padding: 3px 8px; font-size: 10px; color: #94A3B8; border-color: rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer;"
-                  title="عرض جميع الـ Clusters والـ Datapoints الخام القادمة من الجهاز"
+                  style="padding: 2px 6px; font-size: 9.5px; color: #94A3B8; border-color: rgba(255,255,255,0.15); border-radius: 5px; cursor: pointer;"
+                  title="فحص الـ Datapoints الخام"
                   onclick="inspectNodeDatapoints(${nodeId})"
                 >
-                  🔍 فحص الـ Datapoints
+                  🔍 Datapoints
                 </button>
                 <button 
                   class="btn btn-danger-soft" 
                   id="btn-delete-${nodeId}"
-                  style="padding: 3px 10px; font-size: 11px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #F87171; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: inherit;" 
-                  onmouseover="this.style.background='rgba(239,68,68,0.25)'; this.style.borderColor='#EF4444';"
-                  onmouseout="this.style.background='rgba(239,68,68,0.12)'; this.style.borderColor='rgba(239,68,68,0.35)';"
+                  style="padding: 2px 7px; font-size: 9.5px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #F87171; border-radius: 5px; cursor: pointer; transition: all 0.2s;" 
                   onclick="deleteDeviceHandler(${nodeId}, '${(primary.device_name || primary.model || 'Device').replace(/'/g, "\\'")}')"
                 >
-                  🗑️ حذف الجهاز
+                  🗑️
                 </button>
               </div>
             </div>

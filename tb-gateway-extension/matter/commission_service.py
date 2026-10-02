@@ -329,6 +329,24 @@ class MatterCommissionService:
 
         devices = []
         registry = self.connector.mapper._registry
+
+        # Attempt to retrieve live node data from Matter client
+        nodes_cache = {}
+        if hasattr(self.connector, "client") and self.connector.client and self.connector.client.is_connected:
+            try:
+                nodes_resp = self.connector.client.get_nodes(timeout=2.0)
+                if nodes_resp.get("success"):
+                    raw_n = nodes_resp.get("result", [])
+                    if isinstance(raw_n, dict):
+                        nodes_cache = raw_n
+                    elif isinstance(raw_n, list):
+                        for n in raw_n:
+                            n_id = n.get("node_id") or n.get("nodeId")
+                            if n_id is not None:
+                                nodes_cache[int(n_id)] = n
+            except Exception as e:
+                log.debug(f"Could not query live nodes cache: {e}")
+
         for key, dev in registry.items():
             device_name = dev.get("device_name")
             is_bridged = dev.get("is_bridged", False)
@@ -356,7 +374,98 @@ class MatterCommissionService:
             has_onoff = any(kw in dev_type for kw in ["Light", "Relay", "Socket", "Plug", "Switch", "Generic Switch"]) or category in ["lighting", "socket", "switch"]
 
             # Get live state from mapper cache
-            state_data = self.connector.mapper.get_device_state(node_id, endpoint_id)
+            state_data = dict(self.connector.mapper.get_device_state(node_id, endpoint_id))
+
+            # If state_data lacks sensor/power data, scan raw node attributes
+            if node_id in nodes_cache:
+                nd = nodes_cache[node_id]
+                flat_attrs = nd.get("attributes", {})
+                ep_clusters = {}
+                endpoints = nd.get("endpoints", {})
+                if isinstance(endpoints, dict):
+                    ep_clusters = (endpoints.get(str(endpoint_id)) or endpoints.get(endpoint_id, {})).get("clusters", {})
+                elif isinstance(endpoints, list):
+                    for ep in endpoints:
+                        if ep.get("endpoint_id") == endpoint_id:
+                            ep_clusters = ep.get("clusters", {})
+                            break
+
+                # 1. Temperature (Cluster 1026 / 0x0402)
+                if state_data.get("temperature") is None:
+                    for t_key in [f"{endpoint_id}/1026/0", f"{endpoint_id}/1026/measuredValue", f"{endpoint_id}/0x0402/0", "0/1026/0"]:
+                        if t_key in flat_attrs:
+                            try:
+                                raw_t = float(flat_attrs[t_key])
+                                if raw_t not in [-32768, 0x8000]:
+                                    state_data["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
+                                    break
+                            except Exception:
+                                pass
+                    if state_data.get("temperature") is None and ep_clusters:
+                        c1026 = ep_clusters.get("1026") or ep_clusters.get(1026) or ep_clusters.get("0x0402") or {}
+                        t_val = c1026.get("measuredValue") if "measuredValue" in c1026 else c1026.get("0")
+                        if t_val is not None:
+                            try:
+                                raw_t = float(t_val)
+                                if raw_t not in [-32768, 0x8000]:
+                                    state_data["temperature"] = round(raw_t / 100.0 if raw_t > 200 else raw_t, 2)
+                            except Exception:
+                                pass
+
+                # 2. Humidity (Cluster 1029 / 0x0405)
+                if state_data.get("humidity") is None:
+                    for h_key in [f"{endpoint_id}/1029/0", f"{endpoint_id}/1029/measuredValue", f"{endpoint_id}/0x0405/0", "0/1029/0"]:
+                        if h_key in flat_attrs:
+                            try:
+                                raw_h = float(flat_attrs[h_key])
+                                if raw_h not in [0xFFFF, 65535]:
+                                    state_data["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
+                                    break
+                            except Exception:
+                                pass
+                    if state_data.get("humidity") is None and ep_clusters:
+                        c1029 = ep_clusters.get("1029") or ep_clusters.get(1029) or ep_clusters.get("0x0405") or {}
+                        h_val = c1029.get("measuredValue") if "measuredValue" in c1029 else c1029.get("0")
+                        if h_val is not None:
+                            try:
+                                raw_h = float(h_val)
+                                if raw_h not in [0xFFFF, 65535]:
+                                    state_data["humidity"] = round(raw_h / 100.0 if raw_h > 100 else raw_h, 2)
+                            except Exception:
+                                pass
+
+                # 3. Battery (Cluster 1 / 0x0001)
+                if state_data.get("battery") is None:
+                    for b_key in [f"{endpoint_id}/1/12", f"{endpoint_id}/1/batteryPercentRemaining", "0/1/12", "0/1/batteryPercentRemaining"]:
+                        if b_key in flat_attrs:
+                            try:
+                                raw_b = float(flat_attrs[b_key])
+                                state_data["battery"] = round(raw_b / 2.0 if raw_b <= 200 else raw_b, 1)
+                                break
+                            except Exception:
+                                pass
+
+                # 4. State / OnOff (Cluster 6 / 0x0006)
+                if not state_data.get("state") or state_data.get("state") == "OFF":
+                    for s_key in [f"{endpoint_id}/6/0", f"{endpoint_id}/6/onOff"]:
+                        if s_key in flat_attrs:
+                            val = flat_attrs[s_key]
+                            state_data["state"] = "ON" if val in [True, 1, "true", "True", "on", "ON"] else "OFF"
+                            break
+
+                # 5. Electrical Measurement (Cluster 2820 / 1794 / 144)
+                if state_data.get("power") is None:
+                    for p_key in [f"{endpoint_id}/2820/1291", f"{endpoint_id}/2820/0x050B", f"{endpoint_id}/1794/1024", f"{endpoint_id}/144/4"]:
+                        if p_key in flat_attrs:
+                            try:
+                                p_raw = float(flat_attrs[p_key])
+                                state_data["power"] = round(p_raw / 1000.0 if p_raw > 50000 else (p_raw / 10.0 if p_raw > 5000 else p_raw), 2)
+                                break
+                            except Exception:
+                                pass
+
+                self.connector.mapper.update_device_state(node_id, endpoint_id, state_data)
+
             current_state = state_data.get("state", "OFF")
 
             dev_info = {
