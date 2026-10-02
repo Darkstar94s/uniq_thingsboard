@@ -58,6 +58,7 @@ class MatterConnector(BaseConnector):
         self.mapper: Optional[Any] = MatterDeviceMapper(registry_file) if MatterDeviceMapper else None
         self.known_nodes = {}
         self.client: Optional[Any] = None
+        self._gateway: Optional[Any] = None
         self.commission_service: Optional[Any] = None
 
         if MatterClient:

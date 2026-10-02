@@ -952,17 +952,11 @@ class MatterCommissionService:
             "port": 1883,
             "access_token": "",
             "cloud_connected": False,
+            "connection_status": "token_missing",
+            "last_error": "",
             "mqtt_topic_status": "v1/gateway/telemetry",
             "server_type": "ThingsBoard Professional / Community"
         }
-
-        # Check connector live cloud connectivity
-        if self.connector:
-            gw = getattr(self.connector, "_gateway", None)
-            if gw:
-                client = getattr(gw, "tb_client", None) or getattr(gw, "mqtt_client", None)
-                if client and hasattr(client, "is_connected"):
-                    cloud_info["cloud_connected"] = bool(client.is_connected())
 
         # Read config file values if exists
         if os.path.exists(config_file):
@@ -977,6 +971,30 @@ class MatterCommissionService:
                     cloud_info["access_token"] = tok
             except Exception:
                 pass
+
+        # Check connector live cloud connectivity
+        if self.connector:
+            gw = getattr(self.connector, "_gateway", None)
+            if gw:
+                if hasattr(gw, "cloud_connected"):
+                    cloud_info["cloud_connected"] = bool(gw.cloud_connected)
+                    cloud_info["last_error"] = getattr(gw, "last_cloud_error", "")
+                else:
+                    client = getattr(gw, "tb_client", None) or getattr(gw, "mqtt_client", None)
+                    if client and hasattr(client, "is_connected"):
+                        cloud_info["cloud_connected"] = bool(client.is_connected())
+
+        tok = cloud_info.get("access_token", "").strip()
+        is_dummy = (not tok) or (tok in ["YOUR_GATEWAY_TOKEN", "UNIQ_GATEWAY_TOKEN"])
+
+        if cloud_info["cloud_connected"]:
+            cloud_info["connection_status"] = "connected"
+        elif is_dummy:
+            cloud_info["connection_status"] = "token_missing"
+        elif cloud_info.get("last_error"):
+            cloud_info["connection_status"] = "error"
+        else:
+            cloud_info["connection_status"] = "connecting"
 
         return cloud_info
 
@@ -1009,10 +1027,20 @@ class MatterCommissionService:
             with open(config_file, "w", encoding="utf-8") as f:
                 yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True)
 
+            reconnect_note = ""
+            if self.connector:
+                gw = getattr(self.connector, "_gateway", None)
+                if gw and hasattr(gw, "reconnect_cloud"):
+                    ok, msg = gw.reconnect_cloud(new_host, new_port, new_token)
+                    if ok:
+                        reconnect_note = " وجارٍ الاتصال اللحظي بالسحابة..."
+                    else:
+                        reconnect_note = f" (تنبيه الاتصال: {msg})"
+
             return {
                 "success": True,
-                "message": "تم حفظ إعدادات السحابة بنجاح. سيتم تطبيق الاتصال فور إعادة تشغيل البوابة.",
-                "reboot_required": True
+                "message": f"تم حفظ إعدادات السحابة بنجاح{reconnect_note}",
+                "reboot_required": False
             }
         except Exception as e:
             return {"success": False, "error": str(e)}

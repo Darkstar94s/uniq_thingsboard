@@ -784,6 +784,7 @@
             <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px;" id="i18n-cloud-token-hint">
               💡 للحصول على الرمز: من منصة ThingsBoard السحابية -> Devices -> اختر جهاز البوابة (Gateway) -> Copy Access Token.
             </span>
+            <div id="i18n-cloud-gateway-warning" style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 6px; margin-top: 10px; font-size: 11px; line-height: 1.5;"></div>
           </div>
         </div>
 
@@ -1011,7 +1012,8 @@
         allOn: 'تشغيل الكل',
         allOff: 'إطفاء الكل',
         channel: 'قناة',
-        removePin: '🗑️ إزالة من المخطط'
+        removePin: '🗑️ إزالة من المخطط',
+        cloudGatewayWarning: '⚠️ <strong>شرط أساسي لربط البوابة:</strong> عند إنشاء الجهاز في ThingsBoard السحابية، يجب تفعيل خيار <code>Is gateway</code> (الرمز يجب أن يكون لبوابة Gateway وليس جهازاً عادياً)، ليتمكن النظام من تسجيل الأجهزة ومزامنتها بنجاح.'
       },
       en: {
         brandTitle: 'UNIQ Smart Home',
@@ -1076,7 +1078,8 @@
         allOn: 'All ON',
         allOff: 'All OFF',
         channel: 'Gang',
-        removePin: '🗑️ Remove from Map'
+        removePin: '🗑️ Remove from Map',
+        cloudGatewayWarning: '⚠️ <strong>Prerequisite:</strong> When adding the device on ThingsBoard Cloud, make sure <code>Is gateway</code> is checked (the token must belong to a Gateway entity, not a simple device) so the hub can register and sync sub-devices.'
       }
     };
 
@@ -1142,6 +1145,8 @@
       document.getElementById('i18n-cloud-port-label').textContent = t('cloudPortLabel');
       document.getElementById('i18n-cloud-token-label').textContent = t('cloudTokenLabel');
       document.getElementById('i18n-cloud-token-hint').textContent = t('cloudTokenHint');
+      const gwWarn = document.getElementById('i18n-cloud-gateway-warning');
+      if (gwWarn) gwWarn.innerHTML = t('cloudGatewayWarning');
       document.getElementById('i18n-save-cloud-btn').textContent = t('saveCloudBtn');
       document.getElementById('i18n-sync-cloud-btn').textContent = t('syncCloudBtn');
 
@@ -2277,6 +2282,7 @@
     }
 
     // =========================================================================
+    // =========================================================================
     // THINGSBOARD CLOUD CONFIG & MANUAL SYNC
     // =========================================================================
     async function loadCloudConfig() {
@@ -2290,25 +2296,41 @@
         if (data.access_token) document.getElementById('cloudTokenInput').value = data.access_token;
 
         const isConnected = !!data.cloud_connected;
+        const status = data.connection_status || (isConnected ? 'connected' : 'token_missing');
         const dot = document.getElementById('cloudDot');
         const stText = document.getElementById('cloudStatus');
         const dDot = document.getElementById('cloudDetailDot');
         const dText = document.getElementById('cloudDetailText');
         const bannerStat = document.getElementById('statCloudStatus');
 
-        if (isConnected) {
+        if (status === 'connected' || isConnected) {
           dot.className = 'badge-dot';
-          stText.textContent = '☁️ Cloud: Connected';
+          stText.textContent = currentLang === 'ar' ? '☁️ السحابة: متصل' : '☁️ Cloud: Connected';
           dDot.className = 'badge-dot';
-          dText.textContent = currentLang === 'ar' ? 'متصل بالسحابة' : 'Connected to Cloud';
+          dText.textContent = currentLang === 'ar' ? 'متصل بالسحابة (Online)' : 'Connected to Cloud (Online)';
           bannerStat.textContent = 'Online';
           bannerStat.style.color = 'var(--success)';
+        } else if (status === 'connecting') {
+          dot.className = 'badge-dot warn';
+          stText.textContent = currentLang === 'ar' ? '☁️ السحابة: جارٍ الاتصال...' : '☁️ Cloud: Connecting...';
+          dDot.className = 'badge-dot warn';
+          dText.textContent = currentLang === 'ar' ? 'جارٍ محاولة الاتصال بالسحابة...' : 'Connecting to Cloud...';
+          bannerStat.textContent = currentLang === 'ar' ? 'جارٍ الاتصال' : 'Connecting';
+          bannerStat.style.color = 'var(--warning)';
+        } else if (status === 'error') {
+          dot.className = 'badge-dot danger';
+          stText.textContent = currentLang === 'ar' ? '☁️ السحابة: خطأ بالاتصال' : '☁️ Cloud: Auth / Refused';
+          dDot.className = 'badge-dot danger';
+          const errDetail = data.last_error ? ` (${data.last_error})` : '';
+          dText.textContent = currentLang === 'ar' ? `فشل الاتصال: تحقق من صحة التوكن وتفعيل خيار Is Gateway${errDetail}` : `Connection failed: Check token & Is Gateway${errDetail}`;
+          bannerStat.textContent = currentLang === 'ar' ? 'فشل الاتصال' : 'Auth Failed';
+          bannerStat.style.color = 'var(--danger)';
         } else {
           dot.className = 'badge-dot warn';
-          stText.textContent = '☁️ Cloud: Token Required';
+          stText.textContent = currentLang === 'ar' ? '☁️ السحابة: بانتظار التوكن' : '☁️ Cloud: Token Required';
           dDot.className = 'badge-dot warn';
-          dText.textContent = currentLang === 'ar' ? 'غير متصل (بانتظار التوكن)' : 'Disconnected (Token Required)';
-          bannerStat.textContent = 'Pending Token';
+          dText.textContent = currentLang === 'ar' ? 'غير متصل (بانتظار إدخال التوكن)' : 'Disconnected (Token Required)';
+          bannerStat.textContent = currentLang === 'ar' ? 'بانتظار التوكن' : 'Pending Token';
           bannerStat.style.color = 'var(--warning)';
         }
       } catch (e) {}
@@ -2335,6 +2357,8 @@
           msg.style.background = 'rgba(16, 185, 129, 0.15)';
           msg.style.color = '#10B981';
           msg.innerHTML = `✅ ${data.message}`;
+          setTimeout(loadCloudConfig, 1000);
+          setTimeout(loadCloudConfig, 3000);
           triggerManualCloudSync();
         } else {
           msg.style.background = 'rgba(239, 68, 68, 0.15)';

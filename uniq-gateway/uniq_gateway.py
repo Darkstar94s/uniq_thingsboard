@@ -69,6 +69,8 @@ class UniqGateway:
         self.connectors: Dict[str, Any] = {}
         self.mqtt_client = mqtt.Client(client_id=f"uniq_gw_{self.hub_serial}") if HAS_MQTT else None
         self.is_running = False
+        self.cloud_connected = False
+        self.last_cloud_error = ""
 
     def _load_config(self) -> Dict:
         # If the requested path doesn't exist, try alternating .yaml / .json
@@ -105,16 +107,19 @@ class UniqGateway:
         self.is_running = True
 
         # Setup Cloud MQTT client
-        self.mqtt_client.username_pw_set(self.access_token)
-        self.mqtt_client.on_connect = self._on_cloud_connect
-        self.mqtt_client.on_message = self._on_cloud_message
+        if self.mqtt_client:
+            self.mqtt_client.username_pw_set(self.access_token)
+            self.mqtt_client.on_connect = self._on_cloud_connect
+            self.mqtt_client.on_disconnect = self._on_cloud_disconnect
+            self.mqtt_client.on_message = self._on_cloud_message
 
-        try:
-            log.info(f"Connecting to UNIQ Cloud at {self.cloud_host}:{self.cloud_port}...")
-            self.mqtt_client.connect(self.cloud_host, self.cloud_port, 60)
-            self.mqtt_client.loop_start()
-        except Exception as e:
-            log.error(f"Failed to connect to UNIQ Cloud: {e}")
+            try:
+                log.info(f"Connecting to UNIQ Cloud at {self.cloud_host}:{self.cloud_port}...")
+                self.mqtt_client.connect(self.cloud_host, self.cloud_port, 60)
+                self.mqtt_client.loop_start()
+            except Exception as e:
+                self.last_cloud_error = str(e)
+                log.error(f"Failed to connect to UNIQ Cloud: {e}")
 
         # Start authorized protocol connectors
         self._init_connectors()
@@ -147,6 +152,7 @@ class UniqGateway:
         if self.license_manager.is_protocol_licensed("zigbee"):
             zigbee_cfg = connectors_cfg.get("zigbee", {})
             zb_connector = ZigbeeConnector("zigbee", zigbee_cfg, self.on_connector_data)
+            zb_connector._gateway = self
             zb_connector.start()
             self.connectors["zigbee"] = zb_connector
         else:
@@ -156,6 +162,7 @@ class UniqGateway:
         if self.license_manager.is_protocol_licensed("matter"):
             matter_cfg = connectors_cfg.get("matter", {})
             mat_connector = MatterConnector("matter", matter_cfg, self.on_connector_data)
+            mat_connector._gateway = self
             mat_connector.start()
             self.connectors["matter"] = mat_connector
         else:
@@ -170,6 +177,7 @@ class UniqGateway:
             log.info("Activating newly licensed Zigbee connector...")
             zigbee_cfg = self.config.get("connectors", {}).get("zigbee", {})
             zb_connector = ZigbeeConnector("zigbee", zigbee_cfg, self.on_connector_data)
+            zb_connector._gateway = self
             zb_connector.start()
             self.connectors["zigbee"] = zb_connector
         elif "zigbee" not in active_protocols and "zigbee" in self.connectors:
@@ -182,6 +190,7 @@ class UniqGateway:
             log.info("Activating newly licensed Matter connector...")
             matter_cfg = self.config.get("connectors", {}).get("matter", {})
             mat_connector = MatterConnector("matter", matter_cfg, self.on_connector_data)
+            mat_connector._gateway = self
             mat_connector.start()
             self.connectors["matter"] = mat_connector
         elif "matter" not in active_protocols and "matter" in self.connectors:
@@ -189,8 +198,42 @@ class UniqGateway:
             self.connectors["matter"].stop()
             del self.connectors["matter"]
 
+    def reconnect_cloud(self, host: str = None, port: int = None, access_token: str = None):
+        """Live reconnect to ThingsBoard Cloud with new credentials without needing daemon restart."""
+        if host:
+            self.cloud_host = host
+        if port:
+            self.cloud_port = int(port)
+        if access_token:
+            self.access_token = access_token
+
+        log.info(f"Reconnecting to UNIQ Cloud at {self.cloud_host}:{self.cloud_port}...")
+        self.cloud_connected = False
+        self.last_cloud_error = ""
+
+        if not self.mqtt_client:
+            return False, "MQTT client not initialized"
+
+        try:
+            self.mqtt_client.loop_stop()
+            self.mqtt_client.disconnect()
+        except Exception:
+            pass
+
+        try:
+            self.mqtt_client.username_pw_set(self.access_token)
+            self.mqtt_client.connect(self.cloud_host, self.cloud_port, 60)
+            self.mqtt_client.loop_start()
+            return True, "Reconnecting"
+        except Exception as e:
+            self.last_cloud_error = str(e)
+            log.error(f"Failed to initiate reconnect to UNIQ Cloud: {e}")
+            return False, str(e)
+
     def _on_cloud_connect(self, client, userdata, flags, rc):
         if rc == 0:
+            self.cloud_connected = True
+            self.last_cloud_error = ""
             log.info("Connected to UNIQ Cloud successfully!")
             # Subscribe to RPC and attributes
             client.subscribe("v1/gateway/rpc")
@@ -234,7 +277,25 @@ class UniqGateway:
                                 client.publish("v1/gateway/connect", json.dumps({"device": d_name, "type": d_type}))
 
         else:
-            log.error(f"Cloud connection failed with code: {rc}")
+            self.cloud_connected = False
+            rc_reasons = {
+                1: "Connection refused - incorrect protocol version",
+                2: "Connection refused - invalid client identifier",
+                3: "Connection refused - server unavailable",
+                4: "Connection refused - bad username or password (invalid device token)",
+                5: "Connection refused - not authorized (ensure device is marked as Gateway in ThingsBoard)"
+            }
+            reason = rc_reasons.get(rc, f"Connection failed with code {rc}")
+            self.last_cloud_error = reason
+            log.error(f"Cloud connection failed with code: {rc} ({reason})")
+
+    def _on_cloud_disconnect(self, client, userdata, rc):
+        self.cloud_connected = False
+        if rc != 0:
+            self.last_cloud_error = f"Disconnection (code {rc})"
+            log.warning(f"Unexpected disconnection from UNIQ Cloud: {rc}")
+        else:
+            log.info("Disconnected from UNIQ Cloud cleanly.")
 
     def _on_cloud_message(self, client, userdata, msg):
         topic = msg.topic
