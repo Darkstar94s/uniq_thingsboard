@@ -79,6 +79,23 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 self._send_html_response("<h1>UNIQ Smart Hub Web UI</h1><p>Dashboard template not found.</p>")
             return
 
+        # 1.1 Static Web Assets (Logos & Favicon)
+        elif parsed_path.path in ["/uniq-logo.png", "/uniq-logo-dark.png", "/uniq-logo-light.png", "/favicon.ico"]:
+            filename = parsed_path.path.lstrip("/")
+            if filename == "favicon.ico":
+                filename = "uniq-logo-dark.png"
+            asset_path = os.path.join(os.path.dirname(INDEX_HTML_PATH), filename)
+            if os.path.exists(asset_path):
+                with open(asset_path, "rb") as f:
+                    img_data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(img_data)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(img_data)
+                return
+
         # 2. System Status API
         elif parsed_path.path in ["/matter/status", "/status", "/api/status"]:
             status_data = service.get_status()

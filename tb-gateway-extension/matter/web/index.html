@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UNIQ Hub | منصة المنزل الذكي المتكاملة</title>
+  <link rel="icon" type="image/png" href="/uniq-logo-dark.png" id="faviconLink">
   <style>
     :root {
       --primary: #0A57FC;
@@ -71,13 +72,25 @@
       box-shadow: var(--shadow-sm);
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-icon {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--primary), #38BDF8);
+    .brand-logo-container {
+      width: 42px; height: 42px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 20px; color: white;
-      box-shadow: 0 4px 14px var(--primary-glow);
+      background: var(--pill-bg);
+      border: 1px solid var(--card-border);
+      padding: 4px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 14px rgba(10, 87, 252, 0.15);
+      flex-shrink: 0;
+    }
+    .brand-logo-container:hover {
+      transform: scale(1.06);
+      border-color: var(--primary);
+    }
+    .brand-logo-img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      transition: all 0.2s ease;
     }
     .brand-text h1 { font-size: 16px; font-weight: 700; line-height: 1.2; }
     .brand-text span { font-size: 11px; color: var(--text-muted); }
@@ -460,7 +473,9 @@
   <!-- Header -->
   <header>
     <div class="brand">
-      <div class="brand-icon">⚡</div>
+      <div class="brand-logo-container">
+        <img id="brandLogoImg" src="/uniq-logo-dark.png" alt="UNIQ Logo" class="brand-logo-img">
+      </div>
       <div class="brand-text">
         <h1>UNIQ Smart Home</h1>
         <span>الموزع الذكي المحلي والتحكم المركزي</span>
@@ -491,7 +506,11 @@
   <!-- Login Form View -->
   <div id="loginView" style="display: none;">
     <div class="auth-container">
-      <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
+      <div style="margin-bottom: 16px; display: flex; justify-content: center;">
+        <div style="width: 76px; height: 76px; border-radius: 20px; background: var(--pill-bg); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; padding: 10px; box-shadow: 0 8px 24px rgba(10, 87, 252, 0.2);">
+          <img id="loginLogoImg" src="/uniq-logo-dark.png" alt="UNIQ Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+      </div>
       <h2>دخول لوحة تحكم UNIQ</h2>
       <p>أدخل رمز PIN السري للموزع للوصول إلى لوحة التحكم والتحكم بالأجهزة والسيناريوهات.</p>
 
@@ -972,15 +991,32 @@
       other: 'جهاز ذكي'
     };
 
+    // Theme & Dynamic Logo Switching
+    function updateLogosForTheme(theme) {
+      const isLight = (theme === 'light');
+      const logoSrc = isLight ? '/uniq-logo-light.png' : '/uniq-logo-dark.png';
+
+      const brandLogo = document.getElementById('brandLogoImg');
+      if (brandLogo) brandLogo.src = logoSrc;
+
+      const loginLogo = document.getElementById('loginLogoImg');
+      if (loginLogo) loginLogo.src = logoSrc;
+
+      const fav = document.getElementById('faviconLink');
+      if (fav) fav.href = logoSrc;
+    }
+
     // Initialize Theme
     const savedTheme = localStorage.getItem('uniq_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    updateLogosForTheme(savedTheme);
 
     function toggleTheme() {
       const cur = document.documentElement.getAttribute('data-theme') || 'dark';
       const target = cur === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', target);
       localStorage.setItem('uniq_theme', target);
+      updateLogosForTheme(target);
     }
 
     // Tab Switcher
