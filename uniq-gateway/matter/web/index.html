@@ -608,23 +608,30 @@
       const counts = { all: 0, lighting: 0, socket: 0, switch: 0, sensor: 0, climate: 0, security: 0, bridge: 0, other: 0 };
       let totalPower = 0;
 
-      const nodeMap = new Map();
+    // Update Category Statistics
+    function updateCategoryCounts() {
+      const counts = { all: 0, socket: 0, switch: 0, lighting: 0, sensor: 0, climate: 0, security: 0, bridge: 0, other: 0 };
+      let totalPower = 0;
+
+      const itemMap = new Map();
       rawDevices.forEach(d => {
-        const nid = d.node_id;
-        if (!nodeMap.has(nid)) {
-          nodeMap.set(nid, []);
+        // Direct multi-gang devices are grouped by node_id.
+        // Bridged sub-devices are independent individual devices grouped by node_id + endpoint_id.
+        const groupKey = d.is_bridged ? `${d.node_id}_ep_${d.endpoint_id}` : `${d.node_id}`;
+        if (!itemMap.has(groupKey)) {
+          itemMap.set(groupKey, []);
         }
-        nodeMap.get(nid).push(d);
+        itemMap.get(groupKey).push(d);
 
         if (d.power) {
           totalPower += parseFloat(d.power) || 0;
         }
       });
 
-      document.getElementById('statDevicesCount').textContent = nodeMap.size;
+      document.getElementById('statDevicesCount').textContent = itemMap.size;
       document.getElementById('statTotalPower').textContent = (totalPower > 0 ? totalPower.toFixed(1) : '0.0') + ' W';
 
-      nodeMap.forEach((eps, nid) => {
+      itemMap.forEach((eps, key) => {
         const primary = eps[0];
         const cat = primary.category || 'other';
         counts.all++;
@@ -642,19 +649,19 @@
 
       const groupsMap = new Map();
       rawDevices.forEach(d => {
-        const nid = d.node_id;
-        if (!groupsMap.has(nid)) {
-          groupsMap.set(nid, []);
+        const groupKey = d.is_bridged ? `${d.node_id}_ep_${d.endpoint_id}` : `${d.node_id}`;
+        if (!groupsMap.has(groupKey)) {
+          groupsMap.set(groupKey, []);
         }
-        groupsMap.get(nid).push(d);
+        groupsMap.get(groupKey).push(d);
       });
 
       const filteredGroups = [];
-      groupsMap.forEach((eps, nid) => {
+      groupsMap.forEach((eps, key) => {
         const primary = eps[0];
         const cat = primary.category || 'other';
         if (currentCategoryFilter === 'all' || currentCategoryFilter === cat) {
-          filteredGroups.push({ nodeId: nid, endpoints: eps, primary });
+          filteredGroups.push({ groupKey: key, nodeId: primary.node_id, endpoints: eps, primary });
         }
       });
 
@@ -665,7 +672,7 @@
 
       let html = '';
       filteredGroups.forEach(group => {
-        const { nodeId, endpoints, primary } = group;
+        const { groupKey, nodeId, endpoints, primary } = group;
         const isBridged = primary.is_bridged;
         const cat = primary.category || 'other';
         const icon = CATEGORY_ICONS[cat] || '⚙️';
@@ -692,7 +699,7 @@
         const isEnergyDevice = (cat === 'socket' || cat === 'switch' || powerVal !== null || voltVal !== null);
 
         html += `
-          <div class="device-group-card ${hasAnyOn ? 'has-on' : ''}" id="node-card-${nodeId}">
+          <div class="device-group-card ${hasAnyOn ? 'has-on' : ''}" id="card-${groupKey}">
             
             <!-- Card Header -->
             <div class="device-card-header">
@@ -702,16 +709,16 @@
                 </div>
                 <div class="device-title-box">
                   <div class="device-main-title">
-                    ${vendor} ${model}
+                    ${isBridged ? model : `${vendor} ${model}`}
                     <span class="tag tag-category">${catLabel}</span>
                     ${isBridged 
-                      ? `<span class="tag tag-bridge">🌉 عبر الجسر (${primary.bridge_name || 'Bridge'})</span>` 
+                      ? `<span class="tag tag-bridge">🌉 عبر الجسر (${primary.bridge_name || vendor || 'Bridge'})</span>` 
                       : `<span class="tag tag-wifi">📶 Wi-Fi</span>`
                     }
                   </div>
                   <div class="device-sub-meta">
-                    <span>🏷️ <b>Node #${nodeId}</b></span>
-                    ${endpoints.length > 1 ? `<span>• 🎛️ <b>${endpoints.length} قنوات</b></span>` : ''}
+                    <span>🏷️ <b>Node #${nodeId}${isBridged ? ` • المنفذ: EP#${primary.endpoint_id}` : ''}</b></span>
+                    ${!isBridged && endpoints.length > 1 ? `<span>• 🎛️ <b>${endpoints.length} قنوات</b></span>` : ''}
                     ${primary.serial_number ? `<span>• 🔢 S/N: ${primary.serial_number}</span>` : ''}
                   </div>
                 </div>
@@ -802,11 +809,12 @@
 
             <!-- Quick Category Switcher & Actions -->
             <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; margin-top: 4px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                 <span>⚙️ التصنيف:</span>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'socket', 'Smart Socket')">🔌 مقبس</button>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
-                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, 1, 'lighting', 'Smart Light')">💡 إنارة</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'lighting' ? 'background: rgba(245,158,11,0.25); border-color:#F59E0B; color:#F59E0B; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'lighting', 'Smart Light')">💡 إنارة</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'switch' ? 'background: rgba(168,85,247,0.25); border-color:#C084FC; color:#C084FC; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'switch', 'Smart Switch')">🎛️ مفتاح</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'socket' ? 'background: rgba(56,189,248,0.25); border-color:#38BDF8; color:#38BDF8; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'socket', 'Smart Socket')">🔌 مقبس</button>
+                <button class="btn btn-outline" style="padding: 3px 8px; font-size: 10px; ${cat === 'sensor' ? 'background: rgba(16,185,129,0.25); border-color:#10B981; color:#10B981; font-weight:bold;' : ''}" onclick="changeDeviceCategory(${nodeId}, ${primary.endpoint_id || 1}, 'sensor', 'Sensor')">📡 حسّاس</button>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 10px; color: #64748B;">🏷️ Node ID: #${nodeId}</span>

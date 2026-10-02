@@ -342,7 +342,8 @@ class MatterCommissionService:
             resolved_type, resolved_cat = resolve_device_type_and_category(
                 product_name=product_name,
                 vendor_name=vendor_name,
-                device_type_ids=[]
+                device_type_ids=[],
+                is_bridged=is_bridged
             )
 
             category = dev.get("category")

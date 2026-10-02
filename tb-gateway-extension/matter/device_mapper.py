@@ -93,76 +93,102 @@ def resolve_device_type_and_category(
     vendor_name: str = "",
     device_type_ids: list = None,
     clusters: dict = None,
-    endpoint_count: int = 1
+    endpoint_count: int = 1,
+    is_bridged: bool = False
 ) -> Tuple[str, str]:
     """
-    Accurately identifies device type (e.g. 'Smart Switch', 'Smart Socket', 'Smart Light')
+    Accurately identifies device type (e.g. 'Smart Switch', 'Smart Socket', 'Smart Light', 'Motion Sensor')
     and category ('switch', 'socket', 'lighting', 'sensor', 'climate', 'security', 'bridge', 'other')
-    by prioritizing product name and electrical measurement clusters over generic Matter device type IDs.
+    by prioritizing product name, endpoint clusters, and device type IDs.
+    Properly handles bridged sub-devices on Zigbee/Matter Bridges without confusing them with the bridge itself.
     """
     p_lower = (product_name or "").lower()
     v_lower = (vendor_name or "").lower()
-    combined_name = f"{v_lower} {p_lower}"
+    combined_name = f"{v_lower} {p_lower}" if not is_bridged else p_lower
     cl_keys = set(str(k) for k in (clusters or {}).keys()) if clusters else set()
     dt_ids = device_type_ids or []
 
-    # 1. Matter Bridges & Hubs
-    if any(k in combined_name for k in ["bridge", "aggregator", "hub", "gateway", "موزع", "جسر"]):
-        return ("Matter Bridge", "bridge")
-    if DEVICE_TYPE_AGGREGATOR_BRIDGE in dt_ids:
-        return ("Matter Bridge", "bridge")
+    # 1. Matter Bridges & Hubs (Only for the root bridge device, not sub-devices!)
+    if not is_bridged:
+        if DEVICE_TYPE_AGGREGATOR_BRIDGE in dt_ids:
+            return ("Matter Bridge", "bridge")
+        if any(k in combined_name for k in ["bridge", "aggregator", "hub", "gateway", "موزع", "جسر"]) and endpoint_count > 1:
+            return ("Matter Bridge", "bridge")
 
-    # 2. Smart Sockets / Plugs / Outlets (e.g. Smart Plug, Socket, Outlet, Huayu Lian plug, Tuya plug)
+    # 2. Sensors (Temperature, Humidity, Motion, Contact/Door, Light, Air Quality, IAS Zone)
+    if any(k in combined_name for k in ["sensor", "temp", "humidity", "motion", "occupancy", "contact", "door", "window", "pir", "radar", "حساس", "حرارة", "رطوبة", "حركة", "باب", "نافذة"]):
+        if any(k in combined_name for k in ["temp", "حرارة"]) and any(k in combined_name for k in ["hum", "رطوبة"]):
+            return ("Temp & Humidity Sensor", "sensor")
+        if any(k in combined_name for k in ["motion", "pir", "occupancy", "radar", "حركة"]):
+            return ("Motion Sensor", "sensor")
+        if any(k in combined_name for k in ["door", "window", "contact", "باب", "نافذة"]):
+            return ("Door/Window Sensor", "sensor")
+        return ("Sensor", "sensor")
+
+    if any(dt in [DEVICE_TYPE_TEMP_SENSOR, DEVICE_TYPE_HUMIDITY_SENSOR, DEVICE_TYPE_OCCUPANCY_SENSOR, DEVICE_TYPE_CONTACT_SENSOR, DEVICE_TYPE_LIGHT_SENSOR, DEVICE_TYPE_AIR_QUALITY_SENSOR] for dt in dt_ids):
+        for dt in dt_ids:
+            if dt in DEVICE_TYPE_NAMES:
+                return (DEVICE_TYPE_NAMES[dt], "sensor")
+        return ("Sensor", "sensor")
+
+    if cl_keys.intersection({str(CLUSTER_TEMP_MEASUREMENT), "1026", str(CLUSTER_HUMIDITY_MEASUREMENT), "1029", str(CLUSTER_OCCUPANCY_SENSING), "1030", "1280", "0x0500"}):
+        if str(CLUSTER_TEMP_MEASUREMENT) in cl_keys or "1026" in cl_keys:
+            if str(CLUSTER_HUMIDITY_MEASUREMENT) in cl_keys or "1029" in cl_keys:
+                return ("Temp & Humidity Sensor", "sensor")
+            return ("Temperature Sensor", "sensor")
+        if str(CLUSTER_OCCUPANCY_SENSING) in cl_keys or "1030" in cl_keys:
+            return ("Motion Sensor", "sensor")
+        if "1280" in cl_keys or "0x0500" in cl_keys:
+            return ("Door/Window Sensor", "sensor")
+        return ("Sensor", "sensor")
+
+    # 3. Smart Lighting (Bulbs, Lamps, Downlights, LED Strips, Dimmers)
+    if any(k in combined_name for k in ["bulb", "lamp", "downlight", "spotlight", "strip", "ceiling", "led", "لمبة", "إنارة", "إضاءة", "سبوت", "ثريا", "ابجورة"]) or (
+        "light" in combined_name and "switch" not in combined_name
+    ):
+        return ("Smart Light", "lighting")
+    if any(dt in [DEVICE_TYPE_COLOR_LIGHT, DEVICE_TYPE_EXT_COLOR_LIGHT, DEVICE_TYPE_DIMMABLE_LIGHT, DEVICE_TYPE_ON_OFF_LIGHT] for dt in dt_ids):
+        if any(dt in [DEVICE_TYPE_COLOR_LIGHT, DEVICE_TYPE_EXT_COLOR_LIGHT] for dt in dt_ids):
+            return ("Color Light", "lighting")
+        if DEVICE_TYPE_DIMMABLE_LIGHT in dt_ids:
+            return ("Dimmable Light", "lighting")
+        return ("Smart Light", "lighting")
+    if cl_keys.intersection({str(CLUSTER_COLOR_CONTROL), "768", "0x0300", str(CLUSTER_LEVEL_CONTROL), "8"}):
+        return ("Smart Light", "lighting")
+
+    # 4. Smart Sockets / Plugs / Outlets
     has_power_cluster = bool(cl_keys.intersection({
         str(CLUSTER_ELECTRICAL_MEASUREMENT), "2820", "0x0B04", "0x0b04",
         str(CLUSTER_POWER_MEASUREMENT), "144", "0x0090",
         str(CLUSTER_METERING), "1794", "0x0702",
         str(CLUSTER_ENERGY_MEASUREMENT), "145", "0x0091"
     }))
-
     is_known_plug_vendor = any(k in v_lower or k in combined_name for k in ["huayu", "huayu lian", "huayulian", "tuya", "gosund", "meross", "kasa", "tapo", "eve"])
     if any(k in combined_name for k in ["plug", "socket", "outlet", "power plug", "مقبس", "فيش", "بلك", "افياش"]):
         return ("Smart Socket", "socket")
-    if is_known_plug_vendor and endpoint_count <= 1:
+    if is_known_plug_vendor and endpoint_count <= 1 and not is_bridged:
         return ("Smart Socket", "socket")
     if has_power_cluster:
         return ("Smart Socket", "socket")
     if any(dt in [DEVICE_TYPE_ON_OFF_PLUG, DEVICE_TYPE_DIMMABLE_PLUG] for dt in dt_ids):
         return ("Smart Socket", "socket")
 
-    # 3. Wall Switches / Multi-gang Switches (e.g. SONOFF SwitchMan, Aqara Switch, Tuya Switch)
+    # 5. Wall Switches / Relays
     if any(k in combined_name for k in ["switchman", "wall switch", "gang", "relay", "breaker", "مفتاح", "رليه", "قاطع"]) or (
         "switch" in combined_name and "socket" not in combined_name and "plug" not in combined_name
     ):
         return ("Smart Switch", "switch")
-    if endpoint_count > 1 and any(dt in [DEVICE_TYPE_ON_OFF_LIGHT_SWITCH, DEVICE_TYPE_DIMMER_SWITCH, DEVICE_TYPE_GENERIC_SWITCH, DEVICE_TYPE_ON_OFF_LIGHT] for dt in dt_ids):
+    if any(dt in [DEVICE_TYPE_ON_OFF_LIGHT_SWITCH, DEVICE_TYPE_DIMMER_SWITCH, DEVICE_TYPE_GENERIC_SWITCH] for dt in dt_ids):
         return ("Smart Switch", "switch")
-
-    # 4. Smart Lighting (Bulbs, Lamps, Downlights, LED Strips)
-    if any(k in combined_name for k in ["bulb", "lamp", "downlight", "spotlight", "strip", "ceiling", "لمبة", "إنارة", "إضاءة", "سبوت"]) or (
-        "light" in combined_name and "switch" not in combined_name
-    ):
-        return ("Smart Light", "lighting")
-    if any(dt in [DEVICE_TYPE_COLOR_LIGHT, DEVICE_TYPE_EXT_COLOR_LIGHT, DEVICE_TYPE_DIMMABLE_LIGHT] for dt in dt_ids):
-        return ("Smart Light", "lighting")
-    if cl_keys.intersection({str(CLUSTER_COLOR_CONTROL), "768", str(CLUSTER_LEVEL_CONTROL), "8"}):
-        return ("Smart Light", "lighting")
-
-    # 5. Sensors
-    if any(k in combined_name for k in ["sensor", "temp", "humidity", "motion", "occupancy", "contact", "door", "window", "حساس"]):
-        return ("Sensor", "sensor")
-    if any(dt in [DEVICE_TYPE_TEMP_SENSOR, DEVICE_TYPE_HUMIDITY_SENSOR, DEVICE_TYPE_OCCUPANCY_SENSOR, DEVICE_TYPE_CONTACT_SENSOR, DEVICE_TYPE_LIGHT_SENSOR, DEVICE_TYPE_AIR_QUALITY_SENSOR] for dt in dt_ids):
-        for dt in dt_ids:
-            if dt in DEVICE_TYPE_NAMES:
-                return (DEVICE_TYPE_NAMES[dt], "sensor")
-        return ("Sensor", "sensor")
-    if cl_keys.intersection({str(CLUSTER_TEMP_MEASUREMENT), "1026", str(CLUSTER_HUMIDITY_MEASUREMENT), "1029", str(CLUSTER_OCCUPANCY_SENSING), "1030"}):
-        return ("Sensor", "sensor")
 
     # 6. Climate & Security
     if any(k in combined_name for k in ["thermostat", "fan", "hvac", "ac", "تكييف", "مروحة"]):
         return ("Smart Thermostat", "climate")
+    if any(dt in [DEVICE_TYPE_THERMOSTAT, DEVICE_TYPE_FAN] for dt in dt_ids):
+        return ("Smart Thermostat", "climate")
     if any(k in combined_name for k in ["lock", "curtain", "blind", "shade", "قفل", "ستارة"]):
+        return ("Smart Lock/Cover", "security")
+    if any(dt in [DEVICE_TYPE_DOOR_LOCK, DEVICE_TYPE_WINDOW_COVERING] for dt in dt_ids):
         return ("Smart Lock/Cover", "security")
 
     # 7. Fallback based on Matter device type or OnOff cluster
@@ -463,21 +489,26 @@ class MatterDeviceMapper:
                 b_product = bridged_info.get("productName") or bridged_info.get("3") or ""
                 b_serial = bridged_info.get("serialNumber") or bridged_info.get("15") or f"{serial_number}-EP{ep_id}"
 
-                inferred_type = "Bridged Smart Device"
-                for dt in ep_content.get("device_types", []):
-                    dt_id = dt.get("device_type") if isinstance(dt, dict) else dt
-                    if dt_id in DEVICE_TYPE_NAMES:
-                        inferred_type = DEVICE_TYPE_NAMES[dt_id]
-                        break
+                dt_ids = [dt.get("device_type") if isinstance(dt, dict) else dt for dt in ep_content.get("device_types", [])]
 
-                display_title = node_label or b_product or inferred_type
-                bridged_device_name = f"Bridged - {vendor_name} {display_title} (N{node_id}-EP{ep_id})"
+                resolved_type, resolved_cat = resolve_device_type_and_category(
+                    product_name=node_label or b_product,
+                    vendor_name=b_vendor,
+                    device_type_ids=dt_ids,
+                    clusters=clusters,
+                    endpoint_count=1,
+                    is_bridged=True
+                )
+
+                display_title = node_label or b_product or resolved_type
+                bridged_device_name = f"Bridged - {display_title} (N{node_id}-EP{ep_id})"
 
                 bridged_device = self._get_or_create_device_entry(
                     node_id=node_id, endpoint_id=ep_id, device_name=bridged_device_name,
-                    device_type=inferred_type, vendor_name=b_vendor,
+                    device_type=resolved_type, vendor_name=b_vendor,
                     product_name=b_product or display_title, serial_number=b_serial,
-                    is_bridged=True, bridge_name=bridge_name
+                    is_bridged=True, bridge_name=bridge_name,
+                    category=resolved_cat
                 )
                 devices_to_sync.append(bridged_device)
 
