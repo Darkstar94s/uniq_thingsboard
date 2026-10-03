@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UNIQ Hub | Smart Home Platform</title>
   <link rel="icon" type="image/png" href="/uniq-logo-dark.png" id="faviconLink">
+  <link rel="stylesheet" href="/twin.css">
   <style>
     :root {
       --primary: #0A57FC;
@@ -585,7 +586,11 @@
 
     <!-- Top Navigation Tabs Bar -->
     <div class="nav-tabs-bar">
-      <button class="nav-tab-btn active" id="tab-btn-devices" onclick="switchNavTab('devices')">
+      <button class="nav-tab-btn active" id="tab-btn-twin" onclick="switchNavTab('twin')">
+        <span id="tab-icon-twin"></span>
+        <span id="i18n-tab-twin">التوأم الرقمي (3D)</span>
+      </button>
+      <button class="nav-tab-btn" id="tab-btn-devices" onclick="switchNavTab('devices')">
         <span id="tab-icon-devices"></span>
         <span id="i18n-tab-devices">الأجهزة المتصلة</span>
       </button>
@@ -644,9 +649,16 @@
     </div>
 
     <!-- ================================================================= -->
+    <!-- TAB 0: DIGITAL TWIN 3D / BMS VIEW                                 -->
+    <!-- ================================================================= -->
+    <div id="tab-content-twin" class="tab-content">
+      <div class="twin-shell" id="twinShell"></div>
+    </div>
+
+    <!-- ================================================================= -->
     <!-- TAB 1: DEVICES VIEW                                              -->
     <!-- ================================================================= -->
-    <div id="tab-content-devices" class="tab-content">
+    <div id="tab-content-devices" class="tab-content" style="display: none;">
       <!-- Search & Filters -->
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
         <div class="categories-bar" id="categoriesBar">
@@ -958,6 +970,7 @@
         loginDesc: 'أدخل رمز PIN السري للموزع للوصول إلى لوحة التحكم والتحكم بالأجهزة والسيناريوهات.',
         loginSubmit: '🔓 تسجيل الدخول',
         loginErr: 'رمز الـ PIN غير صحيح، يرجى المحاولة مجدداً.',
+        tabTwin: 'التوأم الرقمي (3D)',
         tabDevices: 'الأجهزة المتصلة',
         tabRooms: 'الغرف والتوزيع',
         tabFloorplan: 'المخطط التفاعلي',
@@ -1024,6 +1037,7 @@
         loginDesc: 'Enter your Hub master PIN to access the dashboard and control devices & scenarios.',
         loginSubmit: '🔓 Sign In',
         loginErr: 'Incorrect PIN, please try again.',
+        tabTwin: 'Digital Twin (3D)',
         tabDevices: 'Connected Devices',
         tabRooms: 'Rooms & Layout',
         tabFloorplan: 'Interactive Floorplan',
@@ -1110,6 +1124,7 @@
       document.getElementById('i18n-login-desc').textContent = t('loginDesc');
       document.getElementById('i18n-login-submit').textContent = t('loginSubmit');
 
+      document.getElementById('i18n-tab-twin').textContent = t('tabTwin');
       document.getElementById('i18n-tab-devices').textContent = t('tabDevices');
       document.getElementById('i18n-tab-rooms').textContent = t('tabRooms');
       document.getElementById('i18n-tab-floorplan').textContent = t('tabFloorplan');
@@ -1159,6 +1174,9 @@
 
       document.getElementById('i18n-rename-title').textContent = t('renameTitle');
       document.getElementById('i18n-rename-label').textContent = t('renameLabel');
+      if (window.Twin && typeof Twin.applyI18n === 'function') {
+        try { Twin.applyI18n(); } catch (e) { console.warn('Twin.applyI18n error', e); }
+      }
     }
 
     // =========================================================================
@@ -1220,9 +1238,14 @@
       document.documentElement.setAttribute('data-theme', target);
       localStorage.setItem('uniq_theme', target);
       updateLogosForTheme(target);
+      if (window.Twin && typeof Twin.onTheme === 'function') {
+        Twin.onTheme(target);
+      }
     }
 
     // Populate Tab Icons
+    const twTabIcon = document.getElementById('tab-icon-twin');
+    if (twTabIcon) twTabIcon.innerHTML = getSvg('floorplan');
     document.getElementById('tab-icon-devices').innerHTML = getSvg('bulb');
     document.getElementById('tab-icon-rooms').innerHTML = getSvg('rooms');
     document.getElementById('tab-icon-floorplan').innerHTML = getSvg('floorplan');
@@ -1242,6 +1265,14 @@
       const targetBtn = document.getElementById(`tab-btn-${tabName}`);
       if (targetEl) targetEl.style.display = 'block';
       if (targetBtn) targetBtn.classList.add('active');
+
+      if (tabName === 'twin') {
+        document.body.classList.add('twin-active');
+        if (window.Twin && typeof Twin.onShow === 'function') Twin.onShow();
+      } else {
+        document.body.classList.remove('twin-active');
+        if (window.Twin && typeof Twin.onHide === 'function') Twin.onHide();
+      }
 
       if (tabName === 'rooms') renderRoomsView();
       if (tabName === 'floorplan') renderFloorplanPins();
@@ -1287,6 +1318,7 @@
       loadFloorplanData();
       loadCloudConfig();
       loadDevices();
+      switchNavTab('twin');
 
       if (pollInterval) clearInterval(pollInterval);
       pollInterval = setInterval(() => {
@@ -1422,6 +1454,9 @@
         updateCategoryCounts();
         renderDevicesList();
         try { renderFloorplanPins(); } catch (e) { console.warn(e); }
+        if (window.Twin && typeof Twin.onData === 'function') {
+          try { Twin.onData(); } catch (e) { console.warn('Twin.onData error', e); }
+        }
       } catch (err) {
         if (!silent) console.error('Error fetching devices', err);
       }
@@ -1836,7 +1871,13 @@
             { id: 'kitchen', name: 'Kitchen (المطبخ)', icon: 'kitchen', devices: [] }
           ];
         }
+        if (data.building && window.Twin && typeof Twin.setBuilding === 'function') {
+          Twin.setBuilding(data.building);
+        }
         renderRoomsView();
+        if (window.Twin && typeof Twin.onData === 'function') {
+          try { Twin.onData(); } catch (e) { console.warn('Twin.onData error', e); }
+        }
       } catch (e) {}
     }
 
@@ -1972,13 +2013,17 @@
 
     async function saveRoomsToBackend() {
       try {
+        const payload = { rooms: roomsData };
+        if (window.Twin && typeof Twin.getBuilding === 'function') {
+          payload.building = Twin.getBuilding();
+        }
         await fetch('/api/rooms', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + authToken
           },
-          body: JSON.stringify({ rooms: roomsData })
+          body: JSON.stringify(payload)
         });
       } catch (e) {}
     }
@@ -2467,5 +2512,7 @@
       }
     }
   </script>
+  <script src="/vendor/three.min.js"></script>
+  <script src="/twin.js"></script>
 </body>
 </html>

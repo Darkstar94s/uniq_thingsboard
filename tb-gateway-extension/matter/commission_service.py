@@ -79,22 +79,41 @@ class CommissionRequestHandler(BaseHTTPRequestHandler):
                 self._send_html_response("<h1>UNIQ Smart Hub Web UI</h1><p>Dashboard template not found.</p>")
             return
 
-        # 1.1 Static Web Assets (Logos & Favicon)
-        elif parsed_path.path in ["/uniq-logo.png", "/uniq-logo-dark.png", "/uniq-logo-light.png", "/favicon.ico"]:
-            filename = parsed_path.path.lstrip("/")
-            if filename == "favicon.ico":
-                filename = "uniq-logo-dark.png"
-            asset_path = os.path.join(os.path.dirname(INDEX_HTML_PATH), filename)
-            if os.path.exists(asset_path):
-                with open(asset_path, "rb") as f:
-                    img_data = f.read()
-                self.send_response(200)
-                self.send_header("Content-Type", "image/png")
-                self.send_header("Content-Length", str(len(img_data)))
-                self.send_header("Cache-Control", "public, max-age=86400")
-                self.end_headers()
-                self.wfile.write(img_data)
-                return
+        # 1.1 Static Web Assets (CSS, JS, Logos, Favicon, Vendor)
+        elif any(parsed_path.path.endswith(ext) for ext in [".css", ".js", ".png", ".jpg", ".jpeg", ".svg", ".ico", ".woff2", ".woff"]) or parsed_path.path.startswith("/vendor/"):
+            web_dir = os.path.abspath(os.path.dirname(INDEX_HTML_PATH))
+            req_rel = parsed_path.path.lstrip("/")
+            if req_rel == "favicon.ico":
+                req_rel = "uniq-logo-dark.png"
+            norm_path = os.path.abspath(os.path.join(web_dir, req_rel))
+            if norm_path.startswith(web_dir) and os.path.isfile(norm_path):
+                ext = os.path.splitext(norm_path)[1].lower()
+                mime_map = {
+                    ".html": "text/html; charset=utf-8",
+                    ".css": "text/css; charset=utf-8",
+                    ".js": "application/javascript; charset=utf-8",
+                    ".json": "application/json; charset=utf-8",
+                    ".png": "image/png",
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".svg": "image/svg+xml",
+                    ".ico": "image/x-icon",
+                    ".woff2": "font/woff2",
+                    ".woff": "font/woff"
+                }
+                content_type = mime_map.get(ext, "application/octet-stream")
+                try:
+                    with open(norm_path, "rb") as f:
+                        asset_data = f.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", content_type)
+                    self.send_header("Content-Length", str(len(asset_data)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    self.wfile.write(asset_data)
+                    return
+                except Exception as e:
+                    logger.error(f"Error serving static asset {norm_path}: {e}")
 
         # 2. System Status API
         elif parsed_path.path in ["/matter/status", "/status", "/api/status"]:
