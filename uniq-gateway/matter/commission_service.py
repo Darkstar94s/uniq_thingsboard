@@ -424,11 +424,13 @@ class MatterCommissionService:
         is_connected = False
         registered_count = 0
         server_url = "unknown"
+        last_error = ""
 
         if self.connector:
             if hasattr(self.connector, "client") and self.connector.client:
-                is_connected = self.connector.client.is_connected
-                server_url = self.connector.client.server_url
+                is_connected = bool(self.connector.client.is_connected)
+                server_url = getattr(self.connector.client, "server_url", "unknown")
+                last_error = getattr(self.connector.client, "last_error", "")
             if hasattr(self.connector, "mapper") and self.connector.mapper:
                 registered_count = len(self.connector.mapper._registry)
 
@@ -436,6 +438,7 @@ class MatterCommissionService:
             "status": "online" if self._is_running else "offline",
             "matterjs_connected": is_connected,
             "matterjs_server_url": server_url,
+            "matterjs_last_error": last_error,
             "commissioned_devices_count": registered_count,
             "hub": "UNIQ Smart Home Hub",
             "version": "2.4.0-uniq",

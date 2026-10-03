@@ -1337,9 +1337,12 @@
         if (data.matterjs_connected) {
           matterDot.className = 'badge-dot';
           matterStatus.textContent = '⚡ Matter: Online';
+          matterStatus.title = `Connected to ${data.matterjs_server_url || 'ws://127.0.0.1:5580/ws'}`;
         } else {
           matterDot.className = 'badge-dot off';
-          matterStatus.textContent = '⚡ Matter: Offline';
+          const errDetail = data.matterjs_last_error ? ` (${data.matterjs_last_error})` : '';
+          matterStatus.textContent = currentLang === 'ar' ? '⚡ Matter: غير متصل' : '⚡ Matter: Offline';
+          matterStatus.title = `Server: ${data.matterjs_server_url || '5580'}${errDetail}`;
         }
       } catch (e) {}
     }

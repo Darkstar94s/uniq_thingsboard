@@ -32,6 +32,7 @@ mkdir -p "$DEST/matter/web"
 FILES=(
     "uniq_gateway.py"
     "connectors/matter_connector.py"
+    "matter/matter_client.py"
     "matter/commission_service.py"
     "matter/device_mapper.py"
     "matter/web/index.html"

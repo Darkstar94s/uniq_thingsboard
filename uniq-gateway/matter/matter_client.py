@@ -47,6 +47,7 @@ class MatterClient:
         self._ws: Optional[Any] = None
         self._is_running = False
         self._is_connected = False
+        self.last_error = ""
         self._worker_thread: Optional[threading.Thread] = None
 
         self._message_counter = 0
@@ -83,6 +84,7 @@ class MatterClient:
     def _connection_loop(self):
         while self._is_running:
             if websocket is None:
+                self.last_error = "WebSocket package (websocket-client) not found"
                 log.warning("WebSocket library unavailable. Retrying in 10s...")
                 time.sleep(10)
                 continue
@@ -98,6 +100,7 @@ class MatterClient:
                 )
                 self._ws.run_forever(ping_interval=30, ping_timeout=10)
             except Exception as e:
+                self.last_error = str(e)
                 log.error(f"WebSocket connection error: {e}")
 
             self._set_connected(False)
@@ -116,6 +119,7 @@ class MatterClient:
                     log.error(f"Error in on_connection_change callback: {e}")
 
     def _on_open(self, ws):
+        self.last_error = ""
         log.info("Successfully connected to matterjs-server WebSocket!")
         self._set_connected(True)
         # Immediately subscribe to real-time events stream
@@ -263,10 +267,15 @@ class MatterClient:
                     log.error(f"Error handling attribute event: {e}")
 
     def _on_error(self, ws, error):
+        self.last_error = str(error)
         log.error(f"WebSocket error encountered: {error}")
 
     def _on_close(self, ws, close_status_code, close_msg):
         log.info(f"WebSocket closed: code={close_status_code}, msg={close_msg}")
+        if close_msg or close_status_code:
+            self.last_error = f"Connection closed (code: {close_status_code}, msg: {close_msg})".strip()
+        elif not self.last_error:
+            self.last_error = "Connection closed"
         self._set_connected(False)
 
     def send_command(self, command: str, args: Optional[Dict[str, Any]] = None, timeout: float = 15.0) -> Dict[str, Any]:
